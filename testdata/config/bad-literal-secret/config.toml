@@ -1,0 +1,15 @@
+version = 1
+
+[providers.ollama]
+type     = "openai-compatible"
+base_url = "http://localhost:11434/v1"
+
+[models.gemma]
+provider = "ollama"
+id       = "gemma4:e2b"
+context  = 8192
+
+[providers.openrouter]
+type    = "openai-compatible"
+auth    = "api-key"
+api_key = "sk-or-v1-notarealkey"

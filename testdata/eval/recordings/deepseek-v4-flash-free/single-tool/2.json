@@ -1,0 +1,53 @@
+{
+  "model": "deepseek-v4-flash-free",
+  "scenario": "single-tool",
+  "run": 2,
+  "steps": [
+    {
+      "step": 1,
+      "digest": "9403bfe588b3d68608fcb0f7c9b26516f2125d55936fbc1e06930897ce77e9e0",
+      "shape": {
+        "messages": 1,
+        "tools": [
+          "weather"
+        ],
+        "system_chars": 871,
+        "last_message": "What is the weather in Mirefield right now?"
+      },
+      "response": {
+        "tool_calls": [
+          {
+            "ID": "chatcmpl-tool-a30c960476d39b8d",
+            "Name": "weather",
+            "Arguments": "{\"city\": \"Mirefield\"}"
+          }
+        ],
+        "finish": "tool_calls",
+        "usage": {
+          "PromptTokens": 554,
+          "CompletionTokens": 64
+        }
+      }
+    },
+    {
+      "step": 2,
+      "digest": "038c7131263c86262be30a4fd1bd83c3c71b754af3e2eb69cc8fa47126e7bbbf",
+      "shape": {
+        "messages": 3,
+        "tools": [
+          "weather"
+        ],
+        "system_chars": 871,
+        "last_message": "Mirefield: light rain, 11 C."
+      },
+      "response": {
+        "text": "The weather in Mirefield right now is **light rain** at **11°C**.",
+        "finish": "stop",
+        "usage": {
+          "PromptTokens": 621,
+          "CompletionTokens": 21
+        }
+      }
+    }
+  ]
+}

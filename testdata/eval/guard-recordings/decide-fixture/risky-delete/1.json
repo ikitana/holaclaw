@@ -1,0 +1,43 @@
+{
+  "model": "decide-fixture",
+  "case": "risky-delete",
+  "steps": [
+    {
+      "step": 1,
+      "digest": "cd1a5142620bf4e82315c767f35f76a7f6dc876a28eef7b054b64a9d76a391f8",
+      "shape": {
+        "questions": [
+          "kind",
+          "safe"
+        ],
+        "state_chars": 220,
+        "state_tail": "…tory. timeout_s defaults to 30, max 300. Output is capped.\nrisk: exec\nrun: interactive\nrole: owner\nargs_bytes: 30\n\u003cargs\u003e\n{\"command\":\"rm -rf /home/sam\"}\n\u003c/args\u003e\n"
+      },
+      "response": {
+        "answers": {
+          "kind": {
+            "Type": "choice",
+            "Noul": 0,
+            "Choice": "destructive",
+            "Score": 0,
+            "Probabilities": null,
+            "Confidence": 0
+          },
+          "safe": {
+            "Type": "noul",
+            "Noul": 0.03,
+            "Choice": "",
+            "Score": 0,
+            "Probabilities": null,
+            "Confidence": 0.92
+          }
+        },
+        "usage": {
+          "PromptTokens": 120,
+          "CompletionTokens": 8
+        },
+        "cost": 0.00013
+      }
+    }
+  ]
+}

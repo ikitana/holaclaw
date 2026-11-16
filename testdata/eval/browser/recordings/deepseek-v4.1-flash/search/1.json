@@ -1,0 +1,72 @@
+{
+  "model": "deepseek-v4.1-flash",
+  "scenario": "search",
+  "run": 1,
+  "steps": [
+    {
+      "step": 1,
+      "digest": "098d63c7d9b24948527f879ad66bb6e795d6f7e06ebd64242bfb178d024ad38e",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 966,
+        "last_message": "request: Search for \"Trailhead\" and report the price of \"Trailhead Kettle 2L\".\nstart here: http://127.0.0.1:36069/search/?run=deepseek-v4.1-flash-search-1"
+      },
+      "response": {
+        "text": "{\"start_url\":\"http://127.0.0.1:36069/search/?run=deepseek-v4.1-flash-search-1\",\"steps\":[{\"kind\":\"type\",\"target\":\"the search box\",\"text\":\"Trailhead\",\"submit\":true,\"expect\":\"Search results for Trailhead are listed.\"},{\"kind\":\"click\",\"target\":\"the Trailhead Kettle 2L result\",\"expect\":\"The Trailhead Kettle 2L product page is open.\"}],\"extract\":\"the price shown for Trailhead Kettle 2L\"}",
+        "finish": "stop",
+        "usage": {
+          "PromptTokens": 317,
+          "CompletionTokens": 260
+        }
+      }
+    },
+    {
+      "step": 2,
+      "digest": "6319ec8a017909fea9ee9d472c9f7f0db46479831330640b586a932da3e62c4a",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 1164,
+        "last_message": "…0.1:36069/search/?run=deepseek-v4.1-flash-search-1\ntitle: Example Outdoors — Search\ncandidates:\n  r1: textbox \"Search products\"\n  r2: button \"Search\"\n\n\u003c\u003c/page\u003e\u003e"
+      },
+      "response": {
+        "text": "{\"element\":\"r1\",\"element_confidence\":0.95,\"goal\":0.05,\"blocker\":\"none\",\"surprise\":0.05,\"serves\":1.0,\"risk\":\"none\"}",
+        "finish": "stop",
+        "usage": {
+          "PromptTokens": 491,
+          "CompletionTokens": 285
+        }
+      }
+    },
+    {
+      "step": 3,
+      "digest": "26093eed16fb669c2e8abc3411a43b916e2e5d8d02d8bcc3ccec8ee82ab360d5",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 1164,
+        "last_message": "…1: textbox \"Search products\" = \"Trailhead\"\n  r2: button \"Search\"\ntext:\nExample Outdoors Search products Search Results • Trailhead Kettle 2L — $34.50\n\n\u003c\u003c/page\u003e\u003e"
+      },
+      "response": {
+        "text": "{\"element\":\"r3\",\"element_confidence\":0.96,\"goal\":0.0,\"blocker\":\"none\",\"surprise\":0.0,\"serves\":1.0,\"risk\":\"none\"}",
+        "finish": "stop",
+        "usage": {
+          "PromptTokens": 527,
+          "CompletionTokens": 97
+        }
+      }
+    },
+    {
+      "step": 4,
+      "digest": "570eb521c0c4c9f60b35ff12faa8c017d03f0066322c7b3fef65a6c58172c441",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 1164,
+        "last_message": "…← Back to search\"\ntext:\n← Back to search Trailhead Kettle 2L Price: $34.50 Specifications Capacity: 2 litres Material: stainless steel Weight: 480 g.\n\n\u003c\u003c/page\u003e\u003e"
+      },
+      "error_kind": "network"
+    }
+  ]
+}

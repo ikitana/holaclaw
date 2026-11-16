@@ -1,0 +1,43 @@
+{
+  "model": "deepseek-v4.1-flash+jev-guard",
+  "scenario": "search",
+  "run": 1,
+  "steps": [
+    {
+      "step": 1,
+      "digest": "1795b9d4079ce42150cb1338abf8d736b94dc9a9be025f8264e2d72abc410ba6",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 966,
+        "last_message": "…est: Search for \"Trailhead\" and report the price of \"Trailhead Kettle 2L\".\nstart here: http://127.0.0.1:46681/search/?run=deepseek-v4.1-flash-jev-guard-search-1"
+      },
+      "response": {
+        "text": "{\"start_url\":\"http://127.0.0.1:46681/search/?run=deepseek-v4.1-flash-jev-guard-search-1\",\"steps\":[{\"kind\":\"type\",\"target\":\"the search box\",\"text\":\"Trailhead\",\"submit\":true,\"expect\":\"Search results for Trailhead are listed.\"},{\"kind\":\"click\",\"target\":\"the result link titled Trailhead Kettle 2L\",\"expect\":\"The Trailhead Kettle 2L product page is open.\"}],\"extract\":\"the price of the Trailhead Kettle 2L\"}",
+        "finish": "stop",
+        "usage": {
+          "PromptTokens": 321,
+          "CompletionTokens": 413
+        }
+      }
+    },
+    {
+      "step": 2,
+      "digest": "49f37f79aa4b0dee677374428ae08d2393ceb3d9e297edf38d722c64a62c1e8e",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 352,
+        "last_message": "…← Back to search\"\ntext:\n← Back to search Trailhead Kettle 2L Price: $34.50 Specifications Capacity: 2 litres Material: stainless steel Weight: 480 g.\n\n\u003c\u003c/page\u003e\u003e"
+      },
+      "response": {
+        "text": "$34.50",
+        "finish": "stop",
+        "usage": {
+          "PromptTokens": 238,
+          "CompletionTokens": 31
+        }
+      }
+    }
+  ]
+}

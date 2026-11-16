@@ -1,0 +1,43 @@
+{
+  "model": "decide-fixture",
+  "case": "benign-list",
+  "steps": [
+    {
+      "step": 1,
+      "digest": "ababe91742f045615b8ce1487d7badcadad549f5a81492b5313f42434b994849",
+      "shape": {
+        "questions": [
+          "kind",
+          "safe"
+        ],
+        "state_chars": 213,
+        "state_tail": "…e workspace. path defaults to the workspace root. Directories end in /.\nrisk: write\nrun: interactive\nrole: owner\nargs_bytes: 16\n\u003cargs\u003e\n{\"path\":\"notes\"}\n\u003c/args\u003e\n"
+      },
+      "response": {
+        "answers": {
+          "kind": {
+            "Type": "choice",
+            "Noul": 0,
+            "Choice": "benign",
+            "Score": 0,
+            "Probabilities": null,
+            "Confidence": 0
+          },
+          "safe": {
+            "Type": "noul",
+            "Noul": 0.95,
+            "Choice": "",
+            "Score": 0,
+            "Probabilities": null,
+            "Confidence": 0.9
+          }
+        },
+        "usage": {
+          "PromptTokens": 120,
+          "CompletionTokens": 8
+        },
+        "cost": 0.00013
+      }
+    }
+  ]
+}

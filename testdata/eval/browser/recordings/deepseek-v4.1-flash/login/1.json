@@ -1,0 +1,61 @@
+{
+  "model": "deepseek-v4.1-flash",
+  "scenario": "login",
+  "run": 1,
+  "steps": [
+    {
+      "step": 1,
+      "digest": "3792d5b5cdf215a407f21d366dfa7b5db4a540015e8d9ecf5b38232d46088257",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 966,
+        "last_message": "request: Sign in to the mail inbox and report the subject of the newest message.\nstart here: http://127.0.0.1:36069/login/inbox?run=deepseek-v4.1-flash-login-1"
+      },
+      "response": {
+        "text": "{\"start_url\":\"http://127.0.0.1:36069/login/inbox?run=deepseek-v4.1-flash-login-1\",\"steps\":[{\"kind\":\"wait\",\"target\":\"the sign-in form\",\"text\":\"\",\"url\":\"\",\"submit\":false,\"expect\":\"A sign-in form asking for a username and password is visible.\"}],\"extract\":\"\"}",
+        "finish": "stop",
+        "usage": {
+          "PromptTokens": 313,
+          "CompletionTokens": 215
+        }
+      }
+    },
+    {
+      "step": 2,
+      "digest": "c748a731f505918e5f288e6ba8bb83c3ff9a3e96119958e3350800e15cae204f",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 1164,
+        "last_message": "….0.1:36069/login/?run=deepseek-v4.1-flash-login-1\ntitle: Sign in\ncandidates:\n  r3: button \"Sign in\"\n  r1: textbox \"Username\"\n  r2: textbox \"Password\"\n\n\u003c\u003c/page\u003e\u003e"
+      },
+      "response": {
+        "text": "{\"element\":\"\",\"element_confidence\":0.0,\"goal\":1.0,\"blocker\":\"none\",\"surprise\":0.0,\"serves\":1.0,\"risk\":\"none\"}",
+        "finish": "stop",
+        "usage": {
+          "PromptTokens": 487,
+          "CompletionTokens": 139
+        }
+      }
+    },
+    {
+      "step": 3,
+      "digest": "285cd73ab98832f5784b3486d2cce1baf2b8573ffec37e2c1742ffafadb81beb",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 1164,
+        "last_message": "…h-login-1\ntitle: Sign in\ncandidates:\n  r3: button \"Sign in\"\n  r1: textbox \"Username\"\n  r2: textbox \"Password\"\ntext:\nSign in Username Password Sign in\n\n\u003c\u003c/page\u003e\u003e"
+      },
+      "response": {
+        "text": "{\"element\":\"r1\",\"element_confidence\":0.5,\"goal\":1.0,\"blocker\":\"none\",\"surprise\":0.0,\"serves\":1.0,\"risk\":\"none\"}",
+        "finish": "stop",
+        "usage": {
+          "PromptTokens": 496,
+          "CompletionTokens": 303
+        }
+      }
+    }
+  ]
+}

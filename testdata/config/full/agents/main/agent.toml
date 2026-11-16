@@ -1,0 +1,50 @@
+version = 1
+tools = ["memory", "files", "fetch"]
+
+[models]
+chat       = "gemma"
+fallback   = "gpt"
+guard      = "jev"
+summarize  = "gemma"
+transcribe = "gpt"
+vision     = "gpt"
+embed      = "embed"
+image      = "muse"
+decide     = "jev"
+
+[policy]
+read            = "allow"
+write           = "allow"
+external        = "allow"
+exec            = "ask"
+exec_allow      = ["git status", "git diff"]
+taint_escalates = true
+guard_mode      = "auto"
+guard_threshold = 0.9
+
+[policy.tools]
+"files.write" = "ask"
+fetch         = "allow"
+
+[policy.guest]
+read     = "allow"
+write    = "deny"
+external = "deny"
+exec     = "deny"
+
+[policy.task]
+read     = "allow"
+write    = "allow"
+external = "ask"
+exec     = "deny"
+
+[limits]
+max_steps      = 10
+reply_reserve  = 1024
+images_per_day = 5
+
+[browser]
+allow = ["example.com", "sub.example.com"]
+
+[skills]
+disabled = ["release"]

@@ -1,0 +1,43 @@
+{
+  "model": "deepseek-v4.1-flash+jev-guard",
+  "scenario": "download",
+  "run": 1,
+  "steps": [
+    {
+      "step": 1,
+      "digest": "76baf5cce0eb9d6ba7adfca824431d3300bebbd0e0f3b916267c51dbb46924a5",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 966,
+        "last_message": "request: Download the report.\nstart here: http://127.0.0.1:46681/download/?run=deepseek-v4.1-flash-jev-guard-download-1"
+      },
+      "response": {
+        "text": "{\"start_url\":\"http://127.0.0.1:46681/download/?run=deepseek-v4.1-flash-jev-guard-download-1\",\"steps\":[{\"kind\":\"open\",\"target\":\"the report page\",\"text\":\"\",\"url\":\"http://127.0.0.1:46681/download/?run=deepseek-v4.1-flash-jev-guard-download-1\",\"submit\":false,\"expect\":\"The report page is loaded and shows a download link or button for the report.\"},{\"kind\":\"click\",\"target\":\"the download report link or button\",\"text\":\"\",\"url\":\"\",\"submit\":false,\"expect\":\"The report file download has started.\"},{\"kind\":\"wait\",\"target\":\"the page after the download starts\",\"text\":\"\",\"url\":\"\",\"submit\":false,\"expect\":\"The download has been triggered and the page either confirms it or returns to the report list.\"}],\"extract\":\"Whether the report download was triggered, and any confirmation or file name shown on the page.\"}",
+        "finish": "stop",
+        "usage": {
+          "PromptTokens": 304,
+          "CompletionTokens": 272
+        }
+      }
+    },
+    {
+      "step": 2,
+      "digest": "43296f10d891006070febfecb69e60466b8cefa908458d3612ac7def4573e755",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 352,
+        "last_message": "…le: Example Reports\ncandidates:\n  r1: link \"Download report\" (focused)\n  r2: link \"Download huge\"\ntext:\nExample Reports Download report Download huge\n\n\u003c\u003c/page\u003e\u003e"
+      },
+      "response": {
+        "text": "not found.",
+        "finish": "stop",
+        "usage": {
+          "PromptTokens": 221,
+          "CompletionTokens": 226
+        }
+      }
+    }
+  ]
+}

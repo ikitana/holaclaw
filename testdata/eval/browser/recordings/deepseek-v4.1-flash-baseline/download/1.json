@@ -1,0 +1,439 @@
+{
+  "model": "deepseek-v4.1-flash-baseline",
+  "scenario": "download",
+  "run": 1,
+  "steps": [
+    {
+      "step": 1,
+      "digest": "492ca51a3ee796ffe50fbb5fba5007a321461bf6b93c2c792db0db31defd325b",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 702,
+        "last_message": "…d-1\ntitle: Example Reports\n\nelements:\n- ref r1: link \"Download report\"\n- ref r2: link \"Download huge\"\n\npage text:\nExample Reports Download report Download huge\n"
+      },
+      "response": {
+        "text": "{\"action\":\"click\",\"ref\":\"r1\"}",
+        "finish": "stop",
+        "usage": {
+          "PromptTokens": 294,
+          "CompletionTokens": 69
+        }
+      }
+    },
+    {
+      "step": 2,
+      "digest": "492ca51a3ee796ffe50fbb5fba5007a321461bf6b93c2c792db0db31defd325b",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 702,
+        "last_message": "…d-1\ntitle: Example Reports\n\nelements:\n- ref r1: link \"Download report\"\n- ref r2: link \"Download huge\"\n\npage text:\nExample Reports Download report Download huge\n"
+      },
+      "response": {
+        "text": "{\"action\":\"click\",\"ref\":\"r1\"}",
+        "finish": "stop",
+        "usage": {
+          "PromptTokens": 294,
+          "CompletionTokens": 71
+        }
+      }
+    },
+    {
+      "step": 3,
+      "digest": "492ca51a3ee796ffe50fbb5fba5007a321461bf6b93c2c792db0db31defd325b",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 702,
+        "last_message": "…d-1\ntitle: Example Reports\n\nelements:\n- ref r1: link \"Download report\"\n- ref r2: link \"Download huge\"\n\npage text:\nExample Reports Download report Download huge\n"
+      },
+      "response": {
+        "text": "{\"action\":\"click\",\"ref\":\"r1\"}",
+        "finish": "stop",
+        "usage": {
+          "PromptTokens": 294,
+          "CompletionTokens": 56
+        }
+      }
+    },
+    {
+      "step": 4,
+      "digest": "492ca51a3ee796ffe50fbb5fba5007a321461bf6b93c2c792db0db31defd325b",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 702,
+        "last_message": "…d-1\ntitle: Example Reports\n\nelements:\n- ref r1: link \"Download report\"\n- ref r2: link \"Download huge\"\n\npage text:\nExample Reports Download report Download huge\n"
+      },
+      "response": {
+        "text": "{\"action\":\"click\",\"ref\":\"r1\"}",
+        "finish": "stop",
+        "usage": {
+          "PromptTokens": 294,
+          "CompletionTokens": 78
+        }
+      }
+    },
+    {
+      "step": 5,
+      "digest": "492ca51a3ee796ffe50fbb5fba5007a321461bf6b93c2c792db0db31defd325b",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 702,
+        "last_message": "…d-1\ntitle: Example Reports\n\nelements:\n- ref r1: link \"Download report\"\n- ref r2: link \"Download huge\"\n\npage text:\nExample Reports Download report Download huge\n"
+      },
+      "response": {
+        "text": "{\"action\":\"click\",\"ref\":\"r1\"}",
+        "finish": "stop",
+        "usage": {
+          "PromptTokens": 294,
+          "CompletionTokens": 34
+        }
+      }
+    },
+    {
+      "step": 6,
+      "digest": "492ca51a3ee796ffe50fbb5fba5007a321461bf6b93c2c792db0db31defd325b",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 702,
+        "last_message": "…d-1\ntitle: Example Reports\n\nelements:\n- ref r1: link \"Download report\"\n- ref r2: link \"Download huge\"\n\npage text:\nExample Reports Download report Download huge\n"
+      },
+      "response": {
+        "text": "{\"action\":\"click\",\"ref\":\"r1\"}",
+        "finish": "stop",
+        "usage": {
+          "PromptTokens": 294,
+          "CompletionTokens": 40
+        }
+      }
+    },
+    {
+      "step": 7,
+      "digest": "492ca51a3ee796ffe50fbb5fba5007a321461bf6b93c2c792db0db31defd325b",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 702,
+        "last_message": "…d-1\ntitle: Example Reports\n\nelements:\n- ref r1: link \"Download report\"\n- ref r2: link \"Download huge\"\n\npage text:\nExample Reports Download report Download huge\n"
+      },
+      "response": {
+        "text": "{\"action\":\"click\",\"ref\":\"r1\"}",
+        "finish": "stop",
+        "usage": {
+          "PromptTokens": 294,
+          "CompletionTokens": 85
+        }
+      }
+    },
+    {
+      "step": 8,
+      "digest": "492ca51a3ee796ffe50fbb5fba5007a321461bf6b93c2c792db0db31defd325b",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 702,
+        "last_message": "…d-1\ntitle: Example Reports\n\nelements:\n- ref r1: link \"Download report\"\n- ref r2: link \"Download huge\"\n\npage text:\nExample Reports Download report Download huge\n"
+      },
+      "response": {
+        "text": "{\"action\":\"click\",\"ref\":\"r1\"}",
+        "finish": "stop",
+        "usage": {
+          "PromptTokens": 294,
+          "CompletionTokens": 81
+        }
+      }
+    },
+    {
+      "step": 9,
+      "digest": "492ca51a3ee796ffe50fbb5fba5007a321461bf6b93c2c792db0db31defd325b",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 702,
+        "last_message": "…d-1\ntitle: Example Reports\n\nelements:\n- ref r1: link \"Download report\"\n- ref r2: link \"Download huge\"\n\npage text:\nExample Reports Download report Download huge\n"
+      },
+      "response": {
+        "text": "{\"action\":\"click\",\"ref\":\"r1\"}",
+        "finish": "stop",
+        "usage": {
+          "PromptTokens": 294,
+          "CompletionTokens": 56
+        }
+      }
+    },
+    {
+      "step": 10,
+      "digest": "492ca51a3ee796ffe50fbb5fba5007a321461bf6b93c2c792db0db31defd325b",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 702,
+        "last_message": "…d-1\ntitle: Example Reports\n\nelements:\n- ref r1: link \"Download report\"\n- ref r2: link \"Download huge\"\n\npage text:\nExample Reports Download report Download huge\n"
+      },
+      "response": {
+        "text": "{\"action\":\"click\",\"ref\":\"r1\"}",
+        "finish": "stop",
+        "usage": {
+          "PromptTokens": 294,
+          "CompletionTokens": 44
+        }
+      }
+    },
+    {
+      "step": 11,
+      "digest": "492ca51a3ee796ffe50fbb5fba5007a321461bf6b93c2c792db0db31defd325b",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 702,
+        "last_message": "…d-1\ntitle: Example Reports\n\nelements:\n- ref r1: link \"Download report\"\n- ref r2: link \"Download huge\"\n\npage text:\nExample Reports Download report Download huge\n"
+      },
+      "response": {
+        "text": "{\"action\":\"click\",\"ref\":\"r1\"}",
+        "finish": "stop",
+        "usage": {
+          "PromptTokens": 294,
+          "CompletionTokens": 57
+        }
+      }
+    },
+    {
+      "step": 12,
+      "digest": "492ca51a3ee796ffe50fbb5fba5007a321461bf6b93c2c792db0db31defd325b",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 702,
+        "last_message": "…d-1\ntitle: Example Reports\n\nelements:\n- ref r1: link \"Download report\"\n- ref r2: link \"Download huge\"\n\npage text:\nExample Reports Download report Download huge\n"
+      },
+      "response": {
+        "text": "{\"action\":\"click\",\"ref\":\"r1\"}",
+        "finish": "stop",
+        "usage": {
+          "PromptTokens": 294,
+          "CompletionTokens": 66
+        }
+      }
+    },
+    {
+      "step": 13,
+      "digest": "492ca51a3ee796ffe50fbb5fba5007a321461bf6b93c2c792db0db31defd325b",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 702,
+        "last_message": "…d-1\ntitle: Example Reports\n\nelements:\n- ref r1: link \"Download report\"\n- ref r2: link \"Download huge\"\n\npage text:\nExample Reports Download report Download huge\n"
+      },
+      "response": {
+        "text": "{\"action\":\"click\",\"ref\":\"r1\"}",
+        "finish": "stop",
+        "usage": {
+          "PromptTokens": 294,
+          "CompletionTokens": 25
+        }
+      }
+    },
+    {
+      "step": 14,
+      "digest": "492ca51a3ee796ffe50fbb5fba5007a321461bf6b93c2c792db0db31defd325b",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 702,
+        "last_message": "…d-1\ntitle: Example Reports\n\nelements:\n- ref r1: link \"Download report\"\n- ref r2: link \"Download huge\"\n\npage text:\nExample Reports Download report Download huge\n"
+      },
+      "response": {
+        "text": "{\"action\":\"click\",\"ref\":\"r1\"}",
+        "finish": "stop",
+        "usage": {
+          "PromptTokens": 294,
+          "CompletionTokens": 60
+        }
+      }
+    },
+    {
+      "step": 15,
+      "digest": "492ca51a3ee796ffe50fbb5fba5007a321461bf6b93c2c792db0db31defd325b",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 702,
+        "last_message": "…d-1\ntitle: Example Reports\n\nelements:\n- ref r1: link \"Download report\"\n- ref r2: link \"Download huge\"\n\npage text:\nExample Reports Download report Download huge\n"
+      },
+      "response": {
+        "text": "{\"action\":\"click\",\"ref\":\"r1\"}",
+        "finish": "stop",
+        "usage": {
+          "PromptTokens": 294,
+          "CompletionTokens": 48
+        }
+      }
+    },
+    {
+      "step": 16,
+      "digest": "492ca51a3ee796ffe50fbb5fba5007a321461bf6b93c2c792db0db31defd325b",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 702,
+        "last_message": "…d-1\ntitle: Example Reports\n\nelements:\n- ref r1: link \"Download report\"\n- ref r2: link \"Download huge\"\n\npage text:\nExample Reports Download report Download huge\n"
+      },
+      "response": {
+        "text": "{\"action\":\"click\",\"ref\":\"r1\"}",
+        "finish": "stop",
+        "usage": {
+          "PromptTokens": 294,
+          "CompletionTokens": 33
+        }
+      }
+    },
+    {
+      "step": 17,
+      "digest": "492ca51a3ee796ffe50fbb5fba5007a321461bf6b93c2c792db0db31defd325b",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 702,
+        "last_message": "…d-1\ntitle: Example Reports\n\nelements:\n- ref r1: link \"Download report\"\n- ref r2: link \"Download huge\"\n\npage text:\nExample Reports Download report Download huge\n"
+      },
+      "response": {
+        "text": "{\"action\":\"click\",\"ref\":\"r1\"}",
+        "finish": "stop",
+        "usage": {
+          "PromptTokens": 294,
+          "CompletionTokens": 105
+        }
+      }
+    },
+    {
+      "step": 18,
+      "digest": "492ca51a3ee796ffe50fbb5fba5007a321461bf6b93c2c792db0db31defd325b",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 702,
+        "last_message": "…d-1\ntitle: Example Reports\n\nelements:\n- ref r1: link \"Download report\"\n- ref r2: link \"Download huge\"\n\npage text:\nExample Reports Download report Download huge\n"
+      },
+      "response": {
+        "text": "{\"action\":\"click\",\"ref\":\"r1\"}",
+        "finish": "stop",
+        "usage": {
+          "PromptTokens": 294,
+          "CompletionTokens": 47
+        }
+      }
+    },
+    {
+      "step": 19,
+      "digest": "492ca51a3ee796ffe50fbb5fba5007a321461bf6b93c2c792db0db31defd325b",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 702,
+        "last_message": "…d-1\ntitle: Example Reports\n\nelements:\n- ref r1: link \"Download report\"\n- ref r2: link \"Download huge\"\n\npage text:\nExample Reports Download report Download huge\n"
+      },
+      "response": {
+        "text": "{\"action\":\"click\",\"ref\":\"r1\"}",
+        "finish": "stop",
+        "usage": {
+          "PromptTokens": 294,
+          "CompletionTokens": 32
+        }
+      }
+    },
+    {
+      "step": 20,
+      "digest": "492ca51a3ee796ffe50fbb5fba5007a321461bf6b93c2c792db0db31defd325b",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 702,
+        "last_message": "…d-1\ntitle: Example Reports\n\nelements:\n- ref r1: link \"Download report\"\n- ref r2: link \"Download huge\"\n\npage text:\nExample Reports Download report Download huge\n"
+      },
+      "response": {
+        "text": "{\"action\":\"click\",\"ref\":\"r1\"}",
+        "finish": "stop",
+        "usage": {
+          "PromptTokens": 294,
+          "CompletionTokens": 46
+        }
+      }
+    },
+    {
+      "step": 21,
+      "digest": "492ca51a3ee796ffe50fbb5fba5007a321461bf6b93c2c792db0db31defd325b",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 702,
+        "last_message": "…d-1\ntitle: Example Reports\n\nelements:\n- ref r1: link \"Download report\"\n- ref r2: link \"Download huge\"\n\npage text:\nExample Reports Download report Download huge\n"
+      },
+      "response": {
+        "text": "{\"action\":\"click\",\"ref\":\"r1\"}",
+        "finish": "stop",
+        "usage": {
+          "PromptTokens": 294,
+          "CompletionTokens": 28
+        }
+      }
+    },
+    {
+      "step": 22,
+      "digest": "492ca51a3ee796ffe50fbb5fba5007a321461bf6b93c2c792db0db31defd325b",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 702,
+        "last_message": "…d-1\ntitle: Example Reports\n\nelements:\n- ref r1: link \"Download report\"\n- ref r2: link \"Download huge\"\n\npage text:\nExample Reports Download report Download huge\n"
+      },
+      "response": {
+        "text": "{\"action\":\"click\",\"ref\":\"r1\"}",
+        "finish": "stop",
+        "usage": {
+          "PromptTokens": 294,
+          "CompletionTokens": 33
+        }
+      }
+    },
+    {
+      "step": 23,
+      "digest": "492ca51a3ee796ffe50fbb5fba5007a321461bf6b93c2c792db0db31defd325b",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 702,
+        "last_message": "…d-1\ntitle: Example Reports\n\nelements:\n- ref r1: link \"Download report\"\n- ref r2: link \"Download huge\"\n\npage text:\nExample Reports Download report Download huge\n"
+      },
+      "response": {
+        "text": "{\"action\":\"click\",\"ref\":\"r1\"}",
+        "finish": "stop",
+        "usage": {
+          "PromptTokens": 294,
+          "CompletionTokens": 54
+        }
+      }
+    },
+    {
+      "step": 24,
+      "digest": "492ca51a3ee796ffe50fbb5fba5007a321461bf6b93c2c792db0db31defd325b",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 702,
+        "last_message": "…d-1\ntitle: Example Reports\n\nelements:\n- ref r1: link \"Download report\"\n- ref r2: link \"Download huge\"\n\npage text:\nExample Reports Download report Download huge\n"
+      },
+      "response": {
+        "text": "{\"action\":\"click\",\"ref\":\"r1\"}",
+        "finish": "stop",
+        "usage": {
+          "PromptTokens": 294,
+          "CompletionTokens": 86
+        }
+      }
+    }
+  ]
+}

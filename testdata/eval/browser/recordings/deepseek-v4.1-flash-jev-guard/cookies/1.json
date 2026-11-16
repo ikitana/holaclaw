@@ -1,0 +1,43 @@
+{
+  "model": "deepseek-v4.1-flash+jev-guard",
+  "scenario": "cookies",
+  "run": 1,
+  "steps": [
+    {
+      "step": 1,
+      "digest": "908f133bfd1ea6a791af761eae29119184b2e66ed76ab047a1bb8aa4106a23db",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 966,
+        "last_message": "request: Find the phone number on this contact page.\nstart here: http://127.0.0.1:46681/cookies/?run=deepseek-v4.1-flash-jev-guard-cookies-1"
+      },
+      "response": {
+        "text": "{\"start_url\":\"http://127.0.0.1:46681/cookies/?run=deepseek-v4.1-flash-jev-guard-cookies-1\",\"steps\":[{\"kind\":\"click\",\"target\":\"the contact link\",\"expect\":\"The contact page is open.\"}],\"extract\":\"the phone number on the contact page\"}",
+        "finish": "stop",
+        "usage": {
+          "PromptTokens": 310,
+          "CompletionTokens": 144
+        }
+      }
+    },
+    {
+      "step": 2,
+      "digest": "2cf116ac358f22f549a4c45f90b9653498ac323e7b145217653245bb3ab958a1",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 352,
+        "last_message": "…uard-cookies-1\ntitle: Example Contact\ncandidates: none\ntext:\nContact Example Co. Address: 42 Example Street, Springfield, ST 55555 Phone: +1-555-0142\n\n\u003c\u003c/page\u003e\u003e"
+      },
+      "response": {
+        "text": "+1-555-0142",
+        "finish": "stop",
+        "usage": {
+          "PromptTokens": 218,
+          "CompletionTokens": 43
+        }
+      }
+    }
+  ]
+}

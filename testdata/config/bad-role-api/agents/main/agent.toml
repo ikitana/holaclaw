@@ -1,0 +1,9 @@
+version = 1
+tools = ["memory"]
+
+[models]
+chat      = "gemma"
+guard     = "muse"  # an image model cannot classify a tool call
+summarize = "jev"   # only the guard may be a decision model
+image     = "gemma" # image generation needs api = "images"
+decide    = "gemma" # the browser executor's decide role needs api = "decisions"

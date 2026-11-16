@@ -1,0 +1,22 @@
+#!/usr/bin/expect -f
+# drive [PROMPT ANSWER ... --] COMMAND...: runs COMMAND on a terminal, waits
+# for each PROMPT in turn and types its ANSWER, then exits with COMMAND's
+# status. A terminal, because install.sh asks on /dev/tty and sudo flushes
+# anything typed ahead of its password prompt.
+set timeout 900
+# expect takes a leading -- as its own, so with no prompts there is none.
+set sep [lsearch -exact $argv --]
+set pairs [lrange $argv 0 [expr {$sep - 1}]]
+spawn -noecho {*}[lrange $argv [expr {$sep + 1}] end]
+foreach {prompt answer} $pairs {
+  expect {
+    -exact $prompt { send -- "$answer\r" }
+    timeout { puts stderr "\ndrive: timed out waiting for \"$prompt\""; exit 124 }
+    eof { puts stderr "\ndrive: exited before \"$prompt\""; exit [lindex [wait] 3] }
+  }
+}
+expect {
+  eof {}
+  timeout { puts stderr "\ndrive: timed out"; exit 124 }
+}
+exit [lindex [wait] 3]

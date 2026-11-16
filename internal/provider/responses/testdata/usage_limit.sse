@@ -1,0 +1,6 @@
+event: response.output_text.delta
+data: {"type":"response.output_text.delta","item_id":"msg_1","output_index":0,"delta":"Hola"}
+
+event: error
+data: {"type":"error","code":"usage_limit_reached","message":"You have hit your usage limit for the week.","resets_at":1789000000}
+

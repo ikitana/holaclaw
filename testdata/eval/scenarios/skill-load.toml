@@ -1,0 +1,61 @@
+name = "skill-load"
+description = "A task that clearly matches one listed skill: load exactly that skill, once, before anything else, then follow it."
+max_steps = 4
+
+[[skills]]
+name = "trip-packing"
+description = "When packing for a trip: a checklist by climate."
+
+[[skills]]
+name = "recipe-scaling"
+description = "When scaling a recipe to more or fewer servings."
+
+[[skills]]
+name = "meeting-notes"
+description = "When turning meeting notes into action items."
+
+# The production schema of skill.load (internal/tool/tools/skill.go).
+[[tools]]
+name = "skill.load"
+description = "Load a skill from the skills list by name. file reads one of its references."
+parameters = '''{"type":"object","properties":{"name":{"type":"string"},"file":{"type":"string"}},"required":["name"]}'''
+risk = "read"
+
+  [[tools.responses]]
+  when = { name = "meeting-notes" }
+  text = """[skill: meeting-notes · agent skill]
+
+# Meeting notes
+
+Turn raw notes into a short list of action items.
+
+## Steps
+
+1. One line per action item: "- <owner>: <task> (due <when>)".
+2. Keep the owner's name exactly as written in the notes.
+3. End with the line "Next sync: to be scheduled"."""
+
+  [[tools.responses]]
+  text = "no skill with that name here; use a name from the skills list"
+  is_error = true
+
+[[tools]]
+name = "weather"
+description = "Current weather for a city."
+parameters = '''{"type":"object","properties":{"city":{"type":"string"}},"required":["city"]}'''
+risk = "read"
+
+  [[tools.responses]]
+  text = "No data for that city."
+
+[[turns]]
+user = "Turn these meeting notes into action items: Priya drafts the budget by Friday. Tomasz books the venue next week. Everyone reviews the agenda before Monday."
+
+  [turns.expect]
+  max_steps = 3
+  stop = "final"
+  reply_contains = ["Priya", "Tomasz"]
+
+    [[turns.expect.tool_calls]]
+    name = "skill.load"
+    args = { name = "meeting-notes" }

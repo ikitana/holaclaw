@@ -1,0 +1,20 @@
+{
+  "model": "qwen3.8-27b-free",
+  "scenario": "tool-args",
+  "run": 1,
+  "steps": [
+    {
+      "step": 1,
+      "digest": "a78c7d0982e0d99fe07e4b553bb32866b0fe77762c5127484031ea9baefe94e3",
+      "shape": {
+        "messages": 1,
+        "tools": [
+          "brew"
+        ],
+        "system_chars": 871,
+        "last_message": "Brew 3 cups of rooibos, please."
+      },
+      "error_kind": "rate_limit"
+    }
+  ]
+}

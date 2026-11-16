@@ -1,0 +1,185 @@
+{
+  "model": "deepseek-v4.1-flash-baseline",
+  "scenario": "form",
+  "run": 1,
+  "steps": [
+    {
+      "step": 1,
+      "digest": "b3b28ecb93a8342b5061d7ce939a2f03d1e55443bc596c462c879ed1639d810f",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 702,
+        "last_message": "…ents:\n- ref r1: textbox \"Full name\"\n- ref r2: textbox \"Email\"\n- ref r3: button \"Next\"\n\npage text:\nBook a visit — step 1 of 3: your details Full name Email Next\n"
+      },
+      "response": {
+        "text": "{\"action\":\"type\",\"ref\":\"r1\",\"text\":\"Jordan Avery\"}\n\nWait, the format says one JSON object only. I need to respond with one JSON per turn. Let me just do one action.\n\nActually I typed name with a placeholder? I should type name then email then click next. But each turn one action. Let me start.\n\n{\"action\":\"type\",\"ref\":\"r1\",\"text\":\"Jordan Avery\"}{\"action\":\"type\",\"ref\":\"r1\",\"text\":\"Jordan Avery\"}",
+        "finish": "stop",
+        "usage": {
+          "PromptTokens": 338,
+          "CompletionTokens": 165
+        }
+      }
+    },
+    {
+      "step": 2,
+      "digest": "b3b28ecb93a8342b5061d7ce939a2f03d1e55443bc596c462c879ed1639d810f",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 702,
+        "last_message": "…ents:\n- ref r1: textbox \"Full name\"\n- ref r2: textbox \"Email\"\n- ref r3: button \"Next\"\n\npage text:\nBook a visit — step 1 of 3: your details Full name Email Next\n"
+      },
+      "response": {
+        "text": "{\"action\":\"type\",\"ref\":\"r1\",\"text\":\"Jordan Ellery\"}",
+        "finish": "stop",
+        "usage": {
+          "PromptTokens": 338,
+          "CompletionTokens": 59
+        }
+      }
+    },
+    {
+      "step": 3,
+      "digest": "4ed8bb02029d9ee9abd78caab28baa5fb228244024bb598aa2c65714a10cab2e",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 702,
+        "last_message": "…x \"Full name\" value \"Jordan Ellery\"\n- ref r2: textbox \"Email\"\n- ref r3: button \"Next\"\n\npage text:\nBook a visit — step 1 of 3: your details Full name Email Next\n"
+      },
+      "response": {
+        "text": "{\"action\":\"type\",\"ref\":\"r2\",\"text\":\"jordan.ellery@example.com\"}\u003c/parameter\u003e",
+        "finish": "stop",
+        "usage": {
+          "PromptTokens": 344,
+          "CompletionTokens": 72
+        }
+      }
+    },
+    {
+      "step": 4,
+      "digest": "f42a3f01c6137fe816f6368e71f869ca1785ec46f6e6e5b482262d0623625210",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 702,
+        "last_message": "…\"\n- ref r2: textbox \"Email\" value \"jordan.ellery@example.com\"\n- ref r3: button \"Next\"\n\npage text:\nBook a visit — step 1 of 3: your details Full name Email Next\n"
+      },
+      "response": {
+        "text": "{\"action\":\"click\",\"ref\":\"r3\"}",
+        "finish": "stop",
+        "usage": {
+          "PromptTokens": 354,
+          "CompletionTokens": 121
+        }
+      }
+    },
+    {
+      "step": 5,
+      "digest": "fcba2229352ee8eb1d28d1d931bf45947fd8b84c6f5b7e78f0fbee3ecb2af72b",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 702,
+        "last_message": "…ne-form-1\ntitle: Book — step 2 of 3\n\nelements:\n- ref r1: textbox \"Address\"\n- ref r2: button \"Next\"\n\npage text:\nBook a visit — step 2 of 3: address Address Next\n"
+      },
+      "response": {
+        "finish": "length",
+        "usage": {
+          "PromptTokens": 327,
+          "CompletionTokens": 200
+        }
+      }
+    },
+    {
+      "step": 6,
+      "digest": "fcba2229352ee8eb1d28d1d931bf45947fd8b84c6f5b7e78f0fbee3ecb2af72b",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 702,
+        "last_message": "…ne-form-1\ntitle: Book — step 2 of 3\n\nelements:\n- ref r1: textbox \"Address\"\n- ref r2: button \"Next\"\n\npage text:\nBook a visit — step 2 of 3: address Address Next\n"
+      },
+      "response": {
+        "text": "{\"action\":\"type\",\"ref\":\"r1\",\"text\":\"42 Fictional Lane, Springfield, 12345\"}",
+        "finish": "stop",
+        "usage": {
+          "PromptTokens": 327,
+          "CompletionTokens": 133
+        }
+      }
+    },
+    {
+      "step": 7,
+      "digest": "92162b9f9975d8075711bcfd1f25d009f57416740a44de409febc573b281c69b",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 702,
+        "last_message": "…\n- ref r1: textbox \"Address\" value \"42 Fictional Lane, Springfield, 12345\"\n- ref r2: button \"Next\"\n\npage text:\nBook a visit — step 2 of 3: address Address Next\n"
+      },
+      "response": {
+        "text": "{\"action\":\"click\",\"ref\":\"r2\"}",
+        "finish": "stop",
+        "usage": {
+          "PromptTokens": 340,
+          "CompletionTokens": 114
+        }
+      }
+    },
+    {
+      "step": 8,
+      "digest": "b565e807c37069d33e89f55115d99e57a791f3411750269ba7c5c7ff16f6b7b7",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 702,
+        "last_message": "…t:\nBook a visit — step 3 of 3: review • Name: Jordan Ellery • Email: jordan.ellery@example.com • Address: 42 Fictional Lane, Springfield, 12345 Confirm booking\n"
+      },
+      "response": {
+        "text": "{\"action\":\"click\",\"ref\":\"r1\"}",
+        "finish": "stop",
+        "usage": {
+          "PromptTokens": 348,
+          "CompletionTokens": 42
+        }
+      }
+    },
+    {
+      "step": 9,
+      "digest": "9d353e63f7c5d013c7e783db2c61ec9ff0916318c19b1826ba15ad79f0016ef7",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 702,
+        "last_message": "…seek-v4.1-flash-baseline-form-1\ntitle: Booking confirmed\n\nelements:\n\npage text:\nBooking confirmed Your booking code is BK-deepseek-v4.1-flash-baseline-form-1 .\n"
+      },
+      "response": {
+        "finish": "length",
+        "usage": {
+          "PromptTokens": 309,
+          "CompletionTokens": 200
+        }
+      }
+    },
+    {
+      "step": 10,
+      "digest": "9d353e63f7c5d013c7e783db2c61ec9ff0916318c19b1826ba15ad79f0016ef7",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 702,
+        "last_message": "…seek-v4.1-flash-baseline-form-1\ntitle: Booking confirmed\n\nelements:\n\npage text:\nBooking confirmed Your booking code is BK-deepseek-v4.1-flash-baseline-form-1 .\n"
+      },
+      "response": {
+        "text": "{\"action\":\"done\",\"answer\":\"BK-deepseek-v4.1-flash-baseline-form-1\"}",
+        "finish": "stop",
+        "usage": {
+          "PromptTokens": 309,
+          "CompletionTokens": 97
+        }
+      }
+    }
+  ]
+}

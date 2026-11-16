@@ -1,0 +1,53 @@
+{
+  "model": "deepseek-v4.1-flash",
+  "scenario": "tool-error-recovery",
+  "run": 1,
+  "steps": [
+    {
+      "step": 1,
+      "digest": "cc15ac804a15f8f5c9c034656a88dc1359ae83363df111479f75d58768791247",
+      "shape": {
+        "messages": 1,
+        "tools": [
+          "ticket"
+        ],
+        "system_chars": 871,
+        "last_message": "What is the status of ticket 42?"
+      },
+      "response": {
+        "tool_calls": [
+          {
+            "ID": "chatcmpl-tool-944ee79dff5ab4ac",
+            "Name": "ticket",
+            "Arguments": "{\"ticket_id\": \"AB-42\"}"
+          }
+        ],
+        "finish": "tool_calls",
+        "usage": {
+          "PromptTokens": 501,
+          "CompletionTokens": 116
+        }
+      }
+    },
+    {
+      "step": 2,
+      "digest": "abf5bdde005d5b049e98f98079e596c6cb3bc4e6de84d00ba585b8432cdc35fa",
+      "shape": {
+        "messages": 3,
+        "tools": [
+          "ticket"
+        ],
+        "system_chars": 871,
+        "last_message": "AB-42 is open, waiting on review."
+      },
+      "response": {
+        "text": "Ticket **AB-42** is **open**, currently **waiting on review**.\n\n(I looked it up as AB-42, since ticket IDs use the `XX-42` format — let me know if you meant a different project.)",
+        "finish": "stop",
+        "usage": {
+          "PromptTokens": 564,
+          "CompletionTokens": 117
+        }
+      }
+    }
+  ]
+}

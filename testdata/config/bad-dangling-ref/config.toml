@@ -1,0 +1,9 @@
+version = 1
+
+[providers.ollama]
+type = "openai-compatible"
+
+[models.gemma]
+provider = "olama"
+id       = "gemma4:e2b"
+context  = 8192

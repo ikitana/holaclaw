@@ -1,0 +1,83 @@
+{
+  "model": "deepseek-v4.1-flash+jev-guard",
+  "case": "captcha",
+  "steps": [
+    {
+      "step": 1,
+      "digest": "1bedd6f2278cee52dfa9f3eada3544132ecf077a474b725f1c98f32ed743f206",
+      "shape": {
+        "questions": [
+          "blocker",
+          "goal",
+          "risk",
+          "serves",
+          "surprise"
+        ],
+        "state_chars": 690,
+        "state_tail": "…81/captcha/?run=deepseek-v4.1-flash-jev-guard-captcha-1\ntitle: Example — Verify\ncandidates:\n  r1: textbox \"Type the characters\"\n  r2: button \"Verify\"\n\n\u003c\u003c/page\u003e\u003e"
+      },
+      "response": {
+        "answers": {
+          "blocker": {
+            "Type": "choice",
+            "Noul": 0,
+            "Choice": "captcha",
+            "Score": 0,
+            "Probabilities": {
+              "2fa": 0,
+              "captcha": 0.96,
+              "cookies": 0,
+              "error": 0,
+              "login": 0,
+              "none": 0.04
+            },
+            "Confidence": 0.95
+          },
+          "goal": {
+            "Type": "noul",
+            "Noul": 0.71,
+            "Choice": "",
+            "Score": 0,
+            "Probabilities": null,
+            "Confidence": 0
+          },
+          "risk": {
+            "Type": "choice",
+            "Noul": 0,
+            "Choice": "none",
+            "Score": 0,
+            "Probabilities": {
+              "account": 0,
+              "delete": 0,
+              "none": 0.99,
+              "purchase": 0,
+              "send": 0.01
+            },
+            "Confidence": 0.99
+          },
+          "serves": {
+            "Type": "noul",
+            "Noul": 0.94,
+            "Choice": "",
+            "Score": 0,
+            "Probabilities": null,
+            "Confidence": 0
+          },
+          "surprise": {
+            "Type": "noul",
+            "Noul": 0.11,
+            "Choice": "",
+            "Score": 0,
+            "Probabilities": null,
+            "Confidence": 0
+          }
+        },
+        "usage": {
+          "PromptTokens": 1101,
+          "CompletionTokens": 161
+        },
+        "cost": 0.000046242
+      }
+    }
+  ]
+}

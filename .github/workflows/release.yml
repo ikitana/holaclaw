@@ -1,0 +1,305 @@
+# Releases: the binaries, the systemd units, install.sh and SHA256SUMS on a
+# GitHub release, and the container images on ghcr.io, all signed keyless
+# with cosign as this workflow (docs/security.md#9-deployment says how to
+# verify them).
+#
+# Three jobs, so that nothing that builds can sign:
+#
+#   - build compiles and pushes, with no OIDC token;
+#   - sign only downloads what build made and signs it: every file, each
+#     with its <file>.sigstore.json, and every image by digest;
+#   - publish creates the release and only then moves latest and slim, so
+#     neither ever names an unsigned image.
+#
+# The certificate in each signature names this workflow and the ref it ran
+# from (refs/tags/vX.Y.Z, or refs/heads/main for a dispatched release), and
+# the signature is recorded in Sigstore's public transparency log.
+#
+# GitHub build provenance needs a public repository (or Enterprise Cloud):
+# while the repository is private those steps are skipped, and they run by
+# themselves once it is public.
+name: release
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: >-
+          Tag to release (e.g. v0.1.0). Created at the commit the workflow runs
+          from when it does not exist yet. Defaults to the tag the workflow is
+          run from. A tag with a suffix (e.g. v0.1.0-rc1) is published as a
+          pre-release.
+        required: false
+        type: string
+
+# One release per tag at a time; never cancel a release halfway through.
+concurrency:
+  group: release-${{ inputs.tag || github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+env:
+  IMAGE: ghcr.io/ikitana/holaclaw
+  # Build provenance (actions/attest-build-provenance) needs a public
+  # repository on this plan.
+  PUBLIC: ${{ github.event.repository.visibility == 'public' }}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write   # the container images on ghcr.io
+    outputs:
+      tag: ${{ steps.tag.outputs.tag }}
+      prerelease: ${{ steps.tag.outputs.prerelease }}
+      digest-latest: ${{ steps.images.outputs.digest-latest }}
+      digest-slim: ${{ steps.images.outputs.digest-slim }}
+    env:
+      INPUT_TAG: ${{ inputs.tag }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/ci-setup
+        with:
+          go-cache-key: release
+
+      - name: Resolve tag
+        id: tag
+        run: |
+          tag="$INPUT_TAG"
+          if [ -z "$tag" ]; then
+            if [ "$GITHUB_REF_TYPE" != tag ]; then
+              echo "::error::no tag given and the workflow was not run from a tag"
+              exit 1
+            fi
+            tag="$GITHUB_REF_NAME"
+          fi
+          if ! [[ "$tag" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$ ]]; then
+            echo "::error::tag '$tag' is not of the form vX.Y.Z or vX.Y.Z-suffix"
+            exit 1
+          fi
+          # An existing tag must point at the commit being built, or the
+          # binaries would not match the tagged source. The peeled line
+          # (^{}) comes last and resolves annotated tags.
+          existing="$(git ls-remote origin "refs/tags/$tag" "refs/tags/$tag^{}" | tail -n1 | cut -f1)"
+          if [ -n "$existing" ] && [ "$existing" != "$GITHUB_SHA" ]; then
+            echo "::error::tag $tag exists at $existing, but this run builds $GITHUB_SHA; run the workflow from the tag"
+            exit 1
+          fi
+          # A tag with a suffix (v1.2.3-rc.1) is a pre-release.
+          prerelease=false
+          if [[ "$tag" == *-* ]]; then
+            prerelease=true
+          fi
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          echo "prerelease=$prerelease" >> "$GITHUB_OUTPUT"
+
+      - name: Build
+        run: |
+          rm -rf dist
+          nix develop --command just release "${{ steps.tag.outputs.tag }}"
+          # docs/deployments/linux.md installs the units from the release, and
+          # README.md's quickstart runs install.sh from it.
+          cp deploy/holaclaw.service deploy/holaclaw-browser.service deploy/install.sh dist/
+          cd dist && sha256sum holaclaw-linux-* holaclaw.service holaclaw-browser.service install.sh > SHA256SUMS
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+          if-no-files-found: error
+
+      # Two images, latest (with the browser) and slim, for each architecture
+      # from the flake (nix/container.nix; all build here, no aarch64 builder
+      # needed). Each is pushed by digest only, then one multi-arch index per
+      # variant is tagged <tag> and <tag>-slim. publish tags latest and slim
+      # once sign has signed them. No tag names an architecture.
+      # crane is not in the dev shell; take it from the flake's pinned
+      # nixpkgs, like gh and cosign below.
+      - name: Container images
+        id: images
+        env:
+          TAG: ${{ steps.tag.outputs.tag }}
+        run: |
+          PATH="$(nix build --inputs-from . nixpkgs#crane --no-link --print-out-paths)/bin:$PATH"
+          crane auth login ghcr.io -u "$GITHUB_ACTOR" --password-stdin <<< "$GH_TOKEN"
+          for variant in latest slim; do
+            case "$variant" in
+              latest) output=container tag="$TAG" ;;
+              slim) output=container-slim tag="$TAG-slim" ;;
+            esac
+            refs=()
+            for arch in amd64 arm64; do
+              out="$(HOLACLAW_VERSION="$TAG" nix build --impure --no-link --print-out-paths ".#$output-$arch")"
+              "$out" > image.tar
+              # Pushed to its own digest, the manifest's, so no tag is made;
+              # crane prints the pushed image by digest.
+              refs+=("$(crane push image.tar "$IMAGE@$(crane digest --tarball image.tar)")")
+              rm image.tar
+            done
+            crane index append -t "$IMAGE:$tag" -m "${refs[0]}" -m "${refs[1]}"
+            # sign and publish refer to the index by digest, which no later
+            # push of the tag can change.
+            echo "digest-$variant=$(crane digest "$IMAGE:$tag")" >> "$GITHUB_OUTPUT"
+          done
+
+  # Signs what build made, from the artifact and the registry alone: nothing
+  # here builds or runs code from the repository. The checkout is for the
+  # flake that pins cosign. Signing is keyless: the signature carries a
+  # short-lived certificate for this workflow's OIDC identity, so there is no
+  # key to keep or leak.
+  sign:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write      # signatures and attestations are pushed beside the images
+      id-token: write      # keyless signing
+      attestations: write  # build provenance, once the repository is public
+    env:
+      GH_TOKEN: ${{ github.token }}
+      DIGEST_LATEST: ${{ needs.build.outputs.digest-latest }}
+      DIGEST_SLIM: ${{ needs.build.outputs.digest-slim }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: cachix/install-nix-action@v31
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist
+
+      # None is in the dev shell; take them from the flake's pinned nixpkgs.
+      - name: Tools
+        run: |
+          for out in $(nix build --inputs-from . nixpkgs#cosign nixpkgs#crane nixpkgs#jq --no-link --print-out-paths); do
+            if [ -d "$out/bin" ]; then echo "$out/bin" >> "$GITHUB_PATH"; fi
+          done
+
+      # Every file of the release, SHA256SUMS included, gets its own
+      # <file>.sigstore.json. The bundle holds the signature, the certificate
+      # and the transparency log entry, so verify-blob needs nothing else.
+      - name: Sign the files
+        run: |
+          for f in dist/*; do
+            cosign sign-blob --yes --bundle "$f.sigstore.json" "$f"
+          done
+
+      # --recursive signs the index and each architecture's image, so a
+      # signature is found whether a client checks the tag or the image it
+      # pulled for its platform.
+      - name: Sign the images
+        run: |
+          cosign login ghcr.io -u "$GITHUB_ACTOR" --password-stdin <<< "$GH_TOKEN"
+          cosign sign --yes --recursive "$IMAGE@$DIGEST_LATEST"
+          cosign sign --yes --recursive "$IMAGE@$DIGEST_SLIM"
+
+      # What docs/security.md tells users to run, held to this run's exact
+      # identity: every file, and each index with every image in it.
+      - name: Verify the signatures
+        run: |
+          id=(--certificate-identity "https://github.com/$GITHUB_WORKFLOW_REF"
+              --certificate-oidc-issuer https://token.actions.githubusercontent.com)
+          for f in dist/*; do
+            case "$f" in *.sigstore.json) continue ;; esac
+            cosign verify-blob "${id[@]}" --bundle "$f.sigstore.json" "$f" > /dev/null
+          done
+          set -o pipefail
+          for digest in "$DIGEST_LATEST" "$DIGEST_SLIM"; do
+            cosign verify "${id[@]}" "$IMAGE@$digest" > /dev/null
+            children="$(crane manifest "$IMAGE@$digest" | jq -re '.manifests[].digest')"
+            for child in $children; do
+              cosign verify "${id[@]}" "$IMAGE@$child" > /dev/null
+            done
+          done
+
+      - name: Provenance of the files
+        if: env.PUBLIC == 'true'
+        uses: actions/attest-build-provenance@v2
+        with:
+          subject-checksums: dist/SHA256SUMS
+
+      - name: Provenance of the image
+        if: env.PUBLIC == 'true'
+        uses: actions/attest-build-provenance@v2
+        with:
+          subject-name: ${{ env.IMAGE }}
+          subject-digest: ${{ needs.build.outputs.digest-latest }}
+          push-to-registry: true
+
+      - name: Provenance of the slim image
+        if: env.PUBLIC == 'true'
+        uses: actions/attest-build-provenance@v2
+        with:
+          subject-name: ${{ env.IMAGE }}
+          subject-digest: ${{ needs.build.outputs.digest-slim }}
+          push-to-registry: true
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: signatures
+          path: dist/*.sigstore.json
+          if-no-files-found: error
+
+  publish:
+    needs: [build, sign]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write   # the release
+      packages: write   # the latest and slim tags
+    env:
+      GH_TOKEN: ${{ github.token }}
+      TAG: ${{ needs.build.outputs.tag }}
+      PRERELEASE: ${{ needs.build.outputs.prerelease }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: cachix/install-nix-action@v31
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: signatures
+          path: dist
+
+      # Every file and its signature. A file without one fails the release
+      # rather than going out unsigned.
+      # gh is not in the dev shell; take it from the flake's pinned nixpkgs.
+      - name: Release
+        run: |
+          for f in dist/*; do
+            case "$f" in *.sigstore.json) continue ;; esac
+            [ -f "$f.sigstore.json" ] || { echo "::error::$f is not signed"; exit 1; }
+          done
+          nix shell --inputs-from . nixpkgs#gh --command \
+            gh release create "$TAG" dist/* \
+              --repo "$GITHUB_REPOSITORY" \
+              --target "$GITHUB_SHA" \
+              --title "$TAG" \
+              --generate-notes \
+              --prerelease="$PRERELEASE"
+
+      # latest and slim follow the newest release that is not a pre-release,
+      # and move only now that their images are signed.
+      - name: Tag latest and slim
+        if: needs.build.outputs.prerelease == 'false'
+        env:
+          DIGEST_LATEST: ${{ needs.build.outputs.digest-latest }}
+          DIGEST_SLIM: ${{ needs.build.outputs.digest-slim }}
+        run: |
+          PATH="$(nix build --inputs-from . nixpkgs#crane --no-link --print-out-paths)/bin:$PATH"
+          crane auth login ghcr.io -u "$GITHUB_ACTOR" --password-stdin <<< "$GH_TOKEN"
+          crane tag "$IMAGE@$DIGEST_LATEST" latest
+          crane tag "$IMAGE@$DIGEST_SLIM" slim

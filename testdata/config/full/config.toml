@@ -1,0 +1,73 @@
+version = 1
+
+[server]
+socket   = "/run/holaclaw/holaclaw.sock"
+listen   = "127.0.0.1:8899"
+tls_cert = "/etc/holaclaw/tls.crt"
+tls_key  = "/etc/holaclaw/tls.key"
+data_dir = "/var/lib/holaclaw"
+secrets_dir = "/etc/holaclaw-secrets"
+
+[providers.ollama]
+type           = "openai-compatible"
+base_url       = "http://localhost:11434/v1"
+auth           = "none"
+max_concurrent = 2
+
+[providers.openrouter]
+type           = "openai-compatible"
+base_url       = "https://openrouter.ai/api/v1"
+auth           = "api-key"
+api_key        = "env:OPENROUTER_API_KEY"
+max_concurrent = 4
+
+[providers.codex]
+type = "codex"
+auth = "subscription"
+
+[models.gemma]
+provider       = "ollama"
+id             = "gemma4:e2b"
+context        = 8192
+tools          = true
+vision         = false
+strict         = false
+thinking_tags  = ["think", "reasoning"]
+schema_profile = "llamacpp"
+reasoning      = "none"
+timeout        = "120s"
+
+[models.gpt]
+provider = "codex"
+id       = "gpt-5"
+context  = 128000
+tools    = true
+vision   = true
+
+[models.jev]
+provider = "openrouter"
+id       = "~typesafe/jev-latest"
+api      = "decisions"
+url      = "https://openrouter.ai/api/alpha/decisions"
+
+[models.muse]
+provider = "openrouter"
+id       = "meta/muse-image"
+api      = "images"
+
+[models.embed]
+provider = "ollama"
+id       = "nomic-embed-text"
+context  = 2048
+
+[retention]
+events_days = 30
+
+[backups]
+every = "24h"
+keep = 7
+
+[browser]
+socket   = "/run/holaclaw-browser/browser.sock"
+binary   = "/usr/bin/chromium"
+headless = true

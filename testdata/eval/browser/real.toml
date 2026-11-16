@@ -1,0 +1,87 @@
+# The real-sites browser eval task list.
+#
+# Unlike tasks.toml, which only names a synthetic site the runner already
+# knows everything about, every entry here is self-contained: it is a real
+# public site on the live internet, reached with the owner's own OpenRouter
+# credits (go run ./tools/eval browser --real --mode live --paid …). Never
+# run in CI, never in replay (there is nothing to replay against — the page
+# is live and changes under us).
+#
+# No logins, no purchases, no credentials, nothing private: every task here
+# is a read of public information a stranger could look up. allow is the
+# agent's navigation allow-list, kept to the hosts the task actually needs.
+
+[[tasks]]
+name = "google-flights"
+intent = "Search Google Flights for a one-way flight from Sevilla (SVQ) to Amsterdam (AMS) departing 2026-10-01, and read the results."
+url = "https://www.google.com/travel/flights"
+allow = ["www.google.com", "google.com", "consent.google.com"]
+expect = "done, the answer names a price (€ or EUR) and a departure or arrival time"
+answer = '(?s)(€|EUR).*?\d{1,2}:\d{2}|\d{1,2}:\d{2}.*?(€|EUR)'
+note = """
+The target is under 20s end to end, twice in a
+row. The search form is a stack of comboboxes (origin, destination, dates)
+that a legitimate a11y tree under-reports — a real combobox has scored
+`serves` 0.37 in traces (docs/research/browser-efficiency.md) — and results
+load asynchronously into a virtualized list, so "the results are visible"
+is a moving target. EU sessions may also see a consent interstitial before
+the search page itself.
+"""
+
+[[tasks]]
+name = "wikipedia"
+intent = "Search Wikipedia for \"Ada Lovelace\" and read the first sentence of the article."
+url = "https://en.wikipedia.org/"
+allow = ["en.wikipedia.org", "wikipedia.org"]
+expect = "done, the answer is the article's opening sentence"
+answer = '(?i)Ada Lovelace'
+note = """
+The search box offers a live suggestion dropdown that looks like a
+completed navigation before the article has actually loaded; picking the
+right suggestion (not just pressing Enter into search results) matters for
+speed. The subject is a stable, non-disambiguated title, so the first
+sentence does not drift between runs the way a current-events term would.
+"""
+
+[[tasks]]
+name = "duckduckgo"
+intent = "Search DuckDuckGo for \"Python programming language\" and report the title of the first result."
+url = "https://duckduckgo.com/"
+allow = ["duckduckgo.com"]
+expect = "done, the answer is the first result's title"
+answer = '(?i)Python'
+note = """
+No login wall, but the layout varies by region and A/B test — sponsored
+results, a knowledge panel or a "did you mean" box can all sit above the
+organic list, so "the first result" needs the executor to tell a real
+result from surrounding chrome.
+"""
+
+[[tasks]]
+name = "currency-converter"
+intent = "Using the currency converter form, convert 100 US dollars to euros and report the resulting amount."
+url = "https://www.xe.com/currencyconverter/"
+allow = ["www.xe.com", "xe.com"]
+expect = "done, the answer is a converted amount"
+answer = '\d[\d,]*\.\d{2}'
+note = """
+The amount and currency fields are custom dropdowns/comboboxes, not plain
+selects, and typing into the currency picker opens an autocomplete list
+that can swallow the next click if it is not dismissed first. The result
+updates in place (no navigation, no URL change), so success needs the
+executor to notice the page changed under it rather than waiting on a load.
+"""
+
+[[tasks]]
+name = "bbc-news"
+intent = "If a cookie or consent banner is shown, accept it, then go to the next page of the news list and report the headline of the first article on that page."
+url = "https://www.bbc.com/news"
+allow = ["www.bbc.com", "bbc.com"]
+expect = "done, without following the login/personalisation upsell"
+note = """
+A OneTrust-style consent interstitial blocks every other control until it
+is dismissed. Pagination here is a "load more" affordance rather than a URL
+change, so the executor has to tell a genuinely new second page apart from
+the same first page re-rendered. No answer regexp: the day's headlines are
+never stable, so this task is judged on outcome alone.
+"""

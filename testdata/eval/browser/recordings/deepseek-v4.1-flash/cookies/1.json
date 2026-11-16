@@ -1,0 +1,187 @@
+{
+  "model": "deepseek-v4.1-flash",
+  "scenario": "cookies",
+  "run": 1,
+  "steps": [
+    {
+      "step": 1,
+      "digest": "2fbda8294b1fb2ad914ef862c906126982b7b5161d221b0502c48c5705234c9b",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 966,
+        "last_message": "request: Find the phone number on this contact page.\nstart here: http://127.0.0.1:36069/cookies/?run=deepseek-v4.1-flash-cookies-1"
+      },
+      "response": {
+        "text": "{\"start_url\":\"http://127.0.0.1:36069/cookies/?run=deepseek-v4.1-flash-cookies-1\",\"steps\":[{\"kind\":\"click\",\"target\":\"the contact link\",\"text\":\"\",\"url\":\"\",\"submit\":false,\"expect\":\"The contact page is open.\"},{\"kind\":\"wait\",\"target\":\"the contact details\",\"text\":\"\",\"url\":\"\",\"submit\":false,\"expect\":\"The contact details have finished loading.\"}],\"extract\":\"the phone number listed in the contact details\"}",
+        "finish": "stop",
+        "usage": {
+          "PromptTokens": 306,
+          "CompletionTokens": 278
+        }
+      }
+    },
+    {
+      "step": 2,
+      "digest": "009a5f2dac279a8df99d691d827ceb1cd24ddf856a725632c2f85f352f59aaca",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 1164,
+        "last_message": "… http://127.0.0.1:36069/cookies/?run=deepseek-v4.1-flash-cookies-1\ntitle: Example Contact\ncandidates:\n  r1: button \"Accept all\"\n  r2: button \"Manage\"\n\n\u003c\u003c/page\u003e\u003e"
+      },
+      "response": {
+        "text": "{\"element\":\"\",\"element_confidence\":0.0,\"goal\":0.0,\"blocker\":\"cookies\",\"surprise\":1.0,\"serves\":0.0,\"risk\":\"none\"}",
+        "finish": "stop",
+        "usage": {
+          "PromptTokens": 463,
+          "CompletionTokens": 668
+        }
+      }
+    },
+    {
+      "step": 3,
+      "digest": "0ec53b1337c1e612177f4b410bb20a26a8605e729e6efff7883341aa5f003e7c",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 585,
+        "last_message": "… http://127.0.0.1:36069/cookies/?run=deepseek-v4.1-flash-cookies-1\ntitle: Example Contact\ncandidates:\n  r1: button \"Accept all\"\n  r2: button \"Manage\"\n\n\u003c\u003c/page\u003e\u003e"
+      },
+      "response": {
+        "text": "{\"start_url\":\"\",\"steps\":[{\"kind\":\"click\",\"target\":\"Accept all\",\"text\":\"\",\"url\":\"\",\"submit\":false,\"expect\":\"The cookie banner is dismissed.\"},{\"kind\":\"wait\",\"target\":\"the cookie banner\",\"text\":\"\",\"url\":\"\",\"submit\":false,\"expect\":\"The cookie banner is gone.\"},{\"kind\":\"click\",\"target\":\"the contact link\",\"text\":\"\",\"url\":\"\",\"submit\":false,\"expect\":\"The contact page is open.\"},{\"kind\":\"wait\",\"target\":\"the contact details\",\"text\":\"\",\"url\":\"\",\"submit\":false,\"expect\":\"The contact details have finished loading.\"}],\"extract\":\"the phone number listed in the contact details\"}",
+        "finish": "stop",
+        "usage": {
+          "PromptTokens": 348,
+          "CompletionTokens": 272
+        }
+      }
+    },
+    {
+      "step": 4,
+      "digest": "b3511ec0e3958b0d7f0e3387e1e6223b972212decec7cf30847e32dfd8579d05",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 1164,
+        "last_message": "… http://127.0.0.1:36069/cookies/?run=deepseek-v4.1-flash-cookies-1\ntitle: Example Contact\ncandidates:\n  r1: button \"Accept all\"\n  r2: button \"Manage\"\n\n\u003c\u003c/page\u003e\u003e"
+      },
+      "response": {
+        "text": "{\"element\":\"r1\",\"element_confidence\":1.0,\"goal\":0.0,\"blocker\":\"cookies\",\"surprise\":0.0,\"serves\":1.0,\"risk\":\"none\"}",
+        "finish": "stop",
+        "usage": {
+          "PromptTokens": 498,
+          "CompletionTokens": 384
+        }
+      }
+    },
+    {
+      "step": 5,
+      "digest": "14cc854d4cfe2f505366951217d39a6958543a2e6df7e4babf2997731c864848",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 1164,
+        "last_message": "… http://127.0.0.1:36069/cookies/?run=deepseek-v4.1-flash-cookies-1\ntitle: Example Contact\ncandidates:\n  r1: button \"Accept all\"\n  r2: button \"Manage\"\n\n\u003c\u003c/page\u003e\u003e"
+      },
+      "response": {
+        "text": "{\"element\":\"r1\",\"element_confidence\":0.97,\"goal\":0.0,\"blocker\":\"cookies\",\"surprise\":0.0,\"serves\":0.9,\"risk\":\"none\"}",
+        "finish": "stop",
+        "usage": {
+          "PromptTokens": 546,
+          "CompletionTokens": 267
+        }
+      }
+    },
+    {
+      "step": 6,
+      "digest": "8875aa25b0cffa58321102c81594a35ab0a379099fe41b45acc6b0ffb4e600c6",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 1164,
+        "last_message": "…true: The cookie banner is dismissed.\n\nurl: http://127.0.0.1:36069/cookies/?run=deepseek-v4.1-flash-cookies-1\ntitle: Example Contact\ncandidates: none\n\n\u003c\u003c/page\u003e\u003e"
+      },
+      "response": {
+        "text": "{\"element\":\"\",\"element_confidence\":0.0,\"goal\":0.0,\"blocker\":\"cookies\",\"surprise\":0.0,\"serves\":0.8,\"risk\":\"none\"}",
+        "finish": "stop",
+        "usage": {
+          "PromptTokens": 483,
+          "CompletionTokens": 396
+        }
+      }
+    },
+    {
+      "step": 7,
+      "digest": "549a9bf973f9ba922cbfd8f1a09b99fc08308e82be47a68e9ed6477c9fab6229",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 585,
+        "last_message": "…lash-cookies-1\ntitle: Example Contact\ncandidates: none\ntext:\nContact Example Co. Address: 42 Example Street, Springfield, ST 55555 Phone: +1-555-0142\n\n\u003c\u003c/page\u003e\u003e"
+      },
+      "response": {
+        "text": "{\"start_url\":\"\",\"steps\":[{\"kind\":\"wait\",\"target\":\"the contact details\",\"text\":\"\",\"url\":\"\",\"submit\":false,\"expect\":\"The contact details are visible.\"}],\"extract\":\"+1-555-0142\"}",
+        "finish": "stop",
+        "usage": {
+          "PromptTokens": 409,
+          "CompletionTokens": 871
+        }
+      }
+    },
+    {
+      "step": 8,
+      "digest": "97abc70029033c84fb48ffe9a568716d050d5ce14acd1360ae778c9ebf6f252c",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 1164,
+        "last_message": "…lash-cookies-1\ntitle: Example Contact\ncandidates: none\ntext:\nContact Example Co. Address: 42 Example Street, Springfield, ST 55555 Phone: +1-555-0142\n\n\u003c\u003c/page\u003e\u003e"
+      },
+      "response": {
+        "text": "{\"element\":\"\",\"element_confidence\":0.0,\"goal\":1.0,\"blocker\":\"none\",\"surprise\":0.0,\"serves\":1.0,\"risk\":\"none\"}",
+        "finish": "stop",
+        "usage": {
+          "PromptTokens": 513,
+          "CompletionTokens": 383
+        }
+      }
+    },
+    {
+      "step": 9,
+      "digest": "97abc70029033c84fb48ffe9a568716d050d5ce14acd1360ae778c9ebf6f252c",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 1164,
+        "last_message": "…lash-cookies-1\ntitle: Example Contact\ncandidates: none\ntext:\nContact Example Co. Address: 42 Example Street, Springfield, ST 55555 Phone: +1-555-0142\n\n\u003c\u003c/page\u003e\u003e"
+      },
+      "response": {
+        "text": "{\"element\":\"\",\"element_confidence\":0.0,\"goal\":1.0,\"blocker\":\"none\",\"surprise\":0.0,\"serves\":0.9,\"risk\":\"none\"}",
+        "finish": "stop",
+        "usage": {
+          "PromptTokens": 513,
+          "CompletionTokens": 152
+        }
+      }
+    },
+    {
+      "step": 10,
+      "digest": "93535cd27d27fa89e76c2adc9c6de78b905c1f9d0520404f63b645afdb5d7afa",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 352,
+        "last_message": "…lash-cookies-1\ntitle: Example Contact\ncandidates: none\ntext:\nContact Example Co. Address: 42 Example Street, Springfield, ST 55555 Phone: +1-555-0142\n\n\u003c\u003c/page\u003e\u003e"
+      },
+      "response": {
+        "text": "+1-555-0142",
+        "finish": "stop",
+        "usage": {
+          "PromptTokens": 213,
+          "CompletionTokens": 55
+        }
+      }
+    }
+  ]
+}

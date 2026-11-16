@@ -1,0 +1,45 @@
+name = "two-step"
+description = "The result of the first tool is the argument of the second."
+max_steps = 6
+
+[[tools]]
+name = "room_code"
+description = "Door code of a meeting room."
+parameters = '''{"type":"object","properties":{"room":{"type":"string"}},"required":["room"]}'''
+risk = "read"
+
+  [[tools.responses]]
+  when = { room = "~willow" }
+  text = "The door code for Willow is 7731."
+
+  [[tools.responses]]
+  text = "Unknown room."
+
+[[tools]]
+name = "unlock"
+description = "Unlock a door with its code."
+parameters = '''{"type":"object","properties":{"code":{"type":"string"}},"required":["code"]}'''
+risk = "write"
+
+  [[tools.responses]]
+  when = { code = "7731" }
+  text = "Willow is unlocked."
+
+  [[tools.responses]]
+  text = "Wrong code, the door stayed shut."
+
+[[turns]]
+user = "Look up the door code for the Willow room and unlock it."
+
+  [turns.expect]
+  max_steps = 4
+  stop = "final"
+  reply_contains = ["unlock"]
+
+    [[turns.expect.tool_calls]]
+    name = "room_code"
+    args = { room = "Willow" }
+
+    [[turns.expect.tool_calls]]
+    name = "unlock"
+    args = { code = "7731" }

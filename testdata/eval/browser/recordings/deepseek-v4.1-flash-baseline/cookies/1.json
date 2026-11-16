@@ -1,0 +1,43 @@
+{
+  "model": "deepseek-v4.1-flash-baseline",
+  "scenario": "cookies",
+  "run": 1,
+  "steps": [
+    {
+      "step": 1,
+      "digest": "40f69d06a84fdc6547e794b7079adf95a37058237529dbd918e16a12fb3256a3",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 702,
+        "last_message": "…: Example Contact\n\nelements:\n- ref r1: button \"Accept all\"\n- ref r2: button \"Manage\"\n\npage text:\nWe use cookies to remember your preferences. Accept all Manage\n"
+      },
+      "response": {
+        "text": "{\"action\":\"click\",\"ref\":\"r1\"}",
+        "finish": "stop",
+        "usage": {
+          "PromptTokens": 304,
+          "CompletionTokens": 47
+        }
+      }
+    },
+    {
+      "step": 2,
+      "digest": "c9b4da03276dd499e4198871422c97a05e669e8d32b8530d8ed994be977b3dea",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 702,
+        "last_message": "…flash-baseline-cookies-1\ntitle: Example Contact\n\nelements:\n\npage text:\nContact Example Co. Address: 42 Example Street, Springfield, ST 55555 Phone: +1-555-0142\n"
+      },
+      "response": {
+        "text": "{\"action\":\"done\",\"answer\":\"+1-555-0142\"}",
+        "finish": "stop",
+        "usage": {
+          "PromptTokens": 300,
+          "CompletionTokens": 180
+        }
+      }
+    }
+  ]
+}

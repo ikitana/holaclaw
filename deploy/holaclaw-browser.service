@@ -1,0 +1,86 @@
+# Hardened systemd unit for the holaclaw browser sidecar (docs/browser.md):
+# its own user, its own Chromium processes, no keys and no database. Install:
+#   useradd --system --home /var/lib/holaclaw-browser --shell /usr/sbin/nologin holaclaw-browser
+#   usermod -aG holaclaw-browser holaclaw      # the daemon reaches the 0660 socket through the group
+#   apt install chromium xvfb                # or the distro equivalent; nothing is downloaded
+#   chmod 750 /etc/holaclaw && chgrp holaclaw-browser /etc/holaclaw
+#   chgrp -R holaclaw-browser /etc/holaclaw/config.toml /etc/holaclaw/agents
+#   chmod -R g+rX /etc/holaclaw/config.toml /etc/holaclaw/agents
+#   chmod 700 /etc/holaclaw-secrets           # secrets stay holaclaw-only: the sidecar never reads them
+#   systemctl enable --now holaclaw-browser
+# The sidecar loads the whole configuration (config.toml, the agents and
+# channels.toml, never auth.toml) and writes only its state directory. Add an
+# empty [browser] table to /etc/holaclaw/config.toml: its socket defaults to
+# this unit's, /run/holaclaw-browser/browser.sock.
+[Unit]
+Description=holaclaw browser sidecar (Chromium)
+Before=holaclaw.service
+
+[Service]
+User=holaclaw-browser
+Group=holaclaw-browser
+Environment=HOLACLAW_CONFIG=/etc/holaclaw
+ExecStart=/usr/local/bin/holaclaw browser
+Restart=on-failure
+RestartSec=3
+TimeoutStopSec=20
+
+# The socket lives in the runtime directory, 0750 so the shared group can
+# enter it; the socket itself is created 0660 by the sidecar.
+RuntimeDirectory=holaclaw-browser
+RuntimeDirectoryMode=0750
+Environment=XDG_RUNTIME_DIR=/run/holaclaw-browser
+# Profiles (one per agent) and the download quarantine. $STATE_DIRECTORY is
+# what `holaclaw browser` uses when --state is not given.
+StateDirectory=holaclaw-browser
+StateDirectoryMode=0700
+UMask=0077
+
+# A browser is not a small program: bound what one runaway page can take.
+MemoryMax=2G
+TasksMax=512
+
+# Hardening. Three relaxations, each forced by Chromium and by nothing else:
+#
+#   NoNewPrivileges=no and RestrictNamespaces=no — Chromium's own sandbox is a
+#   setuid helper plus user, PID and network namespaces per renderer. With
+#   either of these set, the sandbox cannot start; the sidecar then refuses to
+#   run rather than passing --no-sandbox, so this unit would simply not work.
+#   MemoryDenyWriteExecute is absent for the same kind of reason: V8 maps its
+#   JIT pages write-then-execute, and denying that kills every page load.
+#
+# That is why this is a separate unit and a separate user: the daemon keeps all
+# three, and a renderer compromise lands in a process that holds no secrets.
+NoNewPrivileges=no
+RestrictNamespaces=no
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+PrivateDevices=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectKernelLogs=yes
+ProtectControlGroups=yes
+ProtectClock=yes
+ProtectHostname=yes
+RestrictRealtime=yes
+RestrictSUIDSGID=yes
+LockPersonality=yes
+# AF_UNIX for the sidecar's own socket, the X connection to Xvfb and
+# Chromium's internal IPC; AF_INET/AF_INET6 for the pages it loads. AF_NETLINK
+# is deliberately not listed: Chromium's network service uses it to watch
+# address changes, and without it that watcher degrades to polling rather than
+# failing. Add it only if a connectivity problem is traced back to this line.
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+SystemCallArchitectures=native
+# No SystemCallFilter: the sandbox's own seccomp policy is stricter than
+# @system-service and the two together break the zygote.
+# The sandbox needs no capability: modern kernels give Chromium unprivileged
+# user namespaces, and the setuid helper is only its fallback. If a distro has
+# unprivileged userns disabled, enable it (kernel.unprivileged_userns_clone=1)
+# rather than widening this set.
+CapabilityBoundingSet=
+AmbientCapabilities=
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,208 @@
+<!doctype html>
+<!--
+  The built-in live-view page (docs/browser.md): a canvas fed by the stream
+  WebSocket plus an input relay. It is a manual-testing tool — the real GUI is
+  HolaClaw — and it deliberately shows neither key names nor typed text,
+  on screen or in the console.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>holaclaw browser</title>
+<style>
+  body { font: 13px system-ui, sans-serif; margin: 0; background: #111; color: #ddd; }
+  header { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; padding: 8px; background: #1b1b1b; }
+  input { background: #222; color: #ddd; border: 1px solid #444; padding: 4px; }
+  input#base { width: 15em; } input#token { width: 18em; } input#agent { width: 8em; }
+  button { background: #333; color: #ddd; border: 1px solid #555; padding: 4px 10px; cursor: pointer; }
+  button:hover { background: #3c3c3c; }
+  #tabs { display: flex; gap: 4px; padding: 4px 8px; flex-wrap: wrap; }
+  #tabs button { max-width: 22em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  #tabs button.active { border-color: #7aa; }
+  #status { padding: 4px 8px; color: #9a9; }
+  canvas { display: block; margin: 8px auto; background: #000; outline: none; max-width: 100%; }
+  canvas:focus { box-shadow: 0 0 0 2px #7aa; }
+</style>
+</head>
+<body>
+<header>
+  <label>base <input id="base" placeholder="https://host"></label>
+  <label>token <input id="token" type="password" placeholder="hb_c_…"></label>
+  <label>agent <input id="agent" value="main"></label>
+  <button id="watch">Watch</button>
+  <button id="take">Take over</button>
+  <button id="release">Release</button>
+</header>
+<div id="tabs"></div>
+<div id="status">idle</div>
+<canvas id="screen" width="1280" height="800" tabindex="0"></canvas>
+<script>
+(function () {
+  "use strict";
+  var $ = function (id) { return document.getElementById(id); };
+  var canvas = $("screen"), ctx = canvas.getContext("2d");
+  var ws = null, frame = { width: 1280, height: 800 }, holder = "", focused = false;
+
+  function base() { return ($("base").value || location.origin).replace(/\/+$/, ""); }
+  function agent() { return $("agent").value.trim(); }
+  function say(text) { $("status").textContent = text; }
+
+  // api runs one control call. Errors are shown as a code, never as a body.
+  function api(method, path, ok) {
+    var req = new XMLHttpRequest();
+    req.open(method, base() + "/v1" + path, true);
+    req.setRequestHeader("Authorization", "Bearer " + $("token").value);
+    req.onload = function () {
+      if (req.status >= 200 && req.status < 300) {
+        ok(req.responseText ? JSON.parse(req.responseText) : {});
+      } else {
+        say(method + " " + path + " failed: " + req.status);
+      }
+    };
+    req.onerror = function () { say(method + " " + path + " failed"); };
+    req.send();
+  }
+
+  // --- stream ---------------------------------------------------------------
+
+  function watch() {
+    if (ws) { ws.close(); ws = null; }
+    var name = agent();
+    api("POST", "/browser/sessions/" + encodeURIComponent(name) + "/view", function (t) {
+      var url = base().replace(/^http/, "ws") + "/v1" + t.path;
+      ws = new WebSocket(url);
+      ws.binaryType = "blob";
+      ws.onopen = function () { say("watching " + name); };
+      ws.onclose = function (e) { say("stream closed (" + e.code + ")"); ws = null; };
+      ws.onerror = function () { say("stream error"); };
+      ws.onmessage = onMessage;
+    });
+  }
+
+  function onMessage(e) {
+    if (typeof e.data === "string") {
+      var m;
+      try { m = JSON.parse(e.data); } catch (err) { return; }
+      if (m.type === "meta") { onMeta(m); }
+      return;
+    }
+    // A frame: draw it, then acknowledge it. The ack is the backpressure —
+    // without it the sidecar stops sending.
+    createImageBitmap(e.data).then(function (bmp) {
+      if (canvas.width !== bmp.width || canvas.height !== bmp.height) {
+        canvas.width = bmp.width;
+        canvas.height = bmp.height;
+      }
+      ctx.drawImage(bmp, 0, 0);
+      bmp.close();
+      send({ type: "ack" });
+    }).catch(function () { send({ type: "ack" }); });
+  }
+
+  function onMeta(m) {
+    if (m.width && m.height) { frame = { width: m.width, height: m.height }; }
+    holder = m.holder || "";
+    say((ws ? "watching " + agent() : "idle") + (holder ? " · held by " + holder : " · nobody holds the browser"));
+    var box = $("tabs");
+    box.textContent = "";
+    (m.tabs || []).forEach(function (tab) {
+      var b = document.createElement("button");
+      b.textContent = tab.title || tab.url || tab.id;
+      if (tab.active) { b.className = "active"; }
+      b.onclick = function () { send({ type: "tab", tab: tab.id }); };
+      box.appendChild(b);
+    });
+  }
+
+  function send(msg) {
+    if (ws && ws.readyState === 1) { ws.send(JSON.stringify(msg)); }
+  }
+
+  // --- input ----------------------------------------------------------------
+
+  // point maps a canvas position onto the frame's own pixels: the canvas may
+  // be scaled by the layout, the page is not.
+  function point(e) {
+    var r = canvas.getBoundingClientRect();
+    return {
+      x: (e.clientX - r.left) / r.width * frame.width,
+      y: (e.clientY - r.top) / r.height * frame.height
+    };
+  }
+
+  function mods(e) {
+    return (e.altKey ? 1 : 0) | (e.ctrlKey ? 2 : 0) | (e.metaKey ? 4 : 0) | (e.shiftKey ? 8 : 0);
+  }
+
+  function button(e) {
+    return e.button === 1 ? "middle" : e.button === 2 ? "right" : "left";
+  }
+
+  var lastMove = 0;
+  canvas.addEventListener("pointermove", function (e) {
+    var now = Date.now();
+    if (now - lastMove < 33) { return; } // ~30 moves a second is plenty
+    lastMove = now;
+    var p = point(e);
+    send({ type: "pointer", event: "move", x: p.x, y: p.y, modifiers: mods(e) });
+  });
+
+  canvas.addEventListener("pointerdown", function (e) {
+    canvas.focus();
+    var p = point(e);
+    send({ type: "pointer", event: "down", x: p.x, y: p.y, button: button(e), clicks: e.detail || 1, modifiers: mods(e) });
+  });
+
+  canvas.addEventListener("pointerup", function (e) {
+    var p = point(e);
+    send({ type: "pointer", event: "up", x: p.x, y: p.y, button: button(e), clicks: e.detail || 1, modifiers: mods(e) });
+  });
+
+  canvas.addEventListener("contextmenu", function (e) { e.preventDefault(); });
+
+  canvas.addEventListener("wheel", function (e) {
+    e.preventDefault();
+    var p = point(e);
+    send({ type: "wheel", x: p.x, y: p.y, delta_x: e.deltaX, delta_y: e.deltaY, modifiers: mods(e) });
+  }, { passive: false });
+
+  canvas.addEventListener("focus", function () { focused = true; });
+  canvas.addEventListener("blur", function () { focused = false; });
+
+  // Keys go straight out. Nothing about them is shown or logged here: what a
+  // person types through takeover is not ours to record.
+  function key(e, event) {
+    if (!focused) { return; }
+    e.preventDefault();
+    send({ type: "key", event: event, key: e.key, code: e.code, modifiers: mods(e) });
+  }
+  window.addEventListener("keydown", function (e) { key(e, "down"); });
+  window.addEventListener("keyup", function (e) { key(e, "up"); });
+
+  window.addEventListener("paste", function (e) {
+    if (!focused) { return; }
+    e.preventDefault();
+    var text = (e.clipboardData || window.clipboardData).getData("text");
+    if (text) { send({ type: "text", text: text }); }
+  });
+
+  // --- controls ---------------------------------------------------------------
+
+  $("watch").onclick = watch;
+  $("take").onclick = function () {
+    api("POST", "/browser/sessions/" + encodeURIComponent(agent()) + "/takeover", function (s) {
+      holder = s.holder || "";
+      say("you hold the browser");
+    });
+  };
+  $("release").onclick = function () {
+    api("POST", "/browser/sessions/" + encodeURIComponent(agent()) + "/release", function () {
+      holder = "";
+      say("handed back");
+    });
+  };
+  $("base").value = location.origin;
+})();
+</script>
+</body>
+</html>

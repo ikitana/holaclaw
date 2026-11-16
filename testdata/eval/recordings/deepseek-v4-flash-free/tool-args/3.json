@@ -1,0 +1,54 @@
+{
+  "model": "deepseek-v4-flash-free",
+  "scenario": "tool-args",
+  "run": 3,
+  "steps": [
+    {
+      "step": 1,
+      "digest": "a78c7d0982e0d99fe07e4b553bb32866b0fe77762c5127484031ea9baefe94e3",
+      "shape": {
+        "messages": 1,
+        "tools": [
+          "brew"
+        ],
+        "system_chars": 871,
+        "last_message": "Brew 3 cups of rooibos, please."
+      },
+      "response": {
+        "text": "I'll brew that for you.\n\n",
+        "tool_calls": [
+          {
+            "ID": "chatcmpl-tool-9b17c2aeb8a28220",
+            "Name": "brew",
+            "Arguments": "{\"size\": 3, \"kind\": \"rooibos\"}"
+          }
+        ],
+        "finish": "tool_calls",
+        "usage": {
+          "PromptTokens": 609,
+          "CompletionTokens": 91
+        }
+      }
+    },
+    {
+      "step": 2,
+      "digest": "90a01d50a01aedf54dda511fd6bf2798ed14be28ac743938074f661506eae95e",
+      "shape": {
+        "messages": 3,
+        "tools": [
+          "brew"
+        ],
+        "system_chars": 871,
+        "last_message": "Brewing started."
+      },
+      "response": {
+        "text": " Your 3 cups of rooibos are brewing now — I'll let you know once it's ready.",
+        "finish": "stop",
+        "usage": {
+          "PromptTokens": 693,
+          "CompletionTokens": 25
+        }
+      }
+    }
+  ]
+}

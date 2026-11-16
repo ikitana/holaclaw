@@ -1,0 +1,24 @@
+# Optional. Remove this file for no external channels.
+version = 1
+
+# [channels.tg-main]
+# type  = "telegram"
+# agent = "main"
+# [channels.tg-main.access]
+# dm     = "invite"              # invite | open
+# rooms  = "approved"            # off | approved | open
+# reply  = "mention"             # mention | always
+# reply_to = "rooms"             # rooms | always | off: answer as a native reply to the message
+#
+# Token:  printf %s "$BOT_TOKEN" | holaclaw auth set channels.tg-main bot_token
+
+# [channels.googlechat]
+# type  = "googlechat"
+# agent = "main"
+# [channels.googlechat.access]
+# dm     = "invite"              # invite | open
+# rooms  = "approved"            # off | approved | open
+# reply  = "mention"             # mention only — Chat only delivers @-mentions in spaces
+#
+# Key:    holaclaw auth set channels.googlechat service_account < holaclaw-key.json
+# Setup:  docs/guides/googlechat.md

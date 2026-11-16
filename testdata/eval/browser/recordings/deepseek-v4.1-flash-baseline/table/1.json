@@ -1,0 +1,43 @@
+{
+  "model": "deepseek-v4.1-flash-baseline",
+  "scenario": "table",
+  "run": 1,
+  "steps": [
+    {
+      "step": 1,
+      "digest": "46a21d2c710ba5c3fafe5296f8bda3897992f4e98e09493efbb260a440153d38",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 702,
+        "last_message": "…Old Quarry 51,900 Wrenfield 203,400 North Barrow 77,650 Cedar Hollow 39,800 Fenwick 165,000 Ashgrove 112,450 Kettlebrook 68,300 Marlow Bend 94,700 1 2 3 4 Next\n"
+      },
+      "response": {
+        "text": "{\"action\":\"click\",\"ref\":\"r3\"}",
+        "finish": "stop",
+        "usage": {
+          "PromptTokens": 414,
+          "CompletionTokens": 51
+        }
+      }
+    },
+    {
+      "step": 2,
+      "digest": "d6063f63cf71b8d64a4a7c015db10c0bade3d4ee719191d36dcf9c804c0191b2",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 702,
+        "last_message": "…wn 89,300 Oakhaven 133,050 Windmere 72,600 Farrow Point 101,900 Ellsworth 64,400 Copperfield 118,750 Nettlebrook 55,200 Highstile 143,300 Previous 1 2 3 4 Next\n"
+      },
+      "response": {
+        "text": "{\"action\":\"done\",\"answer\":\"Rivermouth has the largest population on page 3 with 4,210,000.\"}",
+        "finish": "stop",
+        "usage": {
+          "PromptTokens": 431,
+          "CompletionTokens": 52
+        }
+      }
+    }
+  ]
+}

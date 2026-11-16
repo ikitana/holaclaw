@@ -1,0 +1,7 @@
+version = 1
+
+[providers.ollama]
+base_url = "http://localhost:11434/v1"
+
+[models.gemma]
+id = "gemma4:e2b"

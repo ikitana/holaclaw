@@ -1,0 +1,2096 @@
+openapi: 3.1.0
+info:
+  title: holaclaw Control API
+  version: 1.0.0
+  description: |
+    The single client interface of holaclaw: HTTP/JSON commands plus one
+    resumable SSE stream per client window. Additive changes only within /v1.
+    Every operation declares its required scope in `x-scope`
+    (admin ⊇ client). Scopes are
+    part of the contract. The unix socket arrives as `holaclaw:cli`, the
+    owner's, with `admin` scope by file permission; TCP clients send
+    `Authorization: Bearer <token>`, and a token acts as the identity of its
+    `holaclaw` binding, at most at the scope its role allows. Until
+    `holaclaw init` has created the owner, every operation answers 503
+    `not_initialised`.
+  license:
+    name: Apache-2.0
+    identifier: Apache-2.0
+servers:
+  - url: http://localhost/v1
+security:
+  - bearer: []
+tags:
+  - name: sessions
+  - name: events
+  - name: blobs
+  - name: approvals
+  - name: users
+  - name: tasks
+  - name: channels
+  - name: memory
+  - name: skills
+  - name: system
+  - name: browser
+  - name: backups
+  - name: connectors
+
+paths:
+  /sessions:
+    post:
+      tags: [sessions]
+      operationId: createSession
+      x-scope: client
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/SessionCreate' }
+      responses:
+        '200': { description: Existing session for this conversation, content: { application/json: { schema: { $ref: '#/components/schemas/Session' } } } }
+        '201': { description: Created, content: { application/json: { schema: { $ref: '#/components/schemas/Session' } } } }
+        default: { $ref: '#/components/responses/Error' }
+    get:
+      tags: [sessions]
+      operationId: listSessions
+      x-scope: client
+      description: The sessions of the caller's identity, admin tokens included, without rooms.
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { type: object, required: [sessions], properties: { sessions: { type: array, items: { $ref: '#/components/schemas/Session' } } } } } } }
+        default: { $ref: '#/components/responses/Error' }
+  /sessions/{id}:
+    parameters: [{ $ref: '#/components/parameters/id' }]
+    get:
+      tags: [sessions]
+      operationId: getSession
+      x-scope: client
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/Session' } } } }
+        default: { $ref: '#/components/responses/Error' }
+    delete:
+      tags: [sessions]
+      operationId: deleteSession
+      x-scope: client
+      description: Cascades to messages, events, blobs and recall.
+      responses:
+        '204': { description: Deleted }
+        '409': { $ref: '#/components/responses/Error', description: The session is read_only for the caller. }
+        default: { $ref: '#/components/responses/Error' }
+  /sessions/{id}/messages:
+    parameters: [{ $ref: '#/components/parameters/id' }]
+    post:
+      tags: [sessions]
+      operationId: sendMessage
+      x-scope: client
+      description: |
+        Stores the message and queues a turn. The client-generated `id` (ULID)
+        is the idempotency key (10 min window); `trace_id` and `message_id` in
+        the answer correlate the POST with events. Multipart
+        form: part `message` (JSON MessageSend) plus any number of `file` parts.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/MessageSend' }
+          multipart/form-data:
+            schema:
+              type: object
+              required: [message]
+              properties:
+                message: { type: string, description: JSON MessageSend }
+                file: { type: array, items: { type: string, format: binary } }
+      responses:
+        '202': { description: Accepted, content: { application/json: { schema: { $ref: '#/components/schemas/MessageAccepted' } } } }
+        '409': { $ref: '#/components/responses/Error', description: "The session is read_only for the caller: a task session, or a DM that continues in another channel (named in the message)." }
+        default: { $ref: '#/components/responses/Error' }
+    get:
+      tags: [sessions]
+      operationId: listMessages
+      x-scope: client
+      parameters:
+        - { name: after, in: query, schema: { type: string } }
+        - { name: limit, in: query, schema: { type: integer, minimum: 1, maximum: 500 } }
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { type: object, required: [messages], properties: { messages: { type: array, items: { $ref: '#/components/schemas/Message' } } } } } } }
+        default: { $ref: '#/components/responses/Error' }
+  /sessions/{id}/abort:
+    parameters: [{ $ref: '#/components/parameters/id' }]
+    post:
+      tags: [sessions]
+      operationId: abortSession
+      x-scope: client
+      responses:
+        '202': { description: Abort requested }
+        '409': { $ref: '#/components/responses/Error', description: "The session is a DM through another of the identity's bindings, read_only for the caller. A task session's run can be aborted." }
+        default: { $ref: '#/components/responses/Error' }
+
+  /sessions/{id}/traces:
+    parameters: [{ $ref: '#/components/parameters/id' }]
+    get:
+      tags: [sessions]
+      operationId: listTraces
+      x-scope: client
+      description: |
+        One line per trace of the session, newest first: what it did, how many
+        events it took and how it ended. It is how a client finds a trace id
+        without having kept the one a turn printed. A session the caller may
+        not see answers not_found, exactly as getSession does.
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { type: object, required: [traces], properties: { traces: { type: array, items: { $ref: '#/components/schemas/TraceSummary' } } } } } } }
+        default: { $ref: '#/components/responses/Error' }
+
+  /blobs:
+    post:
+      tags: [blobs]
+      operationId: putBlob
+      x-scope: client
+      requestBody:
+        required: true
+        content:
+          '*/*':
+            schema: { type: string, format: binary }
+      responses:
+        '201': { description: Stored, content: { application/json: { schema: { $ref: '#/components/schemas/Blob' } } } }
+        default: { $ref: '#/components/responses/Error' }
+  /blobs/{id}:
+    parameters: [{ $ref: '#/components/parameters/id' }]
+    get:
+      tags: [blobs]
+      operationId: getBlob
+      x-scope: client
+      description: |
+        A token reads a blob only when a message of a session it may see
+        references it, or when its identity uploaded it and has not attached it
+        yet. Anything else answers not_found.
+        Fresh uploads are remembered in memory: after a daemon restart an
+        unattached upload is no longer readable by its uploader.
+      responses:
+        '200': { description: Blob bytes, content: { '*/*': { schema: { type: string, format: binary } } } }
+        default: { $ref: '#/components/responses/Error' }
+
+  /events:
+    get:
+      tags: [events]
+      operationId: streamEvents
+      x-scope: client
+      description: |
+        Server-sent events, one stream per client window. Resumable with
+        `Last-Event-ID`; a comment heartbeat every 15 s. Full events for the
+        focused session, slim notifications (`type`, `session_id`, `id`) for
+        the rest.
+        Ephemeral `model.token` events carry no `id:` so a resume lands on the
+        last stored event. A stream that opens while a turn is running gets,
+        after any replay and before the live tail, one ephemeral
+        `model.partial` per running turn it sees in full (the focused session,
+        or every session without a focus): `attrs.text` is the turn's text
+        streamed so far, which the `model.token` deltas that follow extend. A
+        turn's text ends with its `reply`, `run.finished` or `run.aborted`. A `channel.reacted` event is the agent reacting
+        on a channel: `attrs.emoji` on the stored message `message_id` (the
+        turn's inbound message), with `attrs.channel` and
+        `attrs.platform_msg_id`.
+      parameters:
+        - { name: focus, in: query, schema: { type: string }, description: Session id }
+        - { name: Last-Event-ID, in: header, schema: { type: string } }
+      responses:
+        '200': { description: Event stream, content: { text/event-stream: { schema: { type: string } } } }
+        default: { $ref: '#/components/responses/Error' }
+
+  /approvals:
+    get:
+      tags: [approvals]
+      operationId: listApprovals
+      x-scope: admin
+      responses:
+        '200': { description: Pending approvals, content: { application/json: { schema: { type: object, required: [approvals], properties: { approvals: { type: array, items: { $ref: '#/components/schemas/Approval' } } } } } } }
+        default: { $ref: '#/components/responses/Error' }
+  /approvals/{id}:
+    parameters: [{ $ref: '#/components/parameters/id' }]
+    post:
+      tags: [approvals]
+      operationId: resolveApproval
+      x-scope: admin
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ApprovalResolve' }
+      responses:
+        '200': { description: Resolved, content: { application/json: { schema: { $ref: '#/components/schemas/Approval' } } } }
+        default: { $ref: '#/components/responses/Error' }
+
+  /identities:
+    get:
+      tags: [users]
+      operationId: listIdentities
+      x-scope: admin
+      description: Identities with their bindings. `pending=true` lists only the identities nobody has confirmed yet.
+      parameters:
+        - { name: pending, in: query, schema: { type: boolean } }
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { type: object, required: [identities], properties: { identities: { type: array, items: { $ref: '#/components/schemas/User' } } } } } } }
+        default: { $ref: '#/components/responses/Error' }
+    post:
+      tags: [users]
+      operationId: createIdentity
+      x-scope: admin
+      description: |
+        Creates a confirmed identity with no bindings; bind it with an invite.
+        `role` defaults to `user`. Nobody is created as `owner` or `guest` (400).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/IdentityCreate' }
+      responses:
+        '201': { description: Created, content: { application/json: { schema: { $ref: '#/components/schemas/User' } } } }
+        '400': { $ref: '#/components/responses/Error', description: "Empty name, or a role that cannot be created." }
+        default: { $ref: '#/components/responses/Error' }
+  /identities/{id}:
+    parameters: [{ $ref: '#/components/parameters/id' }]
+    get:
+      tags: [users]
+      operationId: getIdentity
+      x-scope: admin
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/User' } } } }
+        default: { $ref: '#/components/responses/Error' }
+    patch:
+      tags: [users]
+      operationId: updateIdentity
+      x-scope: admin
+      description: |
+        On a pending (guest) identity this confirms it: `name` is required,
+        `role` defaults to `user`, and the IDs are kept. On a pending room
+        `name` is required and `role` is refused (400): a room has no role.
+        On any other identity it renames it or changes its role. Nobody can be
+        made `owner`, and the owner's role cannot change (409). Demoting to
+        `user` lowers the identity's `admin` tokens to `client`; promoting to
+        `admin` raises none of them.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/IdentityUpdate' }
+      responses:
+        '200': { description: Updated, content: { application/json: { schema: { $ref: '#/components/schemas/User' } } } }
+        default: { $ref: '#/components/responses/Error' }
+    delete:
+      tags: [users]
+      operationId: deleteIdentity
+      x-scope: admin
+      description: |
+        An owner or admin deletes an identity. Its tasks are cancelled; its
+        aliases, tokens and invites are removed; its sessions stay, with no
+        user. By default the person's own memory — notes and recall, in every
+        agent — is forgotten; `keep_memory=true` keeps it instead (an audit,
+        say). Shared notes they wrote stay, stamped with the writer. The owner
+        is never deleted (409). Deleting does not block: the next message from
+        a removed account is treated like any stranger, under the channel's
+        dm/rooms settings.
+      parameters:
+        - { name: keep_memory, in: query, schema: { type: boolean, default: false } }
+      responses:
+        '200': { description: Deleted, content: { application/json: { schema: { $ref: '#/components/schemas/IdentityDeleted' } } } }
+        '404': { $ref: '#/components/responses/Error', description: "Unknown identity." }
+        '409': { $ref: '#/components/responses/Error', description: "The owner cannot be deleted." }
+        default: { $ref: '#/components/responses/Error' }
+  /identities/{id}/assign:
+    parameters: [{ $ref: '#/components/parameters/id' }]
+    post:
+      tags: [users]
+      operationId: assignIdentity
+      x-scope: admin
+      description: |
+        Moves a pending identity onto an existing user (`to`): a known person
+        writing from a new account. In one step its bindings move to the target,
+        its DM memory is re-owned by the target (a recall summary the target
+        already holds is dropped, not duplicated), its DM sessions end, and
+        the pending identity is deleted. Only a pending identity can be moved
+        (409), only onto a confirmed one (409; a pending or disabled target is
+        refused), and never onto itself (400). Only the owner may assign onto
+        the owner (403). A room is never assigned, nor assigned onto (400).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/IdentityAssign' }
+      responses:
+        '200': { description: Assigned, content: { application/json: { schema: { $ref: '#/components/schemas/IdentityAssignment' } } } }
+        '400': { $ref: '#/components/responses/Error', description: "Missing `to`, or an identity assigned to itself." }
+        '403': { $ref: '#/components/responses/Error', description: "Only the owner can assign to the owner." }
+        '404': { $ref: '#/components/responses/Error', description: "Unknown identity." }
+        '409': { $ref: '#/components/responses/Error', description: "The source is not pending, or the target is pending or disabled." }
+        default: { $ref: '#/components/responses/Error' }
+  /identities/{id}/disable:
+    parameters: [{ $ref: '#/components/parameters/id' }]
+    post:
+      tags: [users]
+      operationId: disableIdentity
+      x-scope: admin
+      description: |
+        Switches a confirmed identity off, or a room, pending or confirmed. It
+        keeps its bindings, tokens, memory and sessions, but nothing it sends
+        is answered, its tasks do not run, its tokens answer 403
+        `identity_disabled`, and invites for it are refused. What it has
+        open stops too: its event streams and live views close, and its
+        running turns are aborted, except a room turn that also answers
+        somebody else. Unbind (not a room's), revoke and delete still work.
+        Disabling a disabled identity
+        changes nothing. The owner and a pending user cannot be disabled (409).
+      responses:
+        '200': { description: Disabled, content: { application/json: { schema: { $ref: '#/components/schemas/User' } } } }
+        '404': { $ref: '#/components/responses/Error', description: "Unknown identity." }
+        '409': { $ref: '#/components/responses/Error', description: "The owner or a pending user." }
+        default: { $ref: '#/components/responses/Error' }
+  /identities/{id}/enable:
+    parameters: [{ $ref: '#/components/parameters/id' }]
+    post:
+      tags: [users]
+      operationId: enableIdentity
+      x-scope: admin
+      description: >-
+        Switches a disabled identity back on: a user comes back `confirmed`, a
+        room `pending`, whatever it was, keeping its name and its approval.
+        Enabling an enabled identity changes nothing. The owner and a pending
+        user are refused (409).
+      responses:
+        '200': { description: Enabled, content: { application/json: { schema: { $ref: '#/components/schemas/User' } } } }
+        '404': { $ref: '#/components/responses/Error', description: "Unknown identity." }
+        '409': { $ref: '#/components/responses/Error', description: "The owner or a pending user." }
+        default: { $ref: '#/components/responses/Error' }
+  /bindings/{ref}:
+    parameters:
+      - { name: ref, in: path, required: true, schema: { type: string }, description: '`<channel>:<alias>`, split at the first colon; escape a `/` in the alias as `%2F`.' }
+    delete:
+      tags: [users]
+      operationId: unbindBinding
+      x-scope: admin
+      description: |
+        Removes one binding from the identity that holds it; the ref alone finds it.
+        Memory the person wrote stays with a confirmed identity, and
+        the next message from that account is treated as coming from a
+        stranger. A pending identity left with no bindings is deleted with its
+        memory; a confirmed one never is. Removing a `holaclaw` binding
+        revokes every token on it. Only the owner unbinds the owner (403), and
+        `holaclaw:cli`, the binding the unix socket arrives as, stays (400).
+      responses:
+        '200': { description: Removed, content: { application/json: { schema: { $ref: '#/components/schemas/BindingUnbound' } } } }
+        '400': { $ref: '#/components/responses/Error', description: "The ref is not `<channel>:<alias>`, it is a room's: its one binding stays, or it is `holaclaw:cli`." }
+        '403': { $ref: '#/components/responses/Error', description: "Only the owner can unbind the owner." }
+        '404': { $ref: '#/components/responses/Error', description: "No such binding." }
+        default: { $ref: '#/components/responses/Error' }
+  /invites:
+    post:
+      tags: [users]
+      operationId: createInvite
+      x-scope: admin
+      description: |
+        Mints a one-shot code for one channel instance: a `dm` invite binds an existing identity, a `room` invite approves a room.
+        A `dm` invite creates one binding on a confirmed identity, which the
+        binding gets its role from. `ttl_seconds`
+        defaults to 15 minutes and is refused above 1 hour, or above 24 hours
+        when the identity has no bindings. Only the owner invites the owner.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/InviteCreate' }
+      responses:
+        '201': { description: Created; the code is shown once, content: { application/json: { schema: { $ref: '#/components/schemas/Invite' } } } }
+        '400': { $ref: '#/components/responses/Error', description: "Invalid spec: no channel, an unknown one, no `user_id` on a `dm` invite, a room or pending identity, a TTL above its cap, or a scope off `holaclaw` or above the identity's role." }
+        '403': { $ref: '#/components/responses/Error', description: "Only the owner can invite the owner." }
+        '404': { $ref: '#/components/responses/Error', description: "No such identity." }
+        default: { $ref: '#/components/responses/Error' }
+  /tokens:
+    get:
+      tags: [users]
+      operationId: listTokens
+      x-scope: admin
+      description: |
+        Active tokens, oldest first; `all=true` adds the revoked ones, which
+        are kept for traceability. `identity` keeps the tokens on that
+        identity's bindings, `binding` those of one `holaclaw:<alias>`
+        binding. A token whose binding was removed has no identity any more.
+      parameters:
+        - { name: identity, in: query, schema: { type: string } }
+        - { name: binding, in: query, schema: { type: string }, description: '`holaclaw:<alias>`' }
+        - { name: all, in: query, schema: { type: boolean, default: false } }
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { type: object, required: [tokens], properties: { tokens: { type: array, items: { $ref: '#/components/schemas/Token' } } } } } } }
+        '400': { $ref: '#/components/responses/Error', description: "`binding` is not a `holaclaw:<alias>` ref." }
+        default: { $ref: '#/components/responses/Error' }
+    post:
+      tags: [users]
+      operationId: createToken
+      x-scope: admin
+      description: |
+        Mints a token: on a new `holaclaw` binding of `user_id`, named after
+        the token, or on the existing `binding`; exactly one of the two.
+        `scope` defaults to `client`, and `admin` is refused unless the
+        identity's role is owner or admin.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/TokenCreate' }
+      responses:
+        '201': { description: Created; the secret is shown once, content: { application/json: { schema: { $ref: '#/components/schemas/TokenCreated' } } } }
+        '400': { $ref: '#/components/responses/Error', description: "Invalid scope or one above the identity's role, neither or both of `user_id` and `binding`, a missing identity or binding, a room, or `holaclaw:cli`." }
+        '403': { $ref: '#/components/responses/Error', description: "Only the owner can mint a token for the owner." }
+        '409': { $ref: '#/components/responses/Error', description: "The identity is disabled or pending." }
+        default: { $ref: '#/components/responses/Error' }
+  /tokens/{id}:
+    parameters: [{ $ref: '#/components/parameters/id' }]
+    patch:
+      tags: [users]
+      operationId: updateToken
+      x-scope: admin
+      description: |
+        Raises or lowers a token's scope. A promotion raises no token: this
+        is the only way up, and `admin` is refused while the identity's role
+        is `user`. Only the owner changes the owner's tokens.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/TokenUpdate' }
+      responses:
+        '200': { description: Updated, content: { application/json: { schema: { $ref: '#/components/schemas/Token' } } } }
+        '400': { $ref: '#/components/responses/Error', description: "Invalid scope, or one above the identity's role." }
+        '403': { $ref: '#/components/responses/Error', description: "Only the owner can change the owner's tokens." }
+        '404': { $ref: '#/components/responses/Error', description: "No such token." }
+        '409': { $ref: '#/components/responses/Error', description: "The token is revoked, or its identity disabled." }
+        default: { $ref: '#/components/responses/Error' }
+    delete:
+      tags: [users]
+      operationId: revokeToken
+      x-scope: admin
+      description: |
+        Revokes a token and records who did. The row is kept, and its binding
+        and the binding's other tokens stay. Revoking twice changes nothing,
+        except for a token a rotation replaced while the token it led to is
+        still active: that answers 409 and names it, since it still works.
+        Only the owner revokes the owner's tokens.
+      responses:
+        '204': { description: Revoked }
+        '403': { $ref: '#/components/responses/Error', description: "Only the owner can revoke the owner's tokens." }
+        '404': { $ref: '#/components/responses/Error', description: "No such token." }
+        '409': { $ref: '#/components/responses/Error', description: "The token was rotated into one that is still active." }
+        default: { $ref: '#/components/responses/Error' }
+  /tokens/{id}/rotate:
+    parameters: [{ $ref: '#/components/parameters/id' }]
+    post:
+      tags: [users]
+      operationId: rotateToken
+      x-scope: admin
+      description: |
+        Replaces a token with a new one on the same binding, with the same
+        name and scope, and revokes the old one in the same step. Only the
+        owner rotates the owner's tokens.
+      responses:
+        '201': { description: Rotated; the secret is shown once, content: { application/json: { schema: { $ref: '#/components/schemas/TokenCreated' } } } }
+        '403': { $ref: '#/components/responses/Error', description: "Only the owner can rotate the owner's tokens." }
+        '404': { $ref: '#/components/responses/Error', description: "No such token." }
+        '409': { $ref: '#/components/responses/Error', description: "The token is revoked, or its identity disabled." }
+        default: { $ref: '#/components/responses/Error' }
+  /me:
+    get:
+      tags: [users]
+      operationId: getMe
+      x-scope: client
+      description: |
+        Who the caller is, as the daemon resolves it on this request: the
+        identity with the role it acts with, the effective scope (the lower of
+        the token's and what the role allows), the binding and the token. The
+        unix socket is `holaclaw:cli`, with no token.
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/Me' } } } }
+        default: { $ref: '#/components/responses/Error' }
+  /me/token/rotate:
+    post:
+      tags: [users]
+      operationId: rotateOwnToken
+      x-scope: client
+      description: |
+        Rotates the token that signs this request, as `rotateToken` does, and
+        answers with the new secret. The calling token stops working at once.
+        The unix socket has no token (400).
+      responses:
+        '201': { description: Rotated; the secret is shown once, content: { application/json: { schema: { $ref: '#/components/schemas/TokenCreated' } } } }
+        '400': { $ref: '#/components/responses/Error', description: "The caller has no token." }
+        default: { $ref: '#/components/responses/Error' }
+  /me/devices:
+    get:
+      tags: [users]
+      operationId: listDevices
+      x-scope: client
+      description: |
+        The `holaclaw` bindings of the caller's own identity, oldest first:
+        its devices, its automations and, for the owner, `holaclaw:cli`.
+        `current` marks the one the request arrives from.
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { type: object, required: [devices], properties: { devices: { type: array, items: { $ref: '#/components/schemas/Device' } } } } } } }
+        default: { $ref: '#/components/responses/Error' }
+    post:
+      tags: [users]
+      operationId: createDeviceLink
+      x-scope: client
+      description: |
+        Mints a `holaclaw` invite onto the caller's own identity, for another
+        device to pair with `pairDevice`: the answer carries the code and,
+        when the daemon knows the address devices reach it at, a
+        `holaclaw://pair?server=…&code=…` link. `scope` defaults to `client`
+        and is refused above the caller's own (403). The invite expires after
+        15 minutes.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/DeviceLinkCreate' }
+      responses:
+        '201': { description: Created; the code is shown once, content: { application/json: { schema: { $ref: '#/components/schemas/Invite' } } } }
+        '400': { $ref: '#/components/responses/Error', description: "Invalid scope." }
+        '403': { $ref: '#/components/responses/Error', description: "The scope is above the caller's." }
+        '409': { $ref: '#/components/responses/Error', description: "The caller's identity is pending: only a confirmed identity pairs devices." }
+        default: { $ref: '#/components/responses/Error' }
+  /me/devices/{binding}:
+    parameters:
+      - { name: binding, in: path, required: true, schema: { type: string }, description: '`holaclaw:<alias>`' }
+    delete:
+      tags: [users]
+      operationId: unbindDevice
+      x-scope: client
+      description: |
+        Removes one `holaclaw` binding of the caller's own identity, as
+        `unbindBinding` does, and revokes every token on it. The caller may
+        remove the binding it arrives from. A binding of anyone else answers
+        404, like one that does not exist, and `holaclaw:cli` stays (400).
+      responses:
+        '200': { description: Removed, content: { application/json: { schema: { $ref: '#/components/schemas/BindingUnbound' } } } }
+        '400': { $ref: '#/components/responses/Error', description: "The binding is not `holaclaw:<alias>`, or it is `holaclaw:cli`." }
+        '404': { $ref: '#/components/responses/Error', description: "The caller's identity has no such binding." }
+        default: { $ref: '#/components/responses/Error' }
+  /pair:
+    post:
+      tags: [users]
+      operationId: pairDevice
+      x-scope: client
+      security: []
+      description: |
+        Pairs a device with a `holaclaw` invite: the code is the whole
+        credential, so the request carries no bearer. It creates a new
+        `holaclaw` binding on the invited identity, named after `device`, with
+        its first token, which has the invite's scope (never above the
+        identity's role) and origin `pair`. The secret is shown once. A wrong,
+        used, revoked or expired code is a 400, all alike; failed codes are
+        limited per source address (429).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/PairRequest' }
+      responses:
+        '201': { description: Paired; the secret is shown once, content: { application/json: { schema: { $ref: '#/components/schemas/TokenCreated' } } } }
+        '400': { $ref: '#/components/responses/Error', description: "The code is invalid or has expired, or the device or platform is missing or malformed." }
+        '429': { $ref: '#/components/responses/Error', description: "Too many failed codes from this address; try again later." }
+        default: { $ref: '#/components/responses/Error' }
+
+  /tasks:
+    get:
+      tags: [tasks]
+      operationId: listTasks
+      x-scope: admin
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { type: object, required: [tasks], properties: { tasks: { type: array, items: { $ref: '#/components/schemas/Task' } } } } } } }
+        default: { $ref: '#/components/responses/Error' }
+    post:
+      tags: [tasks]
+      operationId: createTask
+      x-scope: admin
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/TaskCreate' }
+      responses:
+        '201': { description: Created, content: { application/json: { schema: { $ref: '#/components/schemas/Task' } } } }
+        default: { $ref: '#/components/responses/Error' }
+  /tasks/{id}:
+    parameters: [{ $ref: '#/components/parameters/id' }]
+    get:
+      tags: [tasks]
+      operationId: getTask
+      x-scope: admin
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/Task' } } } }
+        default: { $ref: '#/components/responses/Error' }
+    delete:
+      tags: [tasks]
+      operationId: deleteTask
+      x-scope: admin
+      responses:
+        '204': { description: Deleted }
+        default: { $ref: '#/components/responses/Error' }
+
+  /channels:
+    get:
+      tags: [channels]
+      operationId: listChannels
+      x-scope: client
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { type: object, required: [channels], properties: { channels: { type: array, items: { $ref: '#/components/schemas/ChannelStatus' } } } } } } }
+        default: { $ref: '#/components/responses/Error' }
+  /channels/{name}/login:
+    parameters:
+      - { name: name, in: path, required: true, schema: { type: string } }
+    post:
+      tags: [channels]
+      operationId: loginChannel
+      x-scope: admin
+      description: |
+        Starts a pairing-code login (WhatsApp). Poll the same endpoint with GET.
+        Answers once the code is there: `user_code` and `expires_at` are set,
+        `verification_url` is not. A channel that cannot link interactively
+        answers not_implemented; one that is already linked or has a link
+        waiting answers conflict.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ChannelLoginStart' }
+      responses:
+        '200': { description: Code issued, content: { application/json: { schema: { $ref: '#/components/schemas/DeviceLogin' } } } }
+        default: { $ref: '#/components/responses/Error' }
+    get:
+      tags: [channels]
+      operationId: getChannelLogin
+      x-scope: admin
+      description: The current or last login; `user_code` is set only while it is pending.
+      responses:
+        '200': { description: Login state, content: { application/json: { schema: { $ref: '#/components/schemas/DeviceLogin' } } } }
+        default: { $ref: '#/components/responses/Error' }
+    delete:
+      tags: [channels]
+      operationId: logoutChannel
+      x-scope: admin
+      description: Unlinks the channel from its account and cancels a pending login.
+      responses:
+        '204': { description: Unlinked }
+        default: { $ref: '#/components/responses/Error' }
+
+  /status:
+    get:
+      tags: [system]
+      operationId: getStatus
+      x-scope: client
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/Status' } } } }
+        default: { $ref: '#/components/responses/Error' }
+  /agents:
+    get:
+      tags: [system]
+      operationId: listAgents
+      x-scope: client
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { type: object, required: [agents], properties: { agents: { type: array, items: { $ref: '#/components/schemas/AgentInfo' } } } } } } }
+        default: { $ref: '#/components/responses/Error' }
+  /models:
+    get:
+      tags: [system]
+      operationId: listModels
+      x-scope: client
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { type: object, required: [models], properties: { models: { type: array, items: { $ref: '#/components/schemas/ModelInfo' } } } } } } }
+        default: { $ref: '#/components/responses/Error' }
+  /credentials/{provider}:
+    parameters:
+      - { name: provider, in: path, required: true, schema: { type: string } }
+    put:
+      tags: [system]
+      operationId: putCredentials
+      x-scope: admin
+      description: Write-only. Credentials can never be read back; no read operation exists by contract.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CredentialsPut' }
+      responses:
+        '204': { description: Stored }
+        default: { $ref: '#/components/responses/Error' }
+  /credentials/{provider}/login:
+    parameters:
+      - { name: provider, in: path, required: true, schema: { type: string } }
+    post:
+      tags: [system]
+      operationId: loginProvider
+      x-scope: admin
+      description: Starts a device-code login (Codex). Poll the same endpoint with GET.
+      responses:
+        '200': { description: Login started, content: { application/json: { schema: { $ref: '#/components/schemas/DeviceLogin' } } } }
+        default: { $ref: '#/components/responses/Error' }
+    get:
+      tags: [system]
+      operationId: getProviderLogin
+      x-scope: admin
+      responses:
+        '200': { description: Login state, content: { application/json: { schema: { $ref: '#/components/schemas/DeviceLogin' } } } }
+        default: { $ref: '#/components/responses/Error' }
+  /traces/{id}:
+    parameters: [{ $ref: '#/components/parameters/id' }]
+    get:
+      tags: [system]
+      operationId: getTrace
+      x-scope: client
+      description: |
+        A client token bound to a user reads a trace only when at least one of
+        its events or messages belongs to one of that user's sessions; otherwise
+        the trace answers not_found.
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/Trace' } } } }
+        default: { $ref: '#/components/responses/Error' }
+
+  /memory:
+    get:
+      tags: [memory]
+      operationId: searchMemory
+      x-scope: admin
+      parameters:
+        - { name: agent, in: query, required: true, schema: { type: string } }
+        - { name: partition, in: query, required: true, schema: { type: string } }
+        - { name: q, in: query, schema: { type: string } }
+        - { name: layer, in: query, schema: { type: string, enum: [note, recall] } }
+        - { name: limit, in: query, schema: { type: integer, minimum: 1, maximum: 100 } }
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { type: object, required: [items], properties: { items: { type: array, items: { $ref: '#/components/schemas/MemoryItem' } } } } } } }
+        default: { $ref: '#/components/responses/Error' }
+    post:
+      tags: [memory]
+      operationId: writeMemory
+      x-scope: admin
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/MemoryWrite' }
+      responses:
+        '201': { description: Created, content: { application/json: { schema: { $ref: '#/components/schemas/MemoryItem' } } } }
+        default: { $ref: '#/components/responses/Error' }
+  /memory/partitions:
+    get:
+      tags: [memory]
+      operationId: listMemoryPartitions
+      x-scope: admin
+      description: The memory spaces one agent holds, newest written first. It is how a client finds a partition without having to know how one is named.
+      parameters:
+        - { name: agent, in: query, required: true, schema: { type: string } }
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { type: object, required: [partitions], properties: { partitions: { type: array, items: { $ref: '#/components/schemas/MemoryPartition' } } } } } } }
+        default: { $ref: '#/components/responses/Error' }
+  /memory/{id}:
+    parameters:
+      - { $ref: '#/components/parameters/id' }
+      - { name: agent, in: query, required: true, schema: { type: string } }
+      - { name: partition, in: query, required: true, schema: { type: string } }
+    delete:
+      tags: [memory]
+      operationId: forgetMemory
+      x-scope: admin
+      responses:
+        '204': { description: Forgotten }
+        default: { $ref: '#/components/responses/Error' }
+  /skills:
+    get:
+      tags: [skills]
+      operationId: listSkills
+      x-scope: client
+      description: |
+        Every skill of one agent, bundled and agent, with whether the agent's
+        owner sees it and why not, plus the agent's skills in the trash. A
+        client token bound to a user lists only agents that user may use.
+      parameters:
+        - { name: agent, in: query, required: true, schema: { type: string } }
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { type: object, required: [skills], properties: { skills: { type: array, items: { $ref: '#/components/schemas/Skill' } } } } } } }
+        '400': { $ref: '#/components/responses/Error', description: "No agent." }
+        '403': { $ref: '#/components/responses/Error', description: "The token's scope does not allow it." }
+        '404': { $ref: '#/components/responses/Error', description: "Unknown agent." }
+        default: { $ref: '#/components/responses/Error' }
+    post:
+      tags: [skills]
+      operationId: installSkill
+      x-scope: admin
+      description: |
+        Installs an agent skill from a folder the client uploaded
+        (`uploadSkill`), or from a git repository pinned to a ref, optionally
+        a folder in it. The skill's files are copied, scanned for the
+        obvious (pipes into a shell, ssh material, hidden or bidirectional
+        Unicode) and hashed.
+
+        With `preview` nothing is installed: the answer is the skill, its
+        body, the findings and the hash, for the person to read first.
+        Without it the skill is installed, with provenance recorded. Findings
+        refuse the install unless `force`. A `hash` that no longer matches
+        the source refuses it too, so what was previewed is what is
+        installed. An existing skill of that name is never overwritten.
+
+        A source without `SKILL.md` is a collection when its folders, or the
+        folders under its `skills/`, are skills (most skill repositories are
+        one): a preview lists them, each scanned and hashed, and installing
+        needs `all` (every one, refused as a whole when any name exists or
+        any finding is present without `force`) or a source that names one
+        skill (`git.path`, or its folder).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/SkillInstall' }
+      responses:
+        '200': { description: Preview, content: { application/json: { schema: { $ref: '#/components/schemas/SkillInstalled' } } } }
+        '201': { description: Installed, content: { application/json: { schema: { $ref: '#/components/schemas/SkillInstalled' } } } }
+        '400': { $ref: '#/components/responses/Error', description: "No agent, not exactly one of `git` and `upload`, a bad body or source, not a valid skill name, or a collection without `all`." }
+        '403': { $ref: '#/components/responses/Error', description: "The token's scope does not allow it." }
+        '404': { $ref: '#/components/responses/Error', description: "Unknown agent, or an upload that is unknown or expired." }
+        '409': { $ref: '#/components/responses/Error', description: "A skill of that name exists, the scan found something and `force` is not set, the source changed since the preview, or the skill folder is not safe to write." }
+        default: { $ref: '#/components/responses/Error' }
+  /skills/upload:
+    post:
+      tags: [skills]
+      operationId: uploadSkill
+      x-scope: admin
+      description: |
+        Uploads a local skill folder, or a folder of skills, for an install:
+        the client reads it and sends it, so a daemon on another host never
+        reads a path. The body is a gzipped tar holding exactly one folder
+        (the skill's name unless the install renames it), with directories
+        and regular files only, at most 256 files and 128 MiB. The answer's
+        `id` goes in `SkillInstall.upload`, for the preview and the install
+        alike; the upload is removed after a successful install, or after
+        an hour.
+      parameters:
+        - { name: path, in: query, schema: { type: string }, description: "The folder the client read, recorded as where the skill came from." }
+      requestBody:
+        required: true
+        content:
+          application/gzip:
+            schema: { type: string, format: binary }
+      responses:
+        '201': { description: Uploaded, content: { application/json: { schema: { $ref: '#/components/schemas/SkillUpload' } } } }
+        '400': { $ref: '#/components/responses/Error', description: "Not a gzipped tar, a link or another entry that is not a file or folder, a name outside the folder, not one folder, or too many files." }
+        '403': { $ref: '#/components/responses/Error', description: "The token's scope does not allow it." }
+        '413': { $ref: '#/components/responses/Error', description: "Over 128 MiB." }
+        default: { $ref: '#/components/responses/Error' }
+  /skills/{id}:
+    parameters:
+      - { $ref: '#/components/parameters/id' }
+      - { name: agent, in: query, required: true, schema: { type: string } }
+    get:
+      tags: [skills]
+      operationId: getSkill
+      x-scope: client
+      description: |
+        One skill: its body, raw file and versions.
+        The agent skill of that name, else the bundled one, else the one in
+        the trash; only an agent skill has versions. `version` shows one of
+        those versions instead of the current one.
+      parameters:
+        - { name: version, in: query, schema: { type: integer, minimum: 1 }, description: "Agent skills only: the version to show. Without it, the answer is the current version. `body`, `raw`, `learned` and `version` then describe the version asked for; `versions` always lists the earlier ones." }
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/Skill' } } } }
+        '400': { $ref: '#/components/responses/Error', description: "No agent, or a version below 1." }
+        '403': { $ref: '#/components/responses/Error', description: "The token's scope does not allow it." }
+        '404': { $ref: '#/components/responses/Error', description: "Unknown agent, skill or version." }
+        default: { $ref: '#/components/responses/Error' }
+    delete:
+      tags: [skills]
+      operationId: removeSkill
+      x-scope: admin
+      description: A live agent skill moves to the trash. A skill already in the trash is deleted permanently. Bundled skills cannot be deleted.
+      responses:
+        '204': { description: Removed }
+        '400': { $ref: '#/components/responses/Error', description: "No agent, or not a valid skill name." }
+        '403': { $ref: '#/components/responses/Error', description: "A bundled skill, or the token's scope does not allow it." }
+        '404': { $ref: '#/components/responses/Error', description: "Unknown agent or skill." }
+        '409': { $ref: '#/components/responses/Error', description: "The skill folder is not safe to write." }
+        default: { $ref: '#/components/responses/Error' }
+  /skills/{id}/restore:
+    parameters:
+      - { $ref: '#/components/parameters/id' }
+      - { name: agent, in: query, required: true, schema: { type: string } }
+    post:
+      tags: [skills]
+      operationId: restoreSkill
+      x-scope: admin
+      description: Moves an agent skill out of the trash, with its versions.
+      responses:
+        '200': { description: Restored, content: { application/json: { schema: { $ref: '#/components/schemas/Skill' } } } }
+        '400': { $ref: '#/components/responses/Error', description: "No agent, or not a valid skill name." }
+        '403': { $ref: '#/components/responses/Error', description: "The token's scope does not allow it." }
+        '404': { $ref: '#/components/responses/Error', description: "Unknown agent, or no such skill in the trash." }
+        '409': { $ref: '#/components/responses/Error', description: "A live skill of that name exists, or the skill folder is not safe to write." }
+        default: { $ref: '#/components/responses/Error' }
+  /skills/{id}/revert:
+    parameters:
+      - { $ref: '#/components/parameters/id' }
+      - { name: agent, in: query, required: true, schema: { type: string } }
+    post:
+      tags: [skills]
+      operationId: revertSkill
+      x-scope: admin
+      description: |
+        Makes an earlier version of a live agent skill the current one. The
+        version it replaces is kept, so nothing is lost.
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/SkillRevert' }
+      responses:
+        '200': { description: Reverted, content: { application/json: { schema: { $ref: '#/components/schemas/Skill' } } } }
+        '400': { $ref: '#/components/responses/Error', description: "No agent, not a valid skill name, or a bad body." }
+        '403': { $ref: '#/components/responses/Error', description: "A bundled skill, or the token's scope does not allow it." }
+        '404': { $ref: '#/components/responses/Error', description: "Unknown agent, skill or version." }
+        '409': { $ref: '#/components/responses/Error', description: "The skill folder is not safe to write." }
+        default: { $ref: '#/components/responses/Error' }
+  /browser/sessions:
+    get:
+      tags: [browser]
+      operationId: listBrowserSessions
+      x-scope: client
+      description: |
+        Running agent browsers. A client token bound to a
+        user sees only the agents that user may use; admin sees every session.
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { type: object, required: [sessions], properties: { sessions: { type: array, items: { $ref: '#/components/schemas/BrowserSession' } } } } } } }
+        default: { $ref: '#/components/responses/Error' }
+  /browser/sessions/{agent}/view:
+    parameters: [{ $ref: '#/components/parameters/agent' }]
+    post:
+      tags: [browser]
+      operationId: viewBrowser
+      x-scope: client
+      description: |
+        Issues a short-lived, single-use ticket for the live view of one agent's
+        browser. Watching is for users of that agent — a guest is refused with
+        forbidden — and needs no takeover. A browser cannot set a header on a
+        WebSocket, so the ticket goes in the stream URL's query instead.
+      responses:
+        '200': { description: Ticket issued, content: { application/json: { schema: { $ref: '#/components/schemas/BrowserTicket' } } } }
+        default: { $ref: '#/components/responses/Error' }
+  /browser/sessions/{agent}/stream:
+    parameters:
+      - { $ref: '#/components/parameters/agent' }
+      - { name: ticket, in: query, required: true, schema: { type: string } }
+    get:
+      tags: [browser]
+      operationId: streamBrowser
+      x-scope: client
+      security: []
+      description: |
+        The one WebSocket of the API. Authenticated by the ticket alone (no
+        bearer): it is consumed on first use and expires unused. Binary
+        messages from the server are JPEG frames of the active tab, each to be
+        answered with an `ack` text message (backpressure); text messages are
+        JSON control and input messages as in internal/browser/proto. Input is
+        dispatched only while the sender holds the takeover lock and is dropped
+        server-side otherwise. Nothing typed here is ever logged or traced.
+        The stream closes when the viewer's identity is disabled.
+      responses:
+        '101': { description: Switching to WebSocket }
+        '403': { $ref: '#/components/responses/Error', description: "identity_disabled: the ticket's identity was disabled since it was issued." }
+        default: { $ref: '#/components/responses/Error' }
+  /browser/sessions/{agent}/takeover:
+    parameters: [{ $ref: '#/components/parameters/agent' }]
+    post:
+      tags: [browser]
+      operationId: takeoverBrowser
+      x-scope: admin
+      description: |
+        Takes the takeover lock: the running browser task suspends and only the
+        caller's stream input is dispatched. conflict when someone else holds
+        it; not_found when the agent has no browser session.
+      responses:
+        '200': { description: Lock taken, content: { application/json: { schema: { $ref: '#/components/schemas/BrowserSession' } } } }
+        default: { $ref: '#/components/responses/Error' }
+  /browser/sessions/{agent}/release:
+    parameters: [{ $ref: '#/components/parameters/agent' }]
+    post:
+      tags: [browser]
+      operationId: releaseBrowser
+      x-scope: admin
+      description: Hands the browser back; a suspended task resumes. Idempotent for the holder; forbidden for anyone else.
+      responses:
+        '204': { description: Released }
+        default: { $ref: '#/components/responses/Error' }
+  /browser/viewer:
+    get:
+      tags: [browser]
+      operationId: getBrowserViewer
+      x-scope: client
+      description: The minimal built-in viewer page (canvas plus input relay) for manual testing of the live view. The real GUI is HolaClaw.
+      responses:
+        '200': { description: OK, content: { text/html: { schema: { type: string } } } }
+        default: { $ref: '#/components/responses/Error' }
+
+  /backups:
+    get:
+      tags: [backups]
+      operationId: listBackups
+      x-scope: admin
+      description: |
+        The backups the daemon manages, newest first.
+        `origin` says where each came from: `manual` (somebody asked),
+        `automatic` (the daemon's own daily backup; only the newest
+        `backups.keep` of those are kept) or `upload`. Manual backups and
+        uploads are never deleted for you.
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { type: object, required: [backups], properties: { backups: { type: array, items: { $ref: '#/components/schemas/Backup' } } } } } } }
+        default: { $ref: '#/components/responses/Error' }
+    post:
+      tags: [backups]
+      operationId: createBackup
+      x-scope: admin
+      description: |
+        Requests a backup of the running daemon and answers at once.
+        The archive is a consistent snapshot of the database, the blob store
+        and the config files, in the format of `holaclaw backup`. The answer
+        is the record, still `running`; poll it until it is `ready` or
+        `failed`. One backup runs at a time.
+        `include_secrets` puts `auth.toml` in the archive: whoever downloads
+        it then holds every credential of the installation.
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/BackupCreate' }
+      responses:
+        '202': { description: Accepted, content: { application/json: { schema: { $ref: '#/components/schemas/Backup' } } } }
+        '409': { $ref: '#/components/responses/Error', description: "Another backup is running, or a restore is about to replace the data." }
+        default: { $ref: '#/components/responses/Error' }
+  /backups/{id}:
+    parameters: [{ $ref: '#/components/parameters/id' }]
+    get:
+      tags: [backups]
+      operationId: getBackup
+      x-scope: admin
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/Backup' } } } }
+        default: { $ref: '#/components/responses/Error' }
+    delete:
+      tags: [backups]
+      operationId: deleteBackup
+      x-scope: admin
+      description: Removes the record and the archive. Deleting a running backup cancels it.
+      responses:
+        '204': { description: Deleted }
+        default: { $ref: '#/components/responses/Error' }
+  /backups/{id}/content:
+    parameters: [{ $ref: '#/components/parameters/id' }]
+    get:
+      tags: [backups]
+      operationId: getBackupContent
+      x-scope: admin
+      description: |
+        The archive of a ready backup, with its `Content-Length`.
+        Range requests are not supported. An archive made with
+        `include_secrets` carries `auth.toml`: this is the one place the API
+        gives credentials back, and only to an admin who asked for them.
+      responses:
+        '200': { description: The gzipped tar, content: { application/gzip: { schema: { type: string, format: binary } } } }
+        '409': { $ref: '#/components/responses/Error', description: "The backup is still running, or it failed: there is no archive." }
+        default: { $ref: '#/components/responses/Error' }
+  /backups/upload:
+    post:
+      tags: [backups]
+      operationId: uploadBackup
+      x-scope: admin
+      description: |
+        Hands the daemon an archive to keep as a managed backup, `origin`
+        `upload`: one `holaclaw backup` wrote, or one downloaded from this or
+        another installation. The body is the gzipped tar, at most 16 GiB;
+        it is checked against the manifest inside it and listed only if it
+        matches. Uploading restores nothing: that is `…/restore`.
+      requestBody:
+        required: true
+        content:
+          application/gzip:
+            schema: { type: string, format: binary }
+      responses:
+        '201': { description: Kept, content: { application/json: { schema: { $ref: '#/components/schemas/Backup' } } } }
+        '400': { $ref: '#/components/responses/Error', description: "Not a holaclaw backup, or it does not match its manifest." }
+        '413': { $ref: '#/components/responses/Error', description: "Over 16 GiB." }
+        default: { $ref: '#/components/responses/Error' }
+  /backups/{id}/restore:
+    parameters: [{ $ref: '#/components/parameters/id' }]
+    post:
+      tags: [backups]
+      operationId: restoreBackup
+      x-scope: admin
+      description: |
+        Replaces the database and the blobs of the running daemon with those
+        of a ready backup. The archive is checked first; then the daemon
+        answers, restarts, and comes back on the restored data within
+        seconds, with a `backup.restored` event. Expect the connection to
+        drop, and everything stored after the backup to be gone: sessions,
+        users, and API tokens too, so the token that asked may no longer
+        exist. Config files and `auth.toml` are never touched, even when the
+        archive holds them. The managed backups themselves survive, and the
+        replaced database is kept on the host as `holaclaw.db.pre-restore`.
+      responses:
+        '202': { description: Checked and staged; the daemon is restarting, content: { application/json: { schema: { $ref: '#/components/schemas/Backup' } } } }
+        '409': { $ref: '#/components/responses/Error', description: "The backup has no archive, the archive is damaged or was written by a newer holaclaw, or a backup or another restore is under way." }
+        default: { $ref: '#/components/responses/Error' }
+  /backups/{id}/verify:
+    parameters: [{ $ref: '#/components/parameters/id' }]
+    post:
+      tags: [backups]
+      operationId: verifyBackup
+      x-scope: admin
+      description: Re-reads the archive and checks every file against the manifest inside it. A damaged archive is a `200` with `ok` false.
+      responses:
+        '200': { description: Checked, content: { application/json: { schema: { $ref: '#/components/schemas/BackupVerification' } } } }
+        '409': { $ref: '#/components/responses/Error', description: "The backup is still running, or it failed: there is no archive." }
+        default: { $ref: '#/components/responses/Error' }
+
+  /connectors:
+    get:
+      tags: [connectors]
+      operationId: listConnectors
+      x-scope: admin
+      description: |
+        Lists every connector, by id.
+        Each carries its state and why (docs/connectors.md §2), the
+        server's name, how many tools it offers, the granted scopes and the
+        last health check.
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { type: object, required: [connectors], properties: { connectors: { type: array, items: { $ref: '#/components/schemas/Connector' } } } } } } }
+        '403': { $ref: '#/components/responses/Error', description: "The token's scope does not allow it." }
+        default: { $ref: '#/components/responses/Error' }
+    post:
+      tags: [connectors]
+      operationId: createConnector
+      x-scope: admin
+      description: |
+        Creates a connector to a remote MCP server (docs/connectors.md §2).
+        The daemon refuses an id in use, runs discovery and picks the client
+        identity. A protected server answers `202` with the authorization
+        URL the person opens and when it expires; the browser is then sent
+        to `redirect_uri` with `code` and `state`, which go to
+        `…/{id}/code`. An open server is connected at once: `200`. Progress
+        is also on the event stream as `connector.status`. A failed create
+        leaves nothing behind.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ConnectorCreate' }
+      responses:
+        '200': { description: Connected (an open server), content: { application/json: { schema: { $ref: '#/components/schemas/ConnectorStarted' } } } }
+        '202': { description: Waiting for the person to authorize, content: { application/json: { schema: { $ref: '#/components/schemas/ConnectorStarted' } } } }
+        '400': { $ref: '#/components/responses/Error', description: "A bad body, id, url, scope, client id or redirect, or the server does not use the requested auth." }
+        '403': { $ref: '#/components/responses/Error', description: "The token's scope does not allow it." }
+        '409': { $ref: '#/components/responses/Error', description: "The id is in use, or connectors.toml is a symlink or does not parse; the message says what to do." }
+        '502': { $ref: '#/components/responses/Error', description: "The server did not answer, or its authorization metadata or client identity did not work out." }
+        default: { $ref: '#/components/responses/Error' }
+  /connectors/inspect:
+    post:
+      tags: [connectors]
+      operationId: inspectConnector
+      x-scope: admin
+      description: |
+        Asks a remote MCP server what it is, without signing in, and stores nothing.
+        The daemon sends an `initialize` with no token. An open server
+        answers with its name and tools, as a create would cache them. A
+        protected one answers with its authorization metadata
+        (docs/connectors.md §3): the authorization servers, the
+        `scopes_supported`, and the client identity a create with the
+        default redirect would use.
+        Nothing is registered, written or announced on the event stream.
+        Only this POST is taken: a connector named `inspect` is still
+        `GET /connectors/inspect`.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ConnectorInspect' }
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/ConnectorInspection' } } } }
+        '400': { $ref: '#/components/responses/Error', description: "A bad body or url." }
+        '403': { $ref: '#/components/responses/Error', description: "The token's scope does not allow it." }
+        '502': { $ref: '#/components/responses/Error', description: "The server did not answer, or its authorization metadata did not work out." }
+        default: { $ref: '#/components/responses/Error' }
+  /connectors/{id}:
+    parameters: [{ $ref: '#/components/parameters/id' }]
+    get:
+      tags: [connectors]
+      operationId: getConnector
+      x-scope: admin
+      description: |
+        Shows one connector with its tools, trust and auth metadata.
+        Each cached tool has the risk class the gate gives it
+        (docs/connectors.md §6) and whether its description was cut at 400
+        tokens (§8). `trusted` says whether its results are scored. The
+        authorization metadata is what was discovered for its grant, and
+        public: no token, code, secret or state.
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/ConnectorDetail' } } } }
+        '403': { $ref: '#/components/responses/Error', description: "The token's scope does not allow it." }
+        '404': { $ref: '#/components/responses/Error', description: "No connector has the id." }
+        default: { $ref: '#/components/responses/Error' }
+    delete:
+      tags: [connectors]
+      operationId: deleteConnector
+      x-scope: admin
+      description: |
+        Deletes a connector in any state, an open authorization included.
+        Its connectors.toml entry, its auth.toml entry and its cache row are
+        removed, and a last `connector.status` event says `deleted`. An
+        agent that lists the id loses its tools at its next session and
+        `holaclaw check` reports the dangling reference. A connector named
+        `inspect` is `DELETE /connectors/inspect`.
+      responses:
+        '204': { description: Deleted }
+        '403': { $ref: '#/components/responses/Error', description: "The token's scope does not allow it." }
+        '404': { $ref: '#/components/responses/Error', description: "No connector has the id." }
+        '409': { $ref: '#/components/responses/Error', description: "connectors.toml is a symlink or does not parse, and the message says what to do; nothing was removed." }
+        '500': { $ref: '#/components/responses/Error', description: "The connector is deleted, but its auth.toml keys or cache row are left: delete the id again before creating it again." }
+        default: { $ref: '#/components/responses/Error' }
+  /connectors/{id}/code:
+    parameters: [{ $ref: '#/components/parameters/id' }]
+    post:
+      tags: [connectors]
+      operationId: postConnectorCode
+      x-scope: admin
+      description: |
+        Finishes the open authorization with the redirect's code.
+        The body carries the `code`, the `state` and, when present, the
+        `iss` of the redirect. The daemon checks the state, exchanges the
+        code and connects; it answers once the connector has settled, with
+        the connector `connected`, or `degraded` when the server failed
+        after the exchange. A state mismatch also drops the authorization.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ConnectorCode' }
+      responses:
+        '202': { description: Accepted, content: { application/json: { schema: { $ref: '#/components/schemas/Connector' } } } }
+        '400': { $ref: '#/components/responses/Error', description: "A bad body, or the state or the iss is not the open authorization's." }
+        '403': { $ref: '#/components/responses/Error', description: "The token's scope does not allow it." }
+        '404': { $ref: '#/components/responses/Error', description: "No connector has the id." }
+        '409': { $ref: '#/components/responses/Error', description: "No authorization is open: it expired, its code was already posted, or it is still being opened. Or connectors.toml is a symlink or does not parse; the message says what to do." }
+        '502': { $ref: '#/components/responses/Error', description: "The authorization server refused the code." }
+        default: { $ref: '#/components/responses/Error' }
+  /connectors/{id}/reconnect:
+    parameters: [{ $ref: '#/components/parameters/id' }]
+    post:
+      tags: [connectors]
+      operationId: reconnectConnector
+      x-scope: admin
+      description: |
+        Opens a new authorization on an existing connector.
+        It may ask for new scopes, and answers like create. The old tokens
+        serve until the new code is exchanged. An open server is redialed:
+        `200`.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ConnectorReconnect' }
+      responses:
+        '200': { description: Connected (an open server), content: { application/json: { schema: { $ref: '#/components/schemas/ConnectorStarted' } } } }
+        '202': { description: Waiting for the person to authorize, content: { application/json: { schema: { $ref: '#/components/schemas/ConnectorStarted' } } } }
+        '400': { $ref: '#/components/responses/Error', description: "A bad body, scope or redirect, or a client secret is needed." }
+        '403': { $ref: '#/components/responses/Error', description: "The token's scope does not allow it." }
+        '404': { $ref: '#/components/responses/Error', description: "No connector has the id." }
+        '409': { $ref: '#/components/responses/Error', description: "An authorization is being opened or its code is being exchanged." }
+        '502': { $ref: '#/components/responses/Error', description: "The server did not answer, or its authorization metadata or client identity did not work out." }
+        default: { $ref: '#/components/responses/Error' }
+
+components:
+  securitySchemes:
+    bearer:
+      type: http
+      scheme: bearer
+  parameters:
+    id:
+      name: id
+      in: path
+      required: true
+      schema: { type: string }
+    agent:
+      name: agent
+      in: path
+      required: true
+      schema: { type: string }
+  responses:
+    Error:
+      description: Error
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+  schemas:
+    Error:
+      type: object
+      required: [code, message]
+      properties:
+        code: { type: string, description: 'Stable code: bad_request, unauthorized, forbidden, identity_disabled, not_found, conflict, too_large, rate_limited, not_implemented, not_initialised, internal' }
+        message: { type: string }
+    Origin:
+      type: object
+      required: [channel, channel_type, conversation, conversation_kind]
+      properties:
+        channel: { type: string }
+        channel_type: { type: string }
+        conversation: { type: string }
+        conversation_kind: { type: string, enum: [dm, room] }
+        thread: { type: string }
+        platform_msg_id: { type: string }
+    SessionCreate:
+      type: object
+      properties:
+        agent: { type: string, description: Defaults to "main" }
+        conversation: { type: string, description: 'Client conversation id; a new one is generated when empty' }
+        title: { type: string }
+    Session:
+      type: object
+      required: [id, key, agent, kind, origin, read_only, created_at, updated_at]
+      properties:
+        id: { type: string }
+        key: { type: string }
+        agent: { type: string }
+        kind: { type: string, enum: [chat, task] }
+        user_id: { type: string }
+        origin: { $ref: '#/components/schemas/Origin' }
+        title: { type: string }
+        busy: { type: boolean }
+        read_only: { type: boolean, description: "A token may read the session but not send to or delete it (conflict): a DM through another of the identity's bindings, which continues in origin.channel and can't be aborted either, or a task session, whose run its identity may still abort. Only the identity's holaclaw conversations take every write." }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+        prompt_tokens: { type: integer, description: "What the session's model calls used, summed over all its events under the one accounting rule (each call counted once, by the event types marked counted in the event reference). Absent, with the other totals, when the store cannot total it, and on createSession." }
+        completion_tokens: { type: integer, description: The completion side of prompt_tokens. }
+        cost:
+          type: string
+          format: decimal
+          x-go-type: decimal.Decimal
+          x-go-type-import: { path: github.com/shopspring/decimal }
+          description: "USD the upstreams reported, summed exactly over the calls that reported a price, as a decimal string (\"0.000123\"; at most nine decimals). Absent when none did; when unpriced_calls is above zero it covers only the priced calls."
+        unpriced_calls: { type: integer, description: "How many of the calls reported no price (a local engine, a subscription): their cost is unknown, not zero." }
+        cached_tokens: { type: integer, description: "The part of prompt_tokens served from a prompt cache, over the calls that reported it. Absent when none did." }
+        reasoning_tokens: { type: integer, description: "The part of completion_tokens spent reasoning, over the calls that reported it. Absent when none did." }
+    AttachmentRef:
+      type: object
+      required: [blob_id]
+      properties:
+        blob_id: { type: string }
+        name: { type: string }
+        mime: { type: string }
+    Attachment:
+      type: object
+      required: [id, blob_id, mime, name, size, sha256, kind]
+      properties:
+        id: { type: string }
+        blob_id: { type: string }
+        mime: { type: string }
+        name: { type: string }
+        size: { type: integer, format: int64 }
+        sha256: { type: string }
+        kind: { type: string, enum: [image, audio, video, document] }
+        derived:
+          type: object
+          required: [text, by]
+          properties:
+            text: { type: string }
+            by: { type: string, enum: [transcribe, vision] }
+    MessageSend:
+      type: object
+      required: [id]
+      properties:
+        id: { type: string, description: Client-generated ULID; idempotency key }
+        text: { type: string }
+        attachments: { type: array, items: { $ref: '#/components/schemas/AttachmentRef' } }
+        reply_to: { type: string }
+    MessageAccepted:
+      type: object
+      required: [id, trace_id, duplicate]
+      properties:
+        id: { type: string, description: The client-generated id as sent (idempotency key) }
+        message_id: { type: string, description: 'Id of the stored message. Always server-generated: transcripts are ordered by id, so a client clock cannot reorder a conversation' }
+        trace_id: { type: string }
+        session_id: { type: string }
+        duplicate: { type: boolean }
+    ToolCall:
+      type: object
+      required: [id, name, arguments]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        arguments: { type: string }
+    Message:
+      type: object
+      required: [schema, id, session_id, trace_id, role, created_at]
+      properties:
+        schema: { type: integer }
+        id: { type: string }
+        session_id: { type: string }
+        trace_id: { type: string }
+        role: { type: string, enum: [user, assistant, tool, system] }
+        text: { type: string }
+        attachments: { type: array, items: { $ref: '#/components/schemas/Attachment' } }
+        reply_to: { type: string }
+        tool_calls: { type: array, items: { $ref: '#/components/schemas/ToolCall' } }
+        tool_call_id: { type: string }
+        tool_name: { type: string }
+        sender: { type: string }
+        tainted: { type: boolean }
+        taint_score: { type: number, description: How much the untrusted text looks like instructions, 0–1; absent when nothing scored it. }
+        created_at: { type: string, format: date-time }
+    Blob:
+      type: object
+      required: [id, size, mime]
+      properties:
+        id: { type: string }
+        size: { type: integer, format: int64 }
+        mime: { type: string }
+    Event:
+      type: object
+      required: [schema, id, trace_id, span_id, type, time]
+      properties:
+        schema: { type: integer }
+        id: { type: string }
+        trace_id: { type: string }
+        span_id: { type: string }
+        parent_id: { type: string }
+        session_id: { type: string }
+        type: { type: string }
+        time: { type: string, format: date-time }
+        duration_ns: { type: integer, format: int64 }
+        message_id: { type: string }
+        attrs: { type: object, additionalProperties: true }
+    Trace:
+      type: object
+      required: [trace_id, events, messages]
+      properties:
+        trace_id: { type: string }
+        events: { type: array, items: { $ref: '#/components/schemas/Event' } }
+        messages: { type: array, items: { $ref: '#/components/schemas/Message' } }
+    TraceSummary:
+      type: object
+      description: One trace of a session as a list row; the whole of it is getTrace.
+      required: [trace_id, session_id, started_at, ended_at, events, tool_calls, prompt_tokens, completion_tokens, unpriced_calls]
+      properties:
+        trace_id: { type: string }
+        session_id: { type: string }
+        started_at: { type: string, format: date-time, description: The first event of the trace. }
+        ended_at: { type: string, format: date-time, description: The last event of the trace. }
+        events: { type: integer }
+        tool_calls: { type: integer, description: How many tool.call events the trace holds. }
+        last_type: { type: string, description: The type of the last event, which is how a running trace is told from a finished one. }
+        preview: { type: string, description: The first user message of the trace, at most 120 characters; never page or tool text. }
+        prompt_tokens: { type: integer, description: "What the trace's model calls used, each counted once (the Session totals' rule)." }
+        completion_tokens: { type: integer }
+        cost:
+          type: string
+          format: decimal
+          x-go-type: decimal.Decimal
+          x-go-type-import: { path: github.com/shopspring/decimal }
+          description: "USD the upstreams reported, summed exactly over the calls that reported a price, as a decimal string (the Session cost's form). Absent when none did; when unpriced_calls is above zero it covers only the priced calls."
+        unpriced_calls: { type: integer, description: "How many of the calls reported no price: their cost is unknown, not zero." }
+        cached_tokens: { type: integer, description: "The part of prompt_tokens served from a prompt cache, over the calls that reported it. Absent when none did." }
+        reasoning_tokens: { type: integer, description: "The part of completion_tokens spent reasoning, over the calls that reported it. Absent when none did." }
+    Approval:
+      type: object
+      description: A human decision on a tool call.
+      required: [id, status, created_at, expires_at]
+      properties:
+        id: { type: string }
+        status: { type: string, enum: [pending, approved, denied, expired] }
+        trace_id: { type: string }
+        session_id: { type: string }
+        agent: { type: string }
+        tool: { type: string }
+        summary: { type: string }
+        created_at: { type: string, format: date-time }
+        expires_at: { type: string, format: date-time }
+    ApprovalResolve:
+      type: object
+      required: [approve]
+      properties:
+        approve: { type: boolean }
+        choice: { type: string, enum: [once, session, always], description: Defaults to once }
+    BrowserSession:
+      type: object
+      required: [agent, started, tabs, watchers]
+      properties:
+        agent: { type: string }
+        started: { type: string, format: date-time }
+        tabs:
+          type: array
+          items:
+            type: object
+            required: [id, url, title, active]
+            properties:
+              id: { type: string }
+              url: { type: string }
+              title: { type: string, description: Page content, untrusted }
+              active: { type: boolean }
+        holder: { type: string, description: User id holding the takeover lock, absent when nobody does }
+        watchers: { type: integer, description: Open live-view streams }
+        takeover_requested: { type: string, enum: [login, captcha, 2fa], description: Set while the task waits for a person to get past this blocker }
+    BrowserTicket:
+      type: object
+      required: [ticket, expires_at, path]
+      properties:
+        ticket: { type: string }
+        expires_at: { type: string, format: date-time }
+        path: { type: string, description: 'Stream path with the ticket already in the query, relative to /v1' }
+    User:
+      type: object
+      required: [id, kind, name, status, created_at]
+      properties:
+        id: { type: string }
+        kind: { type: string, enum: [user, room], description: 'A room identity is a conversation, not a person: it holds one binding and never a role.' }
+        name:
+          type: string
+          description: >-
+            What people call this person, such as `Rafa` or `Rafael Fernández`.
+            Free text, not unique and not an identifier: the API refers to an
+            identity by `id`, and to one of its accounts by `channel` and
+            `alias`. Admins see it in lists, and the agent sees it as the
+            person who taught a skill. A pending user starts as `guest-` and
+            the last six characters of its id, and keeps that until an admin
+            names it: a name never comes from the platform. The display name
+            the platform sent is only on the binding (`display`), and is never
+            trusted. A room is named after its conversation until confirmed.
+        status: { type: string, enum: [pending, confirmed, disabled], description: '`pending` is not yet confirmed by an admin; `disabled` is switched off.' }
+        role:
+          type: string
+          enum: [owner, admin, user, guest]
+          description: A pending user is a `guest`, and a disabled one keeps its role. Absent on a room.
+        approved_at: { type: string, format: date-time, description: 'When a room was approved, by an admin, a room invite or confirming it; absent until then.' }
+        approved_by: { type: string, description: 'The identity that approved a room: the admin who mentioned the bot or added it, the invite creator, or whoever confirmed it. Absent when unknown; it survives that identity being deleted.' }
+        identities:
+          description: "The identity's bindings (the wire keeps the older field name)."
+          type: array
+          items:
+            type: object
+            required: [channel, alias, created_at]
+            properties:
+              channel: { type: string }
+              alias: { type: string }
+              display: { type: string }
+              tokens: { type: integer, description: 'Active tokens on a `holaclaw` binding; absent on other channels.' }
+              created_at: { type: string, format: date-time }
+        created_at: { type: string, format: date-time }
+    IdentityCreate:
+      type: object
+      required: [name]
+      properties:
+        name: { type: string, description: 'What people call this person (see `User.name`)' }
+        role: { type: string, enum: [user, admin], description: Defaults to user }
+    IdentityUpdate:
+      type: object
+      properties:
+        name: { type: string, description: 'What people call this person: free text, not unique (see `User.name`)' }
+        role: { type: string, enum: [user, admin] }
+    IdentityAssign:
+      type: object
+      required: [to]
+      properties:
+        to: { type: string, description: The confirmed identity that receives the bindings }
+    IdentityAssignment:
+      type: object
+      required: [identity, bindings, memory, dropped, sessions]
+      properties:
+        identity: { $ref: '#/components/schemas/User' }
+        bindings: { type: integer, description: Bindings moved }
+        memory: { type: integer, description: Memory rows re-owned by the target }
+        dropped: { type: integer, description: Recall rows dropped because the target already held them }
+        sessions: { type: integer, description: DM sessions of the pending identity that were ended }
+    IdentityDeleted:
+      type: object
+      required: [id, aliases, tokens_revoked, memory_forgotten, memory_kept]
+      properties:
+        id: { type: string }
+        role: { type: string, enum: [owner, admin, user, guest], description: Absent for a room. }
+        aliases:
+          type: array
+          items: { type: string }
+          description: 'The removed bindings, each `<channel>:<alias>`.'
+        tokens_revoked: { type: integer, description: Active tokens that went with the identity }
+        memory_forgotten: { type: integer, description: 'Memory rows forgotten; 0 when kept.' }
+        memory_kept: { type: boolean }
+    BindingUnbound:
+      type: object
+      required: [identity, pending_deleted, memory_forgotten, tokens_revoked]
+      properties:
+        identity: { type: string, description: The identity that held the binding }
+        pending_deleted: { type: boolean, description: 'The identity was pending and, left with no bindings, was deleted with its memory.' }
+        memory_forgotten: { type: integer, description: 'Memory rows forgotten with a deleted pending identity; otherwise 0.' }
+        tokens_revoked: { type: integer, description: "Active tokens revoked: a `holaclaw` binding's own, and those of a deleted pending identity." }
+    InviteCreate:
+      type: object
+      required: [channel]
+      properties:
+        kind:
+          type: string
+          enum: [dm, room]
+          default: dm
+          description: |
+            `dm` binds the account that redeems it to `user_id`. `room` approves
+            the room conversation it is redeemed in and grants nobody a role: it
+            takes no `user_id`, and is refused unless the channel is a telegram,
+            googlechat or whatsapp instance with `rooms = "approved"`.
+        channel: { type: string, description: 'The one channel instance the code redeems on; `holaclaw` mints a pairing invite.' }
+        user_id: { type: string, description: 'The confirmed user identity a `dm` invite binds to. Required for `dm`.' }
+        scope:
+          type: string
+          enum: [client, admin]
+          description: |
+            `holaclaw` only: the scope of the token a paired device gets.
+            Defaults to `client`; `admin` needs the role owner or admin.
+        ttl_seconds: { type: integer, minimum: 60, maximum: 86400, description: 'Defaults to 900. At most 3600, or 86400 onto an identity with no bindings.' }
+    Invite:
+      type: object
+      required: [id, code, channel, expires_at]
+      properties:
+        id: { type: string }
+        code: { type: string }
+        channel: { type: string }
+        user_id: { type: string, description: 'The identity a `dm` invite binds to.' }
+        scope: { type: string, enum: [client, admin], description: '`holaclaw` invites only.' }
+        link: { type: string, description: Deep link when the channel has one }
+        instruction: { type: string, description: 'How to redeem the code; set exactly when `link` is not.' }
+        expires_at: { type: string, format: date-time }
+    Token:
+      type: object
+      required: [id, name, scope, binding, origin, created_at]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        scope: { type: string, enum: [admin, client], description: 'Never above the role: demoting the identity to `user` lowers its `admin` tokens to `client`, and promoting it raises none.' }
+        binding: { type: string, description: 'The `holaclaw:<alias>` binding the token belongs to.' }
+        user_id: { type: string, description: "The binding's identity. Absent once the binding is removed, which revoked the token." }
+        origin: { type: string, enum: [pair, token_create, rotate, init], description: 'How the token was made.' }
+        origin_ref: { type: string, description: 'The invite of a `pair` token, or the token a `rotate` token replaced.' }
+        created_by: { type: string, description: 'Who created it, as events name a caller.' }
+        created_at: { type: string, format: date-time }
+        last_used_at: { type: string, format: date-time }
+        revoked_at: { type: string, format: date-time }
+        revoked_by: { type: string, description: 'Who revoked it, directly or by a rotation, an unbind or a delete.' }
+    TokenCreate:
+      type: object
+      required: [name]
+      properties:
+        name: { type: string, description: 'Names the new binding too, when there is one.' }
+        scope: { type: string, enum: [admin, client], default: client }
+        user_id:
+          type: string
+          description: |
+            The identity the token acts as: the token gets a new `holaclaw`
+            binding on it, named after the token. A user_id that names no
+            existing user is a bad_request. Not with `binding`.
+        binding: { type: string, description: 'An existing `holaclaw:<alias>` binding the token is added to. Not with `user_id`.' }
+    TokenUpdate:
+      type: object
+      required: [scope]
+      properties:
+        scope: { type: string, enum: [admin, client] }
+    TokenCreated:
+      type: object
+      required: [token, secret]
+      properties:
+        token: { $ref: '#/components/schemas/Token' }
+        secret: { type: string }
+    Device:
+      type: object
+      required: [binding, created_at, tokens, current]
+      properties:
+        binding: { type: string, description: '`holaclaw:<alias>`' }
+        display: { type: string, description: 'The device or automation name.' }
+        platform: { type: string, description: 'What a paired device said it runs on, such as `ios` or `macos`.' }
+        tokens: { type: integer, description: Active tokens on the binding }
+        current: { type: boolean, description: 'The request arrives from this binding.' }
+        created_at: { type: string, format: date-time }
+        last_used_at: { type: string, format: date-time, description: "The latest use of any of the binding's tokens, revoked ones included, recorded at most once a minute. Absent when none was used." }
+    Me:
+      type: object
+      required: [identity, scope, binding]
+      properties:
+        identity:
+          type: object
+          required: [id, name, role]
+          properties:
+            id: { type: string }
+            name: { type: string }
+            role: { type: string, enum: [owner, admin, user, guest], description: 'The role the identity acts with: a pending identity is a `guest`.' }
+        scope: { type: string, enum: [admin, client], description: "The effective scope: the lower of the token's and what the role allows." }
+        binding: { type: string, description: '`holaclaw:<alias>`; `holaclaw:cli` on the unix socket.' }
+        token: { $ref: '#/components/schemas/Token', description: 'The token that signs the request. Absent on the unix socket.' }
+    DeviceLinkCreate:
+      type: object
+      properties:
+        scope: { type: string, enum: [client, admin], default: client, description: "The scope of the paired device's token; never above the caller's." }
+    PairRequest:
+      type: object
+      required: [code, device, platform]
+      properties:
+        code: { type: string, description: 'The code of a `holaclaw` invite, as the pairing link carries it.' }
+        device: { type: string, description: 'The device name; it names the new binding and its token.' }
+        platform: { type: string, description: 'A lower-case word of at most 32 characters, such as `ios` or `macos`.' }
+    TaskCreate:
+      type: object
+      required: [prompt, schedule]
+      properties:
+        agent: { type: string }
+        name: { type: string }
+        prompt: { type: string }
+        schedule:
+          type: object
+          required: [kind]
+          properties:
+            kind: { type: string, enum: [cron, at, now] }
+            cron: { type: string }
+            at: { type: string, format: date-time }
+        delivery:
+          type: object
+          required: [kind]
+          properties:
+            kind: { type: string, enum: [session, channel, store] }
+            session_id: { type: string }
+        grants: { type: array, items: { type: string }, description: Tool names the task may use without asking }
+        missed: { type: string, enum: [skip, run_once], description: Defaults to skip }
+        max_steps: { type: integer }
+    Task:
+      type: object
+      required: [id, agent, prompt, schedule, status, created_at]
+      properties:
+        id: { type: string }
+        agent: { type: string }
+        name: { type: string }
+        prompt: { type: string }
+        schedule: { type: object, additionalProperties: true }
+        delivery: { type: object, additionalProperties: true }
+        grants: { type: array, items: { type: string } }
+        missed: { type: string }
+        status: { type: string, enum: [active, done, failed, cancelled] }
+        next_run: { type: string, format: date-time }
+        last_run: { type: string, format: date-time }
+        last_trace_id: { type: string }
+        created_at: { type: string, format: date-time }
+    ChannelStatus:
+      type: object
+      required: [name, type, agent, state]
+      properties:
+        name: { type: string }
+        type: { type: string }
+        agent: { type: string }
+        state: { type: string, enum: [unlinked, linking, connected, reconnecting, logged_out] }
+        detail: { type: string }
+    Status:
+      type: object
+      required: [version, uptime_seconds, sessions_active]
+      properties:
+        version: { type: string }
+        uptime_seconds: { type: integer }
+        sessions_active: { type: integer }
+        pending_approvals: { type: integer }
+    AgentInfo:
+      type: object
+      required: [name, tools, models]
+      properties:
+        name: { type: string }
+        tools: { type: array, items: { type: string } }
+        models: { type: object, additionalProperties: { type: string } }
+    ModelInfo:
+      type: object
+      required: [name, provider, id, context]
+      properties:
+        name: { type: string }
+        provider: { type: string }
+        id: { type: string }
+        context: { type: integer }
+        tools: { type: boolean }
+        vision: { type: boolean }
+    CredentialsPut:
+      type: object
+      description: Provider-specific secret fields, e.g. api_key.
+      additionalProperties: { type: string }
+    ChannelLoginStart:
+      type: object
+      required: [phone]
+      properties:
+        phone: { type: string, description: 'The account number in international format; spaces, dashes and a leading + are ignored' }
+    DeviceLogin:
+      type: object
+      required: [state]
+      properties:
+        state: { type: string, enum: [pending, done, failed, none] }
+        verification_url: { type: string }
+        user_code: { type: string }
+        expires_at: { type: string, format: date-time }
+        detail: { type: string }
+    MemoryItem:
+      type: object
+      required: [id, layer, text, visibility, partition, created_at]
+      properties:
+        id: { type: string }
+        layer: { type: string, enum: [note, recall] }
+        text: { type: string }
+        about: { type: string }
+        visibility: { type: string, enum: [shared, origin] }
+        partition: { type: string }
+        user_id: { type: string }
+        trace_id: { type: string }
+        score: { type: number }
+        created_at: { type: string, format: date-time }
+    MemoryPartition:
+      type: object
+      description: One memory space of an agent and what it holds.
+      required: [partition, notes, recall]
+      properties:
+        partition: { type: string }
+        name: { type: string, description: 'The name of the identity behind a `dm/` or `room/` partition; absent when there is none.' }
+        notes: { type: integer }
+        recall: { type: integer }
+        last_written: { type: string, format: date-time }
+    Skill:
+      type: object
+      description: A skill.
+      required: [name, description, level, eligible]
+      properties:
+        name: { type: string }
+        description: { type: string, description: "The line the model sees in its list of skills." }
+        level: { type: string, enum: [bundled, agent] }
+        trashed: { type: boolean, description: "An agent skill in the trash, unused until restored." }
+        version: { type: integer, description: "Agent skills only: the version this answer describes, a number from 1. Every change to the skill makes a new version; the earlier ones are in `versions`." }
+        eligible: { type: boolean, description: "Whether the agent's owner sees it when talking to the agent directly." }
+        hidden:
+          type: object
+          description: Why the skill is not eligible or did not load.
+          required: [reason]
+          properties:
+            reason: { type: string, enum: [missing_tool, denied_tool, needs_binary, disabled, trashed, invalid] }
+            subject: { type: string, description: The tool or binary name. }
+            code: { type: string, description: "The load problem code, for `invalid`." }
+            message: { type: string, description: A human-readable explanation. }
+        requires:
+          type: object
+          properties:
+            tools: { type: array, items: { type: string } }
+            bins: { type: array, items: { type: string } }
+        learned:
+          type: object
+          description: Present when the agent saved this version.
+          required: [on, by, from, origin]
+          properties:
+            on: { type: string, format: date-time, description: "When it was saved, UTC; midnight when only a date is known." }
+            by: { type: string, description: "The identity that taught it." }
+            by_name: { type: string, description: "Its display name, when known." }
+            from: { type: string, description: "The trace that saved it." }
+            origin: { type: string, enum: [correction, explicit] }
+        references: { type: array, items: { type: string } }
+        scripts: { type: array, items: { type: string } }
+        body: { type: string, description: "The instructions after the frontmatter, as the model reads them. Only when getting one skill." }
+        versions: { type: array, items: { $ref: '#/components/schemas/SkillVersion' }, description: "Earlier versions, newest first. Only when getting one skill." }
+        raw: { type: string, description: "The `SKILL.md` file as it is on disk, frontmatter included. Only when getting one skill." }
+    SkillVersion:
+      type: object
+      description: One earlier version of an agent skill. `on`, `trace`, `by` and `by_name` are set when the agent saved that version; one a person wrote has the version alone.
+      required: [version]
+      properties:
+        version: { type: integer, description: "What revert's `to` and getSkill's `version` take." }
+        on: { type: string, format: date-time, description: "When it was saved, UTC." }
+        trace: { type: string, description: "The trace that saved it." }
+        by: { type: string, description: "The identity that taught it." }
+        by_name: { type: string, description: "Its display name, when known." }
+    SkillRevert:
+      type: object
+      properties:
+        to: { type: integer, minimum: 1, description: "The version to bring back, from `versions`. It becomes a new version. Omitted, or the current version, nothing changes." }
+    SkillInstall:
+      type: object
+      description: Exactly one of `git` and `upload`.
+      required: [agent]
+      properties:
+        agent: { type: string }
+        git: { $ref: '#/components/schemas/SkillGitSource' }
+        upload: { type: string, description: "The `id` of an upload (`uploadSkill`)." }
+        name: { type: string, description: "Install under this name instead of the source's; the skill's own `name` is rewritten to match." }
+        preview: { type: boolean, description: "Fetch, scan and parse; install nothing." }
+        force: { type: boolean, description: "Install although the scan found something." }
+        hash: { type: string, description: "The hash a preview returned; the install is refused when the source no longer hashes to it." }
+        all: { type: boolean, description: "The source is a collection (a folder without `SKILL.md` whose children, or whose `skills/` children, are skill folders): install every skill in it, each under its own name. Without it a collection only previews, listing its skills; `name` is refused with it." }
+    SkillUpload:
+      type: object
+      required: [id, expires_at]
+      properties:
+        id: { type: string }
+        expires_at: { type: string, format: date-time, description: "When the upload is removed if no install used it." }
+    SkillGitSource:
+      type: object
+      description: A git repository, pinned to a ref or at its default branch.
+      required: [url]
+      properties:
+        url: { type: string, description: "An `https`, `ssh`, `git` or `file` url, without query, fragment or password; scp-like `user@host:path` is checked as `ssh://user@host/path` and fetched as written." }
+        ref: { type: string, description: "A tag, branch or commit; the repository's default branch when omitted." }
+        path: { type: string, description: "The folder inside the repository that is the skill or the collection; the root when omitted." }
+    SkillInstalled:
+      type: object
+      description: |
+        The outcome of an install, a preview or the install itself. For one
+        skill, `skill` (with its body), `findings` and `hash` describe it. For
+        a collection, `skills` lists one entry per skill folder found (path,
+        skill without body, findings, hash), `hash` is `sha256:` over the
+        entries' hashes in path order (what `all` pins with `hash`), and the
+        top-level `findings` is empty. After `all`, `installed` is true on the
+        answer and on every entry.
+      required: [findings, hash, installed]
+      properties:
+        skill: { $ref: '#/components/schemas/Skill' }
+        path: { type: string, description: "Collection entries only, the skill folder inside the source; `git.path` joined with it (git), or that subfolder (local), installs it alone." }
+        findings: { type: array, items: { $ref: '#/components/schemas/ScanFinding' } }
+        hash: { type: string, description: "`sha256:<hex>` over every file of the skill folder; what the install records." }
+        commit: { type: string, description: "The commit the ref resolved to; git sources only." }
+        installed: { type: boolean, description: "False for a preview." }
+        skills: { type: array, items: { $ref: '#/components/schemas/SkillInstalled' }, description: "Collections only: the skills found, sorted by path." }
+    ScanFinding:
+      type: object
+      description: One finding of the install scan; a hint for the reader, not a security boundary.
+      required: [file, line, code, message]
+      properties:
+        file: { type: string, description: "Slash path inside the skill folder." }
+        line: { type: integer }
+        code: { type: string, description: "`SCN001` a pipe into a shell, `SCN002` ssh material, `SCN003` hidden or bidirectional Unicode." }
+        message: { type: string }
+    MemoryWrite:
+      type: object
+      required: [agent, partition, text]
+      properties:
+        agent: { type: string }
+        partition: { type: string }
+        text: { type: string }
+        about: { type: string }
+        visibility:
+          type: string
+          enum: [shared, origin]
+          default: origin
+          description: Defaults to `origin`; `shared` — readable from every partition of the agent — must be asked for explicitly.
+    Backup:
+      type: object
+      required: [id, origin, status, created_at, size, version, secrets_included]
+      properties:
+        id: { type: string }
+        origin: { type: string, enum: [manual, automatic, upload], description: 'Who made it. Only automatic ones are ever deleted by the daemon' }
+        status: { type: string, enum: [running, ready, failed] }
+        reason: { type: string, description: Why a failed backup failed }
+        created_at: { type: string, format: date-time }
+        size: { type: integer, format: int64, description: 'Bytes of the archive; 0 until the backup is ready' }
+        version: { type: string, description: 'The holaclaw version that wrote it; empty for an upload, whose archive does not say' }
+        secrets_included: { type: boolean }
+    BackupCreate:
+      type: object
+      properties:
+        include_secrets: { type: boolean, description: 'Defaults to false. Puts auth.toml in the archive' }
+    BackupVerification:
+      type: object
+      required: [ok]
+      properties:
+        ok: { type: boolean }
+        error: { type: string, description: What does not match, when ok is false }
+    Connector:
+      type: object
+      description: A connector. Never carries a token, a client secret, the PKCE verifier or the state.
+      required: [id, url, state, tool_count]
+      properties:
+        id: { type: string }
+        url: { type: string }
+        auth: { type: string, description: '`none` or `oauth`; empty while discovery has not decided' }
+        scopes: { type: array, items: { type: string }, description: 'Requested; absent means every scope the server offers' }
+        granted_scopes: { type: array, items: { type: string } }
+        client_id: { type: string, description: 'The pre-registered client id, if any' }
+        state: { type: string, description: 'pending, authorizing, connected, degraded or expired (docs/connectors.md §2)' }
+        detail: { type: string, description: 'Why it is in its state: a short daemon code such as `discovery_failed` or `refresh_rejected`' }
+        server_name: { type: string }
+        server_version: { type: string }
+        tool_count: { type: integer, description: 'The tools cached from the server' }
+        last_check: { type: string, format: date-time, description: 'The last health check; absent before the first' }
+    ConnectorDetail:
+      type: object
+      description: One connector as `show` prints it. Never carries a token, a client secret, the PKCE verifier or the state.
+      required: [connector, trusted, tools]
+      properties:
+        connector: { $ref: '#/components/schemas/Connector' }
+        trusted: { type: boolean, description: 'When true, results are not scored and never arm the taint (docs/connectors.md §6).' }
+        tools: { type: array, items: { $ref: '#/components/schemas/ConnectorTool' }, description: 'By name' }
+        auth_metadata: { $ref: '#/components/schemas/ConnectorAuthMetadata' }
+    ConnectorTool:
+      type: object
+      required: [name, risk, always_ask, description_truncated]
+      properties:
+        name: { type: string, description: 'The server''s name; the agent sees `<id>.<name>`' }
+        description: { type: string, description: 'As cached, cut at 400 tokens' }
+        risk: { type: string, description: '`read` when the server marks it read-only, else `external`' }
+        always_ask: { type: boolean, description: 'The server marks it destructive: every call asks' }
+        description_truncated: { type: boolean, description: 'The description was cut at 400 tokens' }
+    ConnectorAuthMetadata:
+      type: object
+      description: The authorization metadata discovered for the current grant, for the authorization a create opened, or by an inspect (without identity_kind and client_id); absent for an open server.
+      required: [issuer]
+      properties:
+        issuer: { type: string }
+        resource: { type: string, description: 'The server URL the tokens are bound to' }
+        authorization_endpoint: { type: string }
+        token_endpoint: { type: string }
+        registration_endpoint: { type: string }
+        scopes: { type: array, items: { type: string }, description: 'What the server offers by default: its challenge''s scope, else its scopes_supported' }
+        identity_kind: { type: string, description: '`pre-registered`, `cimd` or `dcr`: how holaclaw named itself to the authorization server' }
+        client_id: { type: string, description: 'The client id the tokens were granted to; absent before the first grant' }
+    ConnectorStarted:
+      type: object
+      required: [connector]
+      properties:
+        connector: { $ref: '#/components/schemas/Connector' }
+        authorization_url: { type: string, description: 'What the person opens; absent when the connector is connected already' }
+        expires_at: { type: string, format: date-time, description: 'When the authorization is dropped unless its code arrives' }
+    ConnectorCreate:
+      type: object
+      required: [id, url]
+      properties:
+        id: { type: string, description: '[a-z0-9-], at most 32 characters, not the name of a built-in tool or group' }
+        url: { type: string, description: 'The MCP endpoint: https, or http on a loopback host unless allow_insecure_transport' }
+        auth: { type: string, enum: [none, oauth], description: 'Defaults to what discovery finds. Given, the create fails when the server disagrees' }
+        scopes: { type: array, items: { type: string }, description: 'Defaults to every scope the server offers' }
+        redirect_uri: { type: string, description: 'The loopback address the browser is sent to: http on 127.0.0.1 or [::1] with a port. Required unless the server is open' }
+        client_id: { type: string, description: 'A pre-registered client id' }
+        client_secret: { type: string, writeOnly: true, description: 'The secret of the pre-registered client; kept in auth.toml' }
+        allow_insecure_transport: { type: boolean, description: 'Reach the MCP endpoint over plain http on any host, or https with a certificate that does not verify; written to the entry. OAuth endpoints are never relaxed' }
+    ConnectorReconnect:
+      type: object
+      properties:
+        scopes: { type: array, items: { type: string }, description: "Defaults to the connector's scopes" }
+        redirect_uri: { type: string, description: 'As in create; required unless the server is open' }
+        client_secret: { type: string, writeOnly: true, description: "Replaces the pre-registered client's secret; required when the stored one belongs to another issuer or client" }
+    ConnectorInspect:
+      type: object
+      required: [url]
+      properties:
+        url: { type: string, description: 'The MCP endpoint: https, or http on a loopback host' }
+    ConnectorInspection:
+      type: object
+      description: What a server told an unauthenticated client. Server-provided strings are untrusted; nothing of it is stored.
+      required: [open, tools]
+      properties:
+        open: { type: boolean, description: '`initialize` and `tools/list` worked without a token' }
+        server_name: { type: string, description: 'Of an open server' }
+        server_version: { type: string, description: 'Of an open server' }
+        tools: { type: array, items: { $ref: '#/components/schemas/ConnectorTool' }, description: 'Of an open server, by name, as a create would cache them; empty for a protected one' }
+        authorization_servers: { type: array, items: { type: string }, description: 'The https ones the server lists, up to a cap; the first is the one used' }
+        scopes_supported: { type: array, items: { type: string }, description: 'As the server publishes them' }
+        auth_metadata: { $ref: '#/components/schemas/ConnectorAuthMetadata' }
+        identity: { type: string, description: '`cimd`, `dcr`, or `pre-registered` when the authorization server offers neither and a create needs a client id; absent for an open server' }
+    ConnectorCode:
+      type: object
+      required: [code, state]
+      properties:
+        code: { type: string }
+        state: { type: string }
+        iss: { type: string, description: 'The iss parameter of the redirect, when it has one (RFC 9207)' }

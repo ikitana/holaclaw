@@ -1,0 +1,18 @@
+{
+  "model": "qwen3.8-27b-free",
+  "scenario": "multi-turn-memory",
+  "run": 1,
+  "steps": [
+    {
+      "step": 1,
+      "digest": "2c0236ef78e795e420968063763d8aa89719b5a94681a787de1590834b52c45a",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 871,
+        "last_message": "My bike is called Pepino. Just say ok."
+      },
+      "error_kind": "rate_limit"
+    }
+  ]
+}

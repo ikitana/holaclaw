@@ -1,0 +1,23 @@
+name = "tool-args"
+description = "Typed arguments: an integer count and an enum, both taken from the user."
+max_steps = 4
+
+[[tools]]
+name = "brew"
+description = "Brew tea. size is 1-4 cups, kind is one of the listed teas."
+parameters = '''{"type":"object","properties":{"size":{"type":"integer","minimum":1,"maximum":4},"kind":{"type":"string","enum":["green","black","rooibos"]}},"required":["size","kind"]}'''
+risk = "write"
+
+  [[tools.responses]]
+  text = "Brewing started."
+
+[[turns]]
+user = "Brew 3 cups of rooibos, please."
+
+  [turns.expect]
+  max_steps = 3
+  stop = "final"
+
+    [[turns.expect.tool_calls]]
+    name = "brew"
+    args = { size = 3, kind = "rooibos" }

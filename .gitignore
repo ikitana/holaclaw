@@ -1,0 +1,23 @@
+# Env files
+.env
+.env.local
+
+# Go caches (see flake.nix shellHook)
+.go/
+
+# Secrets file written by the daemon
+auth.toml
+auth.toml.lock
+.auth-*.toml
+
+# Build output
+bin/
+
+# Claude Code worktrees
+.claude/worktrees/
+
+# Release output
+dist/
+
+# Nix
+/result

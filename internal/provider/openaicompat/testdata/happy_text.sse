@@ -1,0 +1,14 @@
+: ping
+
+data: {"id":"1","choices":[{"index":0,"delta":{"role":"assistant","content":"Hola"}}]}
+
+data: {"id":"1","choices":[{"index":0,"delta":{"content":", "},"finish_reason":null}]}
+
+data: {"id":"1","choices":[{"index":0,"delta":{"content":"Angel","reasoning_content":"ignored"}}]}
+
+data: {"id":"1","choices":[{"index":0,"delta":{},"finish_reason":"stop"}]}
+
+data: {"id":"1","choices":[],"usage":{"prompt_tokens":11,"completion_tokens":3}}
+
+data: [DONE]
+

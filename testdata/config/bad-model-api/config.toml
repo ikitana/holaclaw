@@ -1,0 +1,29 @@
+version = 1
+
+[providers.openrouter]
+type     = "openai-compatible"
+base_url = "https://openrouter.ai/api/v1"
+
+[models.gemma]
+provider = "openrouter"
+id       = "gemma4:e2b"
+context  = 8192
+
+# A decisions model with no endpoint: there is no standard path to derive one.
+[models.jev]
+provider = "openrouter"
+id       = "~typesafe/jev-latest"
+api      = "decisions"
+
+# A relative endpoint is not a usable override.
+[models.jev-relative]
+provider = "openrouter"
+id       = "~typesafe/jev-latest"
+api      = "decisions"
+url      = "/api/alpha/decisions"
+
+# An image model needs no context window; this one must produce no problem.
+[models.muse]
+provider = "openrouter"
+id       = "meta/muse-image"
+api      = "images"

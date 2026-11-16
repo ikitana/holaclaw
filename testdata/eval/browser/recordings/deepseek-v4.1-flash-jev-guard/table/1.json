@@ -1,0 +1,43 @@
+{
+  "model": "deepseek-v4.1-flash+jev-guard",
+  "scenario": "table",
+  "run": 1,
+  "steps": [
+    {
+      "step": 1,
+      "digest": "c8f13f2cfe7e9fa41c4ca1b7c401b1263b715570f95230f3f797a3b70385214b",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 966,
+        "last_message": "… 3 of the city table and report which city there has the largest population.\nstart here: http://127.0.0.1:46681/table/?run=deepseek-v4.1-flash-jev-guard-table-1"
+      },
+      "response": {
+        "text": "{\"start_url\":\"http://127.0.0.1:46681/table/?run=deepseek-v4.1-flash-jev-guard-table-1\",\"steps\":[{\"kind\":\"click\",\"target\":\"the pagination link for page 3\",\"text\":\"\",\"url\":\"\",\"submit\":false,\"expect\":\"Page 3 of the city table is displayed.\"}],\"extract\":\"the name and population of the city on page 3 with the largest population\"}",
+        "finish": "stop",
+        "usage": {
+          "PromptTokens": 319,
+          "CompletionTokens": 215
+        }
+      }
+    },
+    {
+      "step": 2,
+      "digest": "d3706e206a580eb5b7981c3974ad9592658088e67b6691199ed41ad35abd41c2",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 352,
+        "last_message": "…Oakhaven 133,050 Windmere 72,600 Farrow Point 101,900 Ellsworth 64,400 Copperfield 118,750 Nettlebrook 55,200 Highstile 143,300 Previous 1 2 3 4 Next\n\n\u003c\u003c/page\u003e\u003e"
+      },
+      "response": {
+        "text": "Rivermouth — 4,210,000",
+        "finish": "stop",
+        "usage": {
+          "PromptTokens": 348,
+          "CompletionTokens": 58
+        }
+      }
+    }
+  ]
+}

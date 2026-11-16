@@ -1,0 +1,8 @@
+version = 1
+tools = ["memory"]
+
+[models]
+chat = "gemma"
+
+[providers.oops]
+type = "codex"

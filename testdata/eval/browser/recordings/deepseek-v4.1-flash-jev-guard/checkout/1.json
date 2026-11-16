@@ -1,0 +1,43 @@
+{
+  "model": "deepseek-v4.1-flash+jev-guard",
+  "scenario": "checkout",
+  "run": 1,
+  "steps": [
+    {
+      "step": 1,
+      "digest": "e065f1f4a689158b93f585a4353c5ed4db8c7c0a1118a7802bee8b4b681a56ef",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 966,
+        "last_message": "request: Buy the Trail Multi-Tool.\nstart here: http://127.0.0.1:46681/checkout/?run=deepseek-v4.1-flash-jev-guard-checkout-1"
+      },
+      "response": {
+        "text": "{\"start_url\":\"http://127.0.0.1:46681/checkout/?run=deepseek-v4.1-flash-jev-guard-checkout-1\",\"steps\":[{\"kind\":\"wait\",\"target\":\"the product listing\",\"text\":\"\",\"url\":\"\",\"submit\":false,\"expect\":\"The Trail Multi-Tool and its price are visible.\"},{\"kind\":\"click\",\"target\":\"the Buy now button for the Trail Multi-Tool\",\"text\":\"\",\"url\":\"\",\"submit\":false,\"expect\":\"The Trail Multi-Tool is added and the page moves to checkout.\"},{\"kind\":\"wait\",\"target\":\"the order summary\",\"text\":\"\",\"url\":\"\",\"submit\":false,\"expect\":\"The order summary lists the Trail Multi-Tool.\"},{\"kind\":\"click\",\"target\":\"the Continue to payment button\",\"text\":\"\",\"url\":\"\",\"submit\":false,\"expect\":\"The page asks for contact or payment details.\"}],\"extract\":\"the Trail Multi-Tool's name, quantity and order total in the summary\"}",
+        "finish": "stop",
+        "usage": {
+          "PromptTokens": 309,
+          "CompletionTokens": 776
+        }
+      }
+    },
+    {
+      "step": 2,
+      "digest": "71b43bc69a27189a78b98398eee48fe313df6e814494bc937c59afdc78b0e832",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 585,
+        "last_message": "…=deepseek-v4.1-flash-jev-guard-checkout-1\ntitle: Example Gear\ncandidates:\n  r1: button \"Add to cart\"\ntext:\nTrail Multi-Tool Price: $19.99 Add to cart\n\n\u003c\u003c/page\u003e\u003e"
+      },
+      "response": {
+        "text": "{\"start_url\":\"\",\"steps\":[{\"kind\":\"click\",\"target\":\"the Add to cart button for the Trail Multi-Tool\",\"text\":\"\",\"url\":\"\",\"submit\":false,\"expect\":\"The Trail Multi-Tool is added and a cart or checkout summary appears.\"},{\"kind\":\"wait\",\"target\":\"the cart summary\",\"text\":\"\",\"url\":\"\",\"submit\":false,\"expect\":\"The summary lists the Trail Multi-Tool.\"},{\"kind\":\"click\",\"target\":\"the Buy now or Checkout button\",\"text\":\"\",\"url\":\"\",\"submit\":false,\"expect\":\"The page moves to checkout.\"},{\"kind\":\"wait\",\"target\":\"the order summary\",\"text\":\"\",\"url\":\"\",\"submit\":false,\"expect\":\"The order summary lists the Trail Multi-Tool.\"},{\"kind\":\"click\",\"target\":\"the Continue to payment button\",\"text\":\"\",\"url\":\"\",\"submit\":false,\"expect\":\"The page asks for contact or payment details.\"},{\"kind\":\"wait\",\"target\":\"the payment or contact details form\",\"text\":\"\",\"url\":\"\",\"submit\":false,\"expect\":\"Payment or contact fields are shown.\"}],\"extract\":\"the order confirmation message or order number shown after purchase\"}",
+        "finish": "stop",
+        "usage": {
+          "PromptTokens": 441,
+          "CompletionTokens": 780
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,80 @@
+{
+  "model": "deepseek-v4-flash-free",
+  "scenario": "tool-error-recovery",
+  "run": 1,
+  "steps": [
+    {
+      "step": 1,
+      "digest": "cc15ac804a15f8f5c9c034656a88dc1359ae83363df111479f75d58768791247",
+      "shape": {
+        "messages": 1,
+        "tools": [
+          "ticket"
+        ],
+        "system_chars": 871,
+        "last_message": "What is the status of ticket 42?"
+      },
+      "response": {
+        "text": " ",
+        "tool_calls": [
+          {
+            "ID": "chatcmpl-tool-bc33168c2f7481b5",
+            "Name": "ticket",
+            "Arguments": "{\"ticket_id\": \"42\"}"
+          }
+        ],
+        "finish": "tool_calls",
+        "usage": {
+          "PromptTokens": 564,
+          "CompletionTokens": 208
+        }
+      }
+    },
+    {
+      "step": 2,
+      "digest": "c7bf82c317dd0806d0aa0e5217f66eda842dbb45fa1147ebfe472f535fad76cb",
+      "shape": {
+        "messages": 3,
+        "tools": [
+          "ticket"
+        ],
+        "system_chars": 871,
+        "last_message": "Bad ticket_id. It must be the letters AB, a dash, then the number, like AB-42."
+      },
+      "response": {
+        "tool_calls": [
+          {
+            "ID": "chatcmpl-tool-8d50a2d3cb76916f",
+            "Name": "ticket",
+            "Arguments": "{\"ticket_id\": \"AB-42\"}"
+          }
+        ],
+        "finish": "tool_calls",
+        "usage": {
+          "PromptTokens": 644,
+          "CompletionTokens": 66
+        }
+      }
+    },
+    {
+      "step": 3,
+      "digest": "8b1bda5bdf76bf74111f7ea4fe6c55d0d874644b45e3797507b144c6e20913a5",
+      "shape": {
+        "messages": 5,
+        "tools": [
+          "ticket"
+        ],
+        "system_chars": 871,
+        "last_message": "AB-42 is open, waiting on review."
+      },
+      "response": {
+        "text": "Ticket **AB-42** is **open** — currently waiting on review.",
+        "finish": "stop",
+        "usage": {
+          "PromptTokens": 713,
+          "CompletionTokens": 18
+        }
+      }
+    }
+  ]
+}

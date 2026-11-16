@@ -1,0 +1,60 @@
+{
+  "model": "deepseek-v4.1-flash-baseline",
+  "scenario": "popup",
+  "run": 1,
+  "steps": [
+    {
+      "step": 1,
+      "digest": "f09ad6f24432bb26a48ca7179d7cf4db35f913c899ba2dd378e3f7713681110f",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 702,
+        "last_message": "…lash-baseline-popup-1\ntitle: Example Service\n\nelements:\n- ref r1: button \"Open terms\"\n- ref r2: link \"Continue\"\n\npage text:\nExample Service Open terms Continue\n"
+      },
+      "response": {
+        "text": "{\"action\":\"click\",\"ref\":\"r1\"}",
+        "finish": "stop",
+        "usage": {
+          "PromptTokens": 300,
+          "CompletionTokens": 33
+        }
+      }
+    },
+    {
+      "step": 2,
+      "digest": "7601646e4e11497a46d0f932356427789f3f44a0d5e9a94f169ba15ebc0c51fa",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 702,
+        "last_message": "…ms of service Example Service is provided as-is, for demonstration purposes only, with\nno warranty of any kind. By using it you agree to nothing in particular.\n"
+      },
+      "response": {
+        "finish": "length",
+        "usage": {
+          "PromptTokens": 312,
+          "CompletionTokens": 200
+        }
+      }
+    },
+    {
+      "step": 3,
+      "digest": "7601646e4e11497a46d0f932356427789f3f44a0d5e9a94f169ba15ebc0c51fa",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 702,
+        "last_message": "…ms of service Example Service is provided as-is, for demonstration purposes only, with\nno warranty of any kind. By using it you agree to nothing in particular.\n"
+      },
+      "response": {
+        "text": "{\"action\":\"done\",\"answer\":\"Example Service is provided as-is, for demonstration purposes only, with no warranty of any kind.\"}",
+        "finish": "stop",
+        "usage": {
+          "PromptTokens": 313,
+          "CompletionTokens": 155
+        }
+      }
+    }
+  ]
+}

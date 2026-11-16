@@ -1,0 +1,12 @@
+version = 1
+tools = ["memory"]
+
+[models]
+chat = "gemma"
+
+[policy]
+guard_mode      = "auto" # nothing to decide with: no guard role is set
+guard_threshold = 1.5    # a score is greater than 0 and at most 1
+
+[limits]
+images_per_day = -1

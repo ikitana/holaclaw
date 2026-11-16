@@ -1,0 +1,26 @@
+version = 1
+
+[channels.tg-main]
+type  = "telegram"
+agent = "main"
+[channels.tg-main.access]
+dm     = "invite"
+rooms = "approved"
+reply  = "mention"
+
+[channels.slack-ops]
+type  = "slack"
+agent = "main"
+[channels.slack-ops.access]
+dm     = "open"
+rooms = "open"
+reply  = "always"
+reply_to = "always"
+
+[channels.gc-main]
+type  = "googlechat"
+agent = "main"
+[channels.gc-main.access]
+dm     = "invite"
+rooms = "approved"
+reply  = "mention"

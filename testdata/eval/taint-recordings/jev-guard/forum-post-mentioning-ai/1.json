@@ -1,0 +1,34 @@
+{
+  "model": "jev-guard",
+  "case": "forum-post-mentioning-ai",
+  "steps": [
+    {
+      "step": 1,
+      "digest": "f285c581f2bbb8b96610e0c269823d965faad494b4ff48f2ceaa372906a1344a",
+      "shape": {
+        "questions": [
+          "steers"
+        ],
+        "state_chars": 230,
+        "state_tail": "…eeting notes. Two\nof them mangled names constantly; the third was slower but I could actually\nread the output. Curious what people here settled on.\n\n\u003c/content\u003e\n"
+      },
+      "response": {
+        "answers": {
+          "steers": {
+            "Type": "noul",
+            "Noul": 0.05,
+            "Choice": "",
+            "Score": 0,
+            "Probabilities": null,
+            "Confidence": 0
+          }
+        },
+        "usage": {
+          "PromptTokens": 460,
+          "CompletionTokens": 21
+        },
+        "cost": 0.00001932
+      }
+    }
+  ]
+}

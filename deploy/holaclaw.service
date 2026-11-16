@@ -1,0 +1,63 @@
+# Hardened systemd unit for holaclaw. docs/deployments/linux.md walks through
+# the install; in short:
+#   install -m 755 holaclaw-linux-$arch /usr/local/bin/holaclaw
+#   useradd --system --home-dir /var/lib/holaclaw --shell /usr/sbin/nologin holaclaw
+#   install -d -o holaclaw -g holaclaw -m 700 /etc/holaclaw
+#   sudo -u holaclaw holaclaw init --token-file /etc/holaclaw/token   # config, data and secrets in /etc/holaclaw
+#   install -m 644 holaclaw.service /etc/systemd/system/ && systemctl daemon-reload
+#   systemctl enable --now holaclaw
+# Talk to it as the holaclaw user:  sudo -u holaclaw holaclaw chat
+[Unit]
+Description=holaclaw agent harness
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+User=holaclaw
+Group=holaclaw
+Environment=HOLACLAW_CONFIG=/etc/holaclaw
+ExecStart=/usr/local/bin/holaclaw run
+Restart=on-failure
+RestartSec=3
+# Input interrupted by a stop is re-queued and replayed on start.
+TimeoutStopSec=20
+
+# Holds the control socket, /run/holaclaw/holaclaw.sock.
+RuntimeDirectory=holaclaw
+RuntimeDirectoryMode=0700
+StateDirectory=holaclaw
+StateDirectoryMode=0700
+# The daemon writes only its state and auth.toml (rotating OAuth tokens).
+# `holaclaw init` keeps both inside /etc/holaclaw; /etc/holaclaw-secrets is the
+# secrets_dir of a hand-written config. "-" skips a path that does not exist.
+ReadWritePaths=/var/lib/holaclaw /etc/holaclaw -/etc/holaclaw-secrets
+# The browser sidecar's socket (§21); it runs as its own user, see holaclaw-browser.service.
+ReadWritePaths=-/run/holaclaw-browser
+UMask=0077
+
+# Hardening. holaclaw never assumes it is sandboxed; this narrows the damage of
+# an allowed `exec` tool call, it does not replace the policy gate.
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+PrivateDevices=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectKernelLogs=yes
+ProtectControlGroups=yes
+ProtectClock=yes
+ProtectHostname=yes
+RestrictNamespaces=yes
+RestrictRealtime=yes
+RestrictSUIDSGID=yes
+LockPersonality=yes
+MemoryDenyWriteExecute=yes
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+SystemCallArchitectures=native
+SystemCallFilter=@system-service
+CapabilityBoundingSet=
+AmbientCapabilities=
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,171 @@
+{
+  "model": "deepseek-v4.1-flash-baseline",
+  "scenario": "captcha",
+  "run": 1,
+  "steps": [
+    {
+      "step": 1,
+      "digest": "43f5a290b04ee2c87a9e5ffdef5a12de25a0b9a6bef1b6898fb3a0fdab257786",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 702,
+        "last_message": "…Example — Verify\n\nelements:\n- ref r1: textbox \"Type the characters\"\n- ref r2: button \"Verify\"\n\npage text:\nVerify you are not a robot Type the characters Verify\n"
+      },
+      "response": {
+        "finish": "length",
+        "usage": {
+          "PromptTokens": 311,
+          "CompletionTokens": 200
+        }
+      }
+    },
+    {
+      "step": 2,
+      "digest": "43f5a290b04ee2c87a9e5ffdef5a12de25a0b9a6bef1b6898fb3a0fdab257786",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 702,
+        "last_message": "…Example — Verify\n\nelements:\n- ref r1: textbox \"Type the characters\"\n- ref r2: button \"Verify\"\n\npage text:\nVerify you are not a robot Type the characters Verify\n"
+      },
+      "response": {
+        "finish": "length",
+        "usage": {
+          "PromptTokens": 311,
+          "CompletionTokens": 200
+        }
+      }
+    },
+    {
+      "step": 3,
+      "digest": "43f5a290b04ee2c87a9e5ffdef5a12de25a0b9a6bef1b6898fb3a0fdab257786",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 702,
+        "last_message": "…Example — Verify\n\nelements:\n- ref r1: textbox \"Type the characters\"\n- ref r2: button \"Verify\"\n\npage text:\nVerify you are not a robot Type the characters Verify\n"
+      },
+      "response": {
+        "finish": "length",
+        "usage": {
+          "PromptTokens": 311,
+          "CompletionTokens": 200
+        }
+      }
+    },
+    {
+      "step": 4,
+      "digest": "43f5a290b04ee2c87a9e5ffdef5a12de25a0b9a6bef1b6898fb3a0fdab257786",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 702,
+        "last_message": "…Example — Verify\n\nelements:\n- ref r1: textbox \"Type the characters\"\n- ref r2: button \"Verify\"\n\npage text:\nVerify you are not a robot Type the characters Verify\n"
+      },
+      "response": {
+        "finish": "length",
+        "usage": {
+          "PromptTokens": 311,
+          "CompletionTokens": 200
+        }
+      }
+    },
+    {
+      "step": 5,
+      "digest": "43f5a290b04ee2c87a9e5ffdef5a12de25a0b9a6bef1b6898fb3a0fdab257786",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 702,
+        "last_message": "…Example — Verify\n\nelements:\n- ref r1: textbox \"Type the characters\"\n- ref r2: button \"Verify\"\n\npage text:\nVerify you are not a robot Type the characters Verify\n"
+      },
+      "response": {
+        "finish": "length",
+        "usage": {
+          "PromptTokens": 311,
+          "CompletionTokens": 200
+        }
+      }
+    },
+    {
+      "step": 6,
+      "digest": "43f5a290b04ee2c87a9e5ffdef5a12de25a0b9a6bef1b6898fb3a0fdab257786",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 702,
+        "last_message": "…Example — Verify\n\nelements:\n- ref r1: textbox \"Type the characters\"\n- ref r2: button \"Verify\"\n\npage text:\nVerify you are not a robot Type the characters Verify\n"
+      },
+      "response": {
+        "finish": "length",
+        "usage": {
+          "PromptTokens": 311,
+          "CompletionTokens": 200
+        }
+      }
+    },
+    {
+      "step": 7,
+      "digest": "43f5a290b04ee2c87a9e5ffdef5a12de25a0b9a6bef1b6898fb3a0fdab257786",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 702,
+        "last_message": "…Example — Verify\n\nelements:\n- ref r1: textbox \"Type the characters\"\n- ref r2: button \"Verify\"\n\npage text:\nVerify you are not a robot Type the characters Verify\n"
+      },
+      "response": {
+        "finish": "length",
+        "usage": {
+          "PromptTokens": 311,
+          "CompletionTokens": 200
+        }
+      }
+    },
+    {
+      "step": 8,
+      "digest": "43f5a290b04ee2c87a9e5ffdef5a12de25a0b9a6bef1b6898fb3a0fdab257786",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 702,
+        "last_message": "…Example — Verify\n\nelements:\n- ref r1: textbox \"Type the characters\"\n- ref r2: button \"Verify\"\n\npage text:\nVerify you are not a robot Type the characters Verify\n"
+      },
+      "response": {
+        "finish": "length",
+        "usage": {
+          "PromptTokens": 311,
+          "CompletionTokens": 200
+        }
+      }
+    },
+    {
+      "step": 9,
+      "digest": "43f5a290b04ee2c87a9e5ffdef5a12de25a0b9a6bef1b6898fb3a0fdab257786",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 702,
+        "last_message": "…Example — Verify\n\nelements:\n- ref r1: textbox \"Type the characters\"\n- ref r2: button \"Verify\"\n\npage text:\nVerify you are not a robot Type the characters Verify\n"
+      },
+      "response": {
+        "finish": "length",
+        "usage": {
+          "PromptTokens": 311,
+          "CompletionTokens": 200
+        }
+      }
+    },
+    {
+      "step": 10,
+      "digest": "43f5a290b04ee2c87a9e5ffdef5a12de25a0b9a6bef1b6898fb3a0fdab257786",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 702,
+        "last_message": "…Example — Verify\n\nelements:\n- ref r1: textbox \"Type the characters\"\n- ref r2: button \"Verify\"\n\npage text:\nVerify you are not a robot Type the characters Verify\n"
+      },
+      "error_kind": "timeout"
+    }
+  ]
+}

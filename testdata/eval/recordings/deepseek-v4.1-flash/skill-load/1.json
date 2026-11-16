@@ -1,0 +1,55 @@
+{
+  "model": "deepseek-v4.1-flash",
+  "scenario": "skill-load",
+  "run": 1,
+  "steps": [
+    {
+      "step": 1,
+      "digest": "fb5e1c1b12f31f87c0a910da8cb5431ef5856c0825929d71b8b4532f7c788ba8",
+      "shape": {
+        "messages": 1,
+        "tools": [
+          "skill.load",
+          "weather"
+        ],
+        "system_chars": 1223,
+        "last_message": "Turn these meeting notes into action items: Priya drafts the budget by Friday. Tomasz books the venue next week. Everyone reviews the agenda before Monday."
+      },
+      "response": {
+        "tool_calls": [
+          {
+            "ID": "call_01a0d304a401704da5a75bbf",
+            "Name": "skill.load",
+            "Arguments": "{\"name\":\"meeting-notes\"}"
+          }
+        ],
+        "finish": "tool_calls",
+        "usage": {
+          "PromptTokens": 658,
+          "CompletionTokens": 42
+        }
+      }
+    },
+    {
+      "step": 2,
+      "digest": "099f685a44b14856ea1b4663067c776ded9d2560000a9b09a9e92e33c756c405",
+      "shape": {
+        "messages": 3,
+        "tools": [
+          "skill.load",
+          "weather"
+        ],
+        "system_chars": 1223,
+        "last_message": "… per action item: \"- \u003cowner\u003e: \u003ctask\u003e (due \u003cwhen\u003e)\".\n2. Keep the owner's name exactly as written in the notes.\n3. End with the line \"Next sync: to be scheduled\"."
+      },
+      "response": {
+        "text": "- Priya: draft the budget (due Friday)\n- Tomasz: book the venue (due next week)\n- Everyone: review the agenda (due before Monday)\n\nNext sync: to be scheduled",
+        "finish": "stop",
+        "usage": {
+          "PromptTokens": 788,
+          "CompletionTokens": 53
+        }
+      }
+    }
+  ]
+}

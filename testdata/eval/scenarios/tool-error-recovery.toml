@@ -1,0 +1,29 @@
+name = "tool-error-recovery"
+description = "The first call fails with an error naming the argument to fix; the model retries."
+max_steps = 6
+
+[[tools]]
+name = "ticket"
+description = "Status of a ticket. ticket_id looks like AB-42."
+parameters = '''{"type":"object","properties":{"ticket_id":{"type":"string"}},"required":["ticket_id"]}'''
+risk = "read"
+
+  [[tools.responses]]
+  when = { ticket_id = "AB-42" }
+  text = "AB-42 is open, waiting on review."
+
+  [[tools.responses]]
+  is_error = true
+  text = "Bad ticket_id. It must be the letters AB, a dash, then the number, like AB-42."
+
+[[turns]]
+user = "What is the status of ticket 42?"
+
+  [turns.expect]
+  max_steps = 5
+  stop = "final"
+  reply_contains = ["open"]
+
+    [[turns.expect.tool_calls_any_order]]
+    name = "ticket"
+    args = { ticket_id = "AB-42" }

@@ -1,0 +1,1050 @@
+{
+  "model": "deepseek-v4.1-flash-baseline",
+  "scenario": "login",
+  "run": 1,
+  "steps": [
+    {
+      "step": 1,
+      "digest": "60d4d16f2acaea6a1b956a7298184d40394e7a6d478fd695d82547bc07d9386c",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 702,
+        "last_message": "…-1\ntitle: Sign in\n\nelements:\n- ref r1: textbox \"Username\"\n- ref r2: textbox \"Password\"\n- ref r3: button \"Sign in\"\n\npage text:\nSign in Username Password Sign in\n"
+      },
+      "response": {
+        "finish": "length",
+        "usage": {
+          "PromptTokens": 316,
+          "CompletionTokens": 200
+        }
+      }
+    },
+    {
+      "step": 2,
+      "digest": "60d4d16f2acaea6a1b956a7298184d40394e7a6d478fd695d82547bc07d9386c",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 702,
+        "last_message": "…-1\ntitle: Sign in\n\nelements:\n- ref r1: textbox \"Username\"\n- ref r2: textbox \"Password\"\n- ref r3: button \"Sign in\"\n\npage text:\nSign in Username Password Sign in\n"
+      },
+      "response": {
+        "text": "{\"action\":\"type\",\"ref\":\"r1\",\"text\":\"demo\"}",
+        "finish": "stop",
+        "usage": {
+          "PromptTokens": 316,
+          "CompletionTokens": 120
+        }
+      }
+    },
+    {
+      "step": 3,
+      "digest": "0dfdf26b9c10d55280162fb338c75bab30effbe134c9846bbf533f8f91274940",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 702,
+        "last_message": "…n in\n\nelements:\n- ref r1: textbox \"Username\" value \"demo\"\n- ref r2: textbox \"Password\"\n- ref r3: button \"Sign in\"\n\npage text:\nSign in Username Password Sign in\n"
+      },
+      "response": {
+        "text": "{\"action\":\"type\",\"ref\":\"r2\",\"text\":\"demo\"}",
+        "finish": "stop",
+        "usage": {
+          "PromptTokens": 320,
+          "CompletionTokens": 49
+        }
+      }
+    },
+    {
+      "step": 4,
+      "digest": "399a9b887587a674282ebb4a77804d171d28ec8006ea2cf3e6087dea569329b4",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 702,
+        "last_message": "…s:\n- ref r1: textbox \"Username\" value \"demo\"\n- ref r2: textbox \"Password\" value \"••••\"\n- ref r3: button \"Sign in\"\n\npage text:\nSign in Username Password Sign in\n"
+      },
+      "response": {
+        "text": "{\"action\":\"click\",\"ref\":\"r3\"}",
+        "finish": "stop",
+        "usage": {
+          "PromptTokens": 325,
+          "CompletionTokens": 22
+        }
+      }
+    },
+    {
+      "step": 5,
+      "digest": "84c5df63c958ee243819977022c1e1fb3ac9af0a34d8a4ba606c8217a83c3ddf",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 702,
+        "last_message": "…v4.1-flash-baseline-login-1 is ready — billing@example.test • Weekly digest: nothing new — digest@example.test • Welcome to Example Mail — welcome@example.test\n"
+      },
+      "response": {
+        "finish": "length",
+        "usage": {
+          "PromptTokens": 330,
+          "CompletionTokens": 200
+        }
+      }
+    },
+    {
+      "step": 6,
+      "digest": "84c5df63c958ee243819977022c1e1fb3ac9af0a34d8a4ba606c8217a83c3ddf",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 702,
+        "last_message": "…v4.1-flash-baseline-login-1 is ready — billing@example.test • Weekly digest: nothing new — digest@example.test • Welcome to Example Mail — welcome@example.test\n"
+      },
+      "response": {
+        "finish": "length",
+        "usage": {
+          "PromptTokens": 330,
+          "CompletionTokens": 200
+        }
+      }
+    },
+    {
+      "step": 7,
+      "digest": "84c5df63c958ee243819977022c1e1fb3ac9af0a34d8a4ba606c8217a83c3ddf",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 702,
+        "last_message": "…v4.1-flash-baseline-login-1 is ready — billing@example.test • Weekly digest: nothing new — digest@example.test • Welcome to Example Mail — welcome@example.test\n"
+      },
+      "response": {
+        "finish": "length",
+        "usage": {
+          "PromptTokens": 330,
+          "CompletionTokens": 200
+        }
+      }
+    },
+    {
+      "step": 8,
+      "digest": "84c5df63c958ee243819977022c1e1fb3ac9af0a34d8a4ba606c8217a83c3ddf",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 702,
+        "last_message": "…v4.1-flash-baseline-login-1 is ready — billing@example.test • Weekly digest: nothing new — digest@example.test • Welcome to Example Mail — welcome@example.test\n"
+      },
+      "response": {
+        "text": "{\"action\":\"scroll\"}",
+        "finish": "stop",
+        "usage": {
+          "PromptTokens": 330,
+          "CompletionTokens": 99
+        }
+      }
+    },
+    {
+      "step": 9,
+      "digest": "84c5df63c958ee243819977022c1e1fb3ac9af0a34d8a4ba606c8217a83c3ddf",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 702,
+        "last_message": "…v4.1-flash-baseline-login-1 is ready — billing@example.test • Weekly digest: nothing new — digest@example.test • Welcome to Example Mail — welcome@example.test\n"
+      },
+      "response": {
+        "finish": "length",
+        "usage": {
+          "PromptTokens": 330,
+          "CompletionTokens": 200
+        }
+      }
+    },
+    {
+      "step": 10,
+      "digest": "84c5df63c958ee243819977022c1e1fb3ac9af0a34d8a4ba606c8217a83c3ddf",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 702,
+        "last_message": "…v4.1-flash-baseline-login-1 is ready — billing@example.test • Weekly digest: nothing new — digest@example.test • Welcome to Example Mail — welcome@example.test\n"
+      },
+      "response": {
+        "text": "{\"action\":\"scroll\"}",
+        "finish": "stop",
+        "usage": {
+          "PromptTokens": 330,
+          "CompletionTokens": 155
+        }
+      }
+    },
+    {
+      "step": 11,
+      "digest": "84c5df63c958ee243819977022c1e1fb3ac9af0a34d8a4ba606c8217a83c3ddf",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 702,
+        "last_message": "…v4.1-flash-baseline-login-1 is ready — billing@example.test • Weekly digest: nothing new — digest@example.test • Welcome to Example Mail — welcome@example.test\n"
+      },
+      "response": {
+        "finish": "length",
+        "usage": {
+          "PromptTokens": 330,
+          "CompletionTokens": 200
+        }
+      }
+    },
+    {
+      "step": 12,
+      "digest": "84c5df63c958ee243819977022c1e1fb3ac9af0a34d8a4ba606c8217a83c3ddf",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 702,
+        "last_message": "…v4.1-flash-baseline-login-1 is ready — billing@example.test • Weekly digest: nothing new — digest@example.test • Welcome to Example Mail — welcome@example.test\n"
+      },
+      "response": {
+        "finish": "length",
+        "usage": {
+          "PromptTokens": 330,
+          "CompletionTokens": 200
+        }
+      }
+    },
+    {
+      "step": 13,
+      "digest": "84c5df63c958ee243819977022c1e1fb3ac9af0a34d8a4ba606c8217a83c3ddf",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 702,
+        "last_message": "…v4.1-flash-baseline-login-1 is ready — billing@example.test • Weekly digest: nothing new — digest@example.test • Welcome to Example Mail — welcome@example.test\n"
+      },
+      "response": {
+        "finish": "length",
+        "usage": {
+          "PromptTokens": 330,
+          "CompletionTokens": 200
+        }
+      }
+    },
+    {
+      "step": 14,
+      "digest": "84c5df63c958ee243819977022c1e1fb3ac9af0a34d8a4ba606c8217a83c3ddf",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 702,
+        "last_message": "…v4.1-flash-baseline-login-1 is ready — billing@example.test • Weekly digest: nothing new — digest@example.test • Welcome to Example Mail — welcome@example.test\n"
+      },
+      "response": {
+        "finish": "length",
+        "usage": {
+          "PromptTokens": 330,
+          "CompletionTokens": 200
+        }
+      }
+    },
+    {
+      "step": 15,
+      "digest": "84c5df63c958ee243819977022c1e1fb3ac9af0a34d8a4ba606c8217a83c3ddf",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 702,
+        "last_message": "…v4.1-flash-baseline-login-1 is ready — billing@example.test • Weekly digest: nothing new — digest@example.test • Welcome to Example Mail — welcome@example.test\n"
+      },
+      "response": {
+        "finish": "length",
+        "usage": {
+          "PromptTokens": 330,
+          "CompletionTokens": 200
+        }
+      }
+    },
+    {
+      "step": 16,
+      "digest": "84c5df63c958ee243819977022c1e1fb3ac9af0a34d8a4ba606c8217a83c3ddf",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 702,
+        "last_message": "…v4.1-flash-baseline-login-1 is ready — billing@example.test • Weekly digest: nothing new — digest@example.test • Welcome to Example Mail — welcome@example.test\n"
+      },
+      "response": {
+        "finish": "length",
+        "usage": {
+          "PromptTokens": 330,
+          "CompletionTokens": 200
+        }
+      }
+    },
+    {
+      "step": 17,
+      "digest": "84c5df63c958ee243819977022c1e1fb3ac9af0a34d8a4ba606c8217a83c3ddf",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 702,
+        "last_message": "…v4.1-flash-baseline-login-1 is ready — billing@example.test • Weekly digest: nothing new — digest@example.test • Welcome to Example Mail — welcome@example.test\n"
+      },
+      "response": {
+        "finish": "length",
+        "usage": {
+          "PromptTokens": 330,
+          "CompletionTokens": 200
+        }
+      }
+    },
+    {
+      "step": 18,
+      "digest": "84c5df63c958ee243819977022c1e1fb3ac9af0a34d8a4ba606c8217a83c3ddf",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 702,
+        "last_message": "…v4.1-flash-baseline-login-1 is ready — billing@example.test • Weekly digest: nothing new — digest@example.test • Welcome to Example Mail — welcome@example.test\n"
+      },
+      "response": {
+        "finish": "length",
+        "usage": {
+          "PromptTokens": 330,
+          "CompletionTokens": 200
+        }
+      }
+    },
+    {
+      "step": 19,
+      "digest": "84c5df63c958ee243819977022c1e1fb3ac9af0a34d8a4ba606c8217a83c3ddf",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 702,
+        "last_message": "…v4.1-flash-baseline-login-1 is ready — billing@example.test • Weekly digest: nothing new — digest@example.test • Welcome to Example Mail — welcome@example.test\n"
+      },
+      "response": {
+        "finish": "length",
+        "usage": {
+          "PromptTokens": 330,
+          "CompletionTokens": 200
+        }
+      }
+    },
+    {
+      "step": 20,
+      "digest": "84c5df63c958ee243819977022c1e1fb3ac9af0a34d8a4ba606c8217a83c3ddf",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 702,
+        "last_message": "…v4.1-flash-baseline-login-1 is ready — billing@example.test • Weekly digest: nothing new — digest@example.test • Welcome to Example Mail — welcome@example.test\n"
+      },
+      "response": {
+        "finish": "length",
+        "usage": {
+          "PromptTokens": 330,
+          "CompletionTokens": 200
+        }
+      }
+    },
+    {
+      "step": 21,
+      "digest": "84c5df63c958ee243819977022c1e1fb3ac9af0a34d8a4ba606c8217a83c3ddf",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 702,
+        "last_message": "…v4.1-flash-baseline-login-1 is ready — billing@example.test • Weekly digest: nothing new — digest@example.test • Welcome to Example Mail — welcome@example.test\n"
+      },
+      "response": {
+        "finish": "length",
+        "usage": {
+          "PromptTokens": 330,
+          "CompletionTokens": 200
+        }
+      }
+    },
+    {
+      "step": 22,
+      "digest": "84c5df63c958ee243819977022c1e1fb3ac9af0a34d8a4ba606c8217a83c3ddf",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 702,
+        "last_message": "…v4.1-flash-baseline-login-1 is ready — billing@example.test • Weekly digest: nothing new — digest@example.test • Welcome to Example Mail — welcome@example.test\n"
+      },
+      "response": {
+        "finish": "length",
+        "usage": {
+          "PromptTokens": 330,
+          "CompletionTokens": 200
+        }
+      }
+    },
+    {
+      "step": 23,
+      "digest": "84c5df63c958ee243819977022c1e1fb3ac9af0a34d8a4ba606c8217a83c3ddf",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 702,
+        "last_message": "…v4.1-flash-baseline-login-1 is ready — billing@example.test • Weekly digest: nothing new — digest@example.test • Welcome to Example Mail — welcome@example.test\n"
+      },
+      "response": {
+        "finish": "length",
+        "usage": {
+          "PromptTokens": 330,
+          "CompletionTokens": 200
+        }
+      }
+    },
+    {
+      "step": 24,
+      "digest": "84c5df63c958ee243819977022c1e1fb3ac9af0a34d8a4ba606c8217a83c3ddf",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 702,
+        "last_message": "…v4.1-flash-baseline-login-1 is ready — billing@example.test • Weekly digest: nothing new — digest@example.test • Welcome to Example Mail — welcome@example.test\n"
+      },
+      "response": {
+        "finish": "length",
+        "usage": {
+          "PromptTokens": 330,
+          "CompletionTokens": 200
+        }
+      }
+    },
+    {
+      "step": 25,
+      "digest": "84c5df63c958ee243819977022c1e1fb3ac9af0a34d8a4ba606c8217a83c3ddf",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 702,
+        "last_message": "…v4.1-flash-baseline-login-1 is ready — billing@example.test • Weekly digest: nothing new — digest@example.test • Welcome to Example Mail — welcome@example.test\n"
+      },
+      "response": {
+        "finish": "length",
+        "usage": {
+          "PromptTokens": 330,
+          "CompletionTokens": 200
+        }
+      }
+    },
+    {
+      "step": 26,
+      "digest": "84c5df63c958ee243819977022c1e1fb3ac9af0a34d8a4ba606c8217a83c3ddf",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 702,
+        "last_message": "…v4.1-flash-baseline-login-1 is ready — billing@example.test • Weekly digest: nothing new — digest@example.test • Welcome to Example Mail — welcome@example.test\n"
+      },
+      "response": {
+        "finish": "length",
+        "usage": {
+          "PromptTokens": 330,
+          "CompletionTokens": 200
+        }
+      }
+    },
+    {
+      "step": 27,
+      "digest": "84c5df63c958ee243819977022c1e1fb3ac9af0a34d8a4ba606c8217a83c3ddf",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 702,
+        "last_message": "…v4.1-flash-baseline-login-1 is ready — billing@example.test • Weekly digest: nothing new — digest@example.test • Welcome to Example Mail — welcome@example.test\n"
+      },
+      "response": {
+        "text": "{\"action\":\"scroll\"}",
+        "finish": "stop",
+        "usage": {
+          "PromptTokens": 330,
+          "CompletionTokens": 196
+        }
+      }
+    },
+    {
+      "step": 28,
+      "digest": "84c5df63c958ee243819977022c1e1fb3ac9af0a34d8a4ba606c8217a83c3ddf",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 702,
+        "last_message": "…v4.1-flash-baseline-login-1 is ready — billing@example.test • Weekly digest: nothing new — digest@example.test • Welcome to Example Mail — welcome@example.test\n"
+      },
+      "response": {
+        "finish": "length",
+        "usage": {
+          "PromptTokens": 330,
+          "CompletionTokens": 200
+        }
+      }
+    },
+    {
+      "step": 29,
+      "digest": "84c5df63c958ee243819977022c1e1fb3ac9af0a34d8a4ba606c8217a83c3ddf",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 702,
+        "last_message": "…v4.1-flash-baseline-login-1 is ready — billing@example.test • Weekly digest: nothing new — digest@example.test • Welcome to Example Mail — welcome@example.test\n"
+      },
+      "response": {
+        "finish": "length",
+        "usage": {
+          "PromptTokens": 330,
+          "CompletionTokens": 200
+        }
+      }
+    },
+    {
+      "step": 30,
+      "digest": "84c5df63c958ee243819977022c1e1fb3ac9af0a34d8a4ba606c8217a83c3ddf",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 702,
+        "last_message": "…v4.1-flash-baseline-login-1 is ready — billing@example.test • Weekly digest: nothing new — digest@example.test • Welcome to Example Mail — welcome@example.test\n"
+      },
+      "response": {
+        "finish": "length",
+        "usage": {
+          "PromptTokens": 330,
+          "CompletionTokens": 200
+        }
+      }
+    },
+    {
+      "step": 31,
+      "digest": "84c5df63c958ee243819977022c1e1fb3ac9af0a34d8a4ba606c8217a83c3ddf",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 702,
+        "last_message": "…v4.1-flash-baseline-login-1 is ready — billing@example.test • Weekly digest: nothing new — digest@example.test • Welcome to Example Mail — welcome@example.test\n"
+      },
+      "response": {
+        "finish": "length",
+        "usage": {
+          "PromptTokens": 330,
+          "CompletionTokens": 200
+        }
+      }
+    },
+    {
+      "step": 32,
+      "digest": "84c5df63c958ee243819977022c1e1fb3ac9af0a34d8a4ba606c8217a83c3ddf",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 702,
+        "last_message": "…v4.1-flash-baseline-login-1 is ready — billing@example.test • Weekly digest: nothing new — digest@example.test • Welcome to Example Mail — welcome@example.test\n"
+      },
+      "response": {
+        "finish": "length",
+        "usage": {
+          "PromptTokens": 330,
+          "CompletionTokens": 200
+        }
+      }
+    },
+    {
+      "step": 33,
+      "digest": "84c5df63c958ee243819977022c1e1fb3ac9af0a34d8a4ba606c8217a83c3ddf",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 702,
+        "last_message": "…v4.1-flash-baseline-login-1 is ready — billing@example.test • Weekly digest: nothing new — digest@example.test • Welcome to Example Mail — welcome@example.test\n"
+      },
+      "response": {
+        "finish": "length",
+        "usage": {
+          "PromptTokens": 330,
+          "CompletionTokens": 200
+        }
+      }
+    },
+    {
+      "step": 34,
+      "digest": "84c5df63c958ee243819977022c1e1fb3ac9af0a34d8a4ba606c8217a83c3ddf",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 702,
+        "last_message": "…v4.1-flash-baseline-login-1 is ready — billing@example.test • Weekly digest: nothing new — digest@example.test • Welcome to Example Mail — welcome@example.test\n"
+      },
+      "response": {
+        "finish": "length",
+        "usage": {
+          "PromptTokens": 330,
+          "CompletionTokens": 200
+        }
+      }
+    },
+    {
+      "step": 35,
+      "digest": "84c5df63c958ee243819977022c1e1fb3ac9af0a34d8a4ba606c8217a83c3ddf",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 702,
+        "last_message": "…v4.1-flash-baseline-login-1 is ready — billing@example.test • Weekly digest: nothing new — digest@example.test • Welcome to Example Mail — welcome@example.test\n"
+      },
+      "response": {
+        "finish": "length",
+        "usage": {
+          "PromptTokens": 330,
+          "CompletionTokens": 200
+        }
+      }
+    },
+    {
+      "step": 36,
+      "digest": "84c5df63c958ee243819977022c1e1fb3ac9af0a34d8a4ba606c8217a83c3ddf",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 702,
+        "last_message": "…v4.1-flash-baseline-login-1 is ready — billing@example.test • Weekly digest: nothing new — digest@example.test • Welcome to Example Mail — welcome@example.test\n"
+      },
+      "response": {
+        "finish": "length",
+        "usage": {
+          "PromptTokens": 330,
+          "CompletionTokens": 200
+        }
+      }
+    },
+    {
+      "step": 37,
+      "digest": "84c5df63c958ee243819977022c1e1fb3ac9af0a34d8a4ba606c8217a83c3ddf",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 702,
+        "last_message": "…v4.1-flash-baseline-login-1 is ready — billing@example.test • Weekly digest: nothing new — digest@example.test • Welcome to Example Mail — welcome@example.test\n"
+      },
+      "response": {
+        "finish": "length",
+        "usage": {
+          "PromptTokens": 330,
+          "CompletionTokens": 200
+        }
+      }
+    },
+    {
+      "step": 38,
+      "digest": "84c5df63c958ee243819977022c1e1fb3ac9af0a34d8a4ba606c8217a83c3ddf",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 702,
+        "last_message": "…v4.1-flash-baseline-login-1 is ready — billing@example.test • Weekly digest: nothing new — digest@example.test • Welcome to Example Mail — welcome@example.test\n"
+      },
+      "response": {
+        "finish": "length",
+        "usage": {
+          "PromptTokens": 330,
+          "CompletionTokens": 200
+        }
+      }
+    },
+    {
+      "step": 39,
+      "digest": "84c5df63c958ee243819977022c1e1fb3ac9af0a34d8a4ba606c8217a83c3ddf",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 702,
+        "last_message": "…v4.1-flash-baseline-login-1 is ready — billing@example.test • Weekly digest: nothing new — digest@example.test • Welcome to Example Mail — welcome@example.test\n"
+      },
+      "response": {
+        "finish": "length",
+        "usage": {
+          "PromptTokens": 330,
+          "CompletionTokens": 200
+        }
+      }
+    },
+    {
+      "step": 40,
+      "digest": "84c5df63c958ee243819977022c1e1fb3ac9af0a34d8a4ba606c8217a83c3ddf",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 702,
+        "last_message": "…v4.1-flash-baseline-login-1 is ready — billing@example.test • Weekly digest: nothing new — digest@example.test • Welcome to Example Mail — welcome@example.test\n"
+      },
+      "response": {
+        "text": "{\"action\":\"scroll\"}",
+        "finish": "stop",
+        "usage": {
+          "PromptTokens": 330,
+          "CompletionTokens": 97
+        }
+      }
+    },
+    {
+      "step": 41,
+      "digest": "84c5df63c958ee243819977022c1e1fb3ac9af0a34d8a4ba606c8217a83c3ddf",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 702,
+        "last_message": "…v4.1-flash-baseline-login-1 is ready — billing@example.test • Weekly digest: nothing new — digest@example.test • Welcome to Example Mail — welcome@example.test\n"
+      },
+      "response": {
+        "finish": "length",
+        "usage": {
+          "PromptTokens": 330,
+          "CompletionTokens": 200
+        }
+      }
+    },
+    {
+      "step": 42,
+      "digest": "84c5df63c958ee243819977022c1e1fb3ac9af0a34d8a4ba606c8217a83c3ddf",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 702,
+        "last_message": "…v4.1-flash-baseline-login-1 is ready — billing@example.test • Weekly digest: nothing new — digest@example.test • Welcome to Example Mail — welcome@example.test\n"
+      },
+      "response": {
+        "finish": "length",
+        "usage": {
+          "PromptTokens": 330,
+          "CompletionTokens": 200
+        }
+      }
+    },
+    {
+      "step": 43,
+      "digest": "84c5df63c958ee243819977022c1e1fb3ac9af0a34d8a4ba606c8217a83c3ddf",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 702,
+        "last_message": "…v4.1-flash-baseline-login-1 is ready — billing@example.test • Weekly digest: nothing new — digest@example.test • Welcome to Example Mail — welcome@example.test\n"
+      },
+      "response": {
+        "finish": "length",
+        "usage": {
+          "PromptTokens": 330,
+          "CompletionTokens": 200
+        }
+      }
+    },
+    {
+      "step": 44,
+      "digest": "84c5df63c958ee243819977022c1e1fb3ac9af0a34d8a4ba606c8217a83c3ddf",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 702,
+        "last_message": "…v4.1-flash-baseline-login-1 is ready — billing@example.test • Weekly digest: nothing new — digest@example.test • Welcome to Example Mail — welcome@example.test\n"
+      },
+      "response": {
+        "finish": "length",
+        "usage": {
+          "PromptTokens": 330,
+          "CompletionTokens": 200
+        }
+      }
+    },
+    {
+      "step": 45,
+      "digest": "84c5df63c958ee243819977022c1e1fb3ac9af0a34d8a4ba606c8217a83c3ddf",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 702,
+        "last_message": "…v4.1-flash-baseline-login-1 is ready — billing@example.test • Weekly digest: nothing new — digest@example.test • Welcome to Example Mail — welcome@example.test\n"
+      },
+      "response": {
+        "finish": "length",
+        "usage": {
+          "PromptTokens": 330,
+          "CompletionTokens": 200
+        }
+      }
+    },
+    {
+      "step": 46,
+      "digest": "84c5df63c958ee243819977022c1e1fb3ac9af0a34d8a4ba606c8217a83c3ddf",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 702,
+        "last_message": "…v4.1-flash-baseline-login-1 is ready — billing@example.test • Weekly digest: nothing new — digest@example.test • Welcome to Example Mail — welcome@example.test\n"
+      },
+      "response": {
+        "text": "{\"action\":\"scroll\"}",
+        "finish": "stop",
+        "usage": {
+          "PromptTokens": 330,
+          "CompletionTokens": 138
+        }
+      }
+    },
+    {
+      "step": 47,
+      "digest": "84c5df63c958ee243819977022c1e1fb3ac9af0a34d8a4ba606c8217a83c3ddf",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 702,
+        "last_message": "…v4.1-flash-baseline-login-1 is ready — billing@example.test • Weekly digest: nothing new — digest@example.test • Welcome to Example Mail — welcome@example.test\n"
+      },
+      "response": {
+        "finish": "length",
+        "usage": {
+          "PromptTokens": 330,
+          "CompletionTokens": 200
+        }
+      }
+    },
+    {
+      "step": 48,
+      "digest": "84c5df63c958ee243819977022c1e1fb3ac9af0a34d8a4ba606c8217a83c3ddf",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 702,
+        "last_message": "…v4.1-flash-baseline-login-1 is ready — billing@example.test • Weekly digest: nothing new — digest@example.test • Welcome to Example Mail — welcome@example.test\n"
+      },
+      "response": {
+        "text": "{\"action\":\"scroll\"}",
+        "finish": "stop",
+        "usage": {
+          "PromptTokens": 330,
+          "CompletionTokens": 190
+        }
+      }
+    },
+    {
+      "step": 49,
+      "digest": "84c5df63c958ee243819977022c1e1fb3ac9af0a34d8a4ba606c8217a83c3ddf",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 702,
+        "last_message": "…v4.1-flash-baseline-login-1 is ready — billing@example.test • Weekly digest: nothing new — digest@example.test • Welcome to Example Mail — welcome@example.test\n"
+      },
+      "response": {
+        "finish": "length",
+        "usage": {
+          "PromptTokens": 330,
+          "CompletionTokens": 200
+        }
+      }
+    },
+    {
+      "step": 50,
+      "digest": "84c5df63c958ee243819977022c1e1fb3ac9af0a34d8a4ba606c8217a83c3ddf",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 702,
+        "last_message": "…v4.1-flash-baseline-login-1 is ready — billing@example.test • Weekly digest: nothing new — digest@example.test • Welcome to Example Mail — welcome@example.test\n"
+      },
+      "response": {
+        "text": "{\"",
+        "finish": "length",
+        "usage": {
+          "PromptTokens": 330,
+          "CompletionTokens": 200
+        }
+      }
+    },
+    {
+      "step": 51,
+      "digest": "84c5df63c958ee243819977022c1e1fb3ac9af0a34d8a4ba606c8217a83c3ddf",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 702,
+        "last_message": "…v4.1-flash-baseline-login-1 is ready — billing@example.test • Weekly digest: nothing new — digest@example.test • Welcome to Example Mail — welcome@example.test\n"
+      },
+      "response": {
+        "finish": "length",
+        "usage": {
+          "PromptTokens": 330,
+          "CompletionTokens": 200
+        }
+      }
+    },
+    {
+      "step": 52,
+      "digest": "84c5df63c958ee243819977022c1e1fb3ac9af0a34d8a4ba606c8217a83c3ddf",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 702,
+        "last_message": "…v4.1-flash-baseline-login-1 is ready — billing@example.test • Weekly digest: nothing new — digest@example.test • Welcome to Example Mail — welcome@example.test\n"
+      },
+      "response": {
+        "finish": "length",
+        "usage": {
+          "PromptTokens": 330,
+          "CompletionTokens": 200
+        }
+      }
+    },
+    {
+      "step": 53,
+      "digest": "84c5df63c958ee243819977022c1e1fb3ac9af0a34d8a4ba606c8217a83c3ddf",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 702,
+        "last_message": "…v4.1-flash-baseline-login-1 is ready — billing@example.test • Weekly digest: nothing new — digest@example.test • Welcome to Example Mail — welcome@example.test\n"
+      },
+      "response": {
+        "finish": "length",
+        "usage": {
+          "PromptTokens": 330,
+          "CompletionTokens": 200
+        }
+      }
+    },
+    {
+      "step": 54,
+      "digest": "84c5df63c958ee243819977022c1e1fb3ac9af0a34d8a4ba606c8217a83c3ddf",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 702,
+        "last_message": "…v4.1-flash-baseline-login-1 is ready — billing@example.test • Weekly digest: nothing new — digest@example.test • Welcome to Example Mail — welcome@example.test\n"
+      },
+      "response": {
+        "finish": "length",
+        "usage": {
+          "PromptTokens": 330,
+          "CompletionTokens": 200
+        }
+      }
+    },
+    {
+      "step": 55,
+      "digest": "84c5df63c958ee243819977022c1e1fb3ac9af0a34d8a4ba606c8217a83c3ddf",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 702,
+        "last_message": "…v4.1-flash-baseline-login-1 is ready — billing@example.test • Weekly digest: nothing new — digest@example.test • Welcome to Example Mail — welcome@example.test\n"
+      },
+      "response": {
+        "text": "{\"action\":\"scroll\"}",
+        "finish": "stop",
+        "usage": {
+          "PromptTokens": 330,
+          "CompletionTokens": 80
+        }
+      }
+    },
+    {
+      "step": 56,
+      "digest": "84c5df63c958ee243819977022c1e1fb3ac9af0a34d8a4ba606c8217a83c3ddf",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 702,
+        "last_message": "…v4.1-flash-baseline-login-1 is ready — billing@example.test • Weekly digest: nothing new — digest@example.test • Welcome to Example Mail — welcome@example.test\n"
+      },
+      "response": {
+        "text": "{\"action\":\"scroll\"}",
+        "finish": "stop",
+        "usage": {
+          "PromptTokens": 330,
+          "CompletionTokens": 193
+        }
+      }
+    },
+    {
+      "step": 57,
+      "digest": "84c5df63c958ee243819977022c1e1fb3ac9af0a34d8a4ba606c8217a83c3ddf",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 702,
+        "last_message": "…v4.1-flash-baseline-login-1 is ready — billing@example.test • Weekly digest: nothing new — digest@example.test • Welcome to Example Mail — welcome@example.test\n"
+      },
+      "response": {
+        "finish": "length",
+        "usage": {
+          "PromptTokens": 330,
+          "CompletionTokens": 200
+        }
+      }
+    },
+    {
+      "step": 58,
+      "digest": "84c5df63c958ee243819977022c1e1fb3ac9af0a34d8a4ba606c8217a83c3ddf",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 702,
+        "last_message": "…v4.1-flash-baseline-login-1 is ready — billing@example.test • Weekly digest: nothing new — digest@example.test • Welcome to Example Mail — welcome@example.test\n"
+      },
+      "response": {
+        "finish": "length",
+        "usage": {
+          "PromptTokens": 330,
+          "CompletionTokens": 200
+        }
+      }
+    },
+    {
+      "step": 59,
+      "digest": "84c5df63c958ee243819977022c1e1fb3ac9af0a34d8a4ba606c8217a83c3ddf",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 702,
+        "last_message": "…v4.1-flash-baseline-login-1 is ready — billing@example.test • Weekly digest: nothing new — digest@example.test • Welcome to Example Mail — welcome@example.test\n"
+      },
+      "response": {
+        "finish": "length",
+        "usage": {
+          "PromptTokens": 330,
+          "CompletionTokens": 200
+        }
+      }
+    },
+    {
+      "step": 60,
+      "digest": "84c5df63c958ee243819977022c1e1fb3ac9af0a34d8a4ba606c8217a83c3ddf",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 702,
+        "last_message": "…v4.1-flash-baseline-login-1 is ready — billing@example.test • Weekly digest: nothing new — digest@example.test • Welcome to Example Mail — welcome@example.test\n"
+      },
+      "response": {
+        "finish": "length",
+        "usage": {
+          "PromptTokens": 330,
+          "CompletionTokens": 200
+        }
+      }
+    },
+    {
+      "step": 61,
+      "digest": "84c5df63c958ee243819977022c1e1fb3ac9af0a34d8a4ba606c8217a83c3ddf",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 702,
+        "last_message": "…v4.1-flash-baseline-login-1 is ready — billing@example.test • Weekly digest: nothing new — digest@example.test • Welcome to Example Mail — welcome@example.test\n"
+      },
+      "error_kind": "timeout"
+    }
+  ]
+}

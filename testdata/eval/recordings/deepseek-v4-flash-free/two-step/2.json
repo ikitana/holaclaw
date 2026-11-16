@@ -1,0 +1,83 @@
+{
+  "model": "deepseek-v4-flash-free",
+  "scenario": "two-step",
+  "run": 2,
+  "steps": [
+    {
+      "step": 1,
+      "digest": "2e572ef36ea59dab009b1fa4e027862f61b8da6b25f6597bbba33ed7bcb35522",
+      "shape": {
+        "messages": 1,
+        "tools": [
+          "room_code",
+          "unlock"
+        ],
+        "system_chars": 871,
+        "last_message": "Look up the door code for the Willow room and unlock it."
+      },
+      "response": {
+        "tool_calls": [
+          {
+            "ID": "chatcmpl-tool-a5a29b648959a90a",
+            "Name": "room_code",
+            "Arguments": "{\"room\": \"Willow\"}"
+          }
+        ],
+        "finish": "tool_calls",
+        "usage": {
+          "PromptTokens": 606,
+          "CompletionTokens": 81
+        }
+      }
+    },
+    {
+      "step": 2,
+      "digest": "cb469cd158b11006da5010e20057013f4be3134c5031ae3643af6cd586552173",
+      "shape": {
+        "messages": 3,
+        "tools": [
+          "room_code",
+          "unlock"
+        ],
+        "system_chars": 871,
+        "last_message": "The door code for Willow is 7731."
+      },
+      "response": {
+        "text": " ",
+        "tool_calls": [
+          {
+            "ID": "chatcmpl-tool-b621b62fa32e99be",
+            "Name": "unlock",
+            "Arguments": "{\"code\": \"7731\"}"
+          }
+        ],
+        "finish": "tool_calls",
+        "usage": {
+          "PromptTokens": 671,
+          "CompletionTokens": 65
+        }
+      }
+    },
+    {
+      "step": 3,
+      "digest": "856398b159e875a3943fe6fe9022332531a632bb79fd12707065e8e3ee1eb59e",
+      "shape": {
+        "messages": 5,
+        "tools": [
+          "room_code",
+          "unlock"
+        ],
+        "system_chars": 871,
+        "last_message": "Willow is unlocked."
+      },
+      "response": {
+        "text": "Done. The Willow room door code is **7731**, and it's now unlocked.",
+        "finish": "stop",
+        "usage": {
+          "PromptTokens": 732,
+          "CompletionTokens": 20
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,9 @@
+event: response.output_item.added
+data: {"type":"response.output_item.added","output_index":0,"item":{"id":"fc_1","type":"function_call","call_id":"call_a","name":"weather","arguments":""}}
+
+event: response.function_call_arguments.done
+data: {"type":"response.function_call_arguments.done","item_id":"fc_1","output_index":0,"arguments":"{\"city\":\"Madrid\",}"}
+
+event: response.completed
+data: {"type":"response.completed","response":{"id":"resp_6","status":"completed","usage":{"input_tokens":8,"output_tokens":4}}}
+

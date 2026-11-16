@@ -1,0 +1,3 @@
+event: error
+data: {"type":"error","error":{"type":"usage_limit_reached","message":"Weekly limit reached.","resets_in_seconds":3600}}
+

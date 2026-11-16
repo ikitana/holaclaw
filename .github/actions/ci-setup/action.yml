@@ -1,0 +1,51 @@
+name: CI setup
+description: >-
+  Shared CI setup for the GitHub-hosted runners: free disk space, install
+  Nix, warm the dev shell and restore Go caches.
+
+inputs:
+  go-cache-key:
+    description: >-
+      Distinct Go cache key for this job. Each job uses its own key so jobs
+      don't clobber each other's saved cache (e.g. -race builds differ).
+    required: false
+    default: "ci"
+
+runs:
+  using: composite
+  steps:
+    # The runner image ships toolchains we never use; the Nix store needs the
+    # room. Removing them frees a few tens of GB.
+    - name: Free disk space
+      shell: bash
+      run: |
+        df -h /
+        sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc \
+          /usr/local/.ghcup /opt/hostedtoolcache/CodeQL /usr/share/swift
+        sudo docker image prune --all --force > /dev/null
+        df -h /
+
+    - uses: cachix/install-nix-action@v31
+
+    - name: Prefetch dev shell
+      shell: bash
+      run: nix develop --command true
+
+    - name: Get Go cache directories
+      id: go-cache
+      shell: bash
+      run: |
+        nix develop --command bash -c '
+          echo "GOCACHE=$(go env GOCACHE)" >> "$GITHUB_OUTPUT"
+          echo "GOMODCACHE=$(go env GOMODCACHE)" >> "$GITHUB_OUTPUT"
+        '
+
+    - name: Cache Go build and modules
+      uses: actions/cache@v4
+      with:
+        path: |
+          ${{ steps.go-cache.outputs.GOCACHE }}
+          ${{ steps.go-cache.outputs.GOMODCACHE }}
+        key: ${{ runner.os }}-go-${{ inputs.go-cache-key }}-${{ hashFiles('go.sum', 'flake.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-go-${{ inputs.go-cache-key }}-

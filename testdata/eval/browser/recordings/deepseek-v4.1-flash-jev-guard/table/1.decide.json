@@ -1,0 +1,176 @@
+{
+  "model": "deepseek-v4.1-flash+jev-guard",
+  "case": "table",
+  "steps": [
+    {
+      "step": 1,
+      "digest": "fb095b287fd88510830a0834b0f739ebf2eeb26038d7de25652dbde95c6d259e",
+      "shape": {
+        "questions": [
+          "blocker",
+          "element",
+          "goal",
+          "risk",
+          "serves",
+          "surprise"
+        ],
+        "state_chars": 863,
+        "state_tail": "… 51,900 Wrenfield 203,400 North Barrow 77,650 Cedar Hollow 39,800 Fenwick 165,000 Ashgrove 112,450 Kettlebrook 68,300 Marlow Bend 94,700 1 2 3 4 Next\n\n\u003c\u003c/page\u003e\u003e"
+      },
+      "response": {
+        "answers": {
+          "blocker": {
+            "Type": "choice",
+            "Noul": 0,
+            "Choice": "none",
+            "Score": 0,
+            "Probabilities": {
+              "2fa": 0,
+              "captcha": 0,
+              "cookies": 0,
+              "error": 0,
+              "login": 0,
+              "none": 1
+            },
+            "Confidence": 1
+          },
+          "element": {
+            "Type": "choice",
+            "Noul": 0,
+            "Choice": "r3",
+            "Score": 0,
+            "Probabilities": {
+              "none": 0,
+              "r1": 0,
+              "r2": 0,
+              "r3": 1,
+              "r4": 0,
+              "r5": 0
+            },
+            "Confidence": 1
+          },
+          "goal": {
+            "Type": "noul",
+            "Noul": 0.04,
+            "Choice": "",
+            "Score": 0,
+            "Probabilities": null,
+            "Confidence": 0
+          },
+          "risk": {
+            "Type": "choice",
+            "Noul": 0,
+            "Choice": "none",
+            "Score": 0,
+            "Probabilities": {
+              "account": 0,
+              "delete": 0,
+              "none": 1,
+              "purchase": 0,
+              "send": 0
+            },
+            "Confidence": 1
+          },
+          "serves": {
+            "Type": "noul",
+            "Noul": 0.96,
+            "Choice": "",
+            "Score": 0,
+            "Probabilities": null,
+            "Confidence": 0
+          },
+          "surprise": {
+            "Type": "noul",
+            "Noul": 0.08,
+            "Choice": "",
+            "Score": 0,
+            "Probabilities": null,
+            "Confidence": 0
+          }
+        },
+        "usage": {
+          "PromptTokens": 1335,
+          "CompletionTokens": 223
+        },
+        "cost": 0.00005607
+      }
+    },
+    {
+      "step": 2,
+      "digest": "3824ca1a049ac25ebce1c8cfe0a10507c3f7753a6e4bf1226afbc6aeac7459d0",
+      "shape": {
+        "questions": [
+          "blocker",
+          "goal",
+          "risk",
+          "serves",
+          "surprise"
+        ],
+        "state_chars": 908,
+        "state_tail": "…Oakhaven 133,050 Windmere 72,600 Farrow Point 101,900 Ellsworth 64,400 Copperfield 118,750 Nettlebrook 55,200 Highstile 143,300 Previous 1 2 3 4 Next\n\n\u003c\u003c/page\u003e\u003e"
+      },
+      "response": {
+        "answers": {
+          "blocker": {
+            "Type": "choice",
+            "Noul": 0,
+            "Choice": "none",
+            "Score": 0,
+            "Probabilities": {
+              "2fa": 0,
+              "captcha": 0,
+              "cookies": 0,
+              "error": 0,
+              "login": 0,
+              "none": 1
+            },
+            "Confidence": 1
+          },
+          "goal": {
+            "Type": "noul",
+            "Noul": 0.95,
+            "Choice": "",
+            "Score": 0,
+            "Probabilities": null,
+            "Confidence": 0
+          },
+          "risk": {
+            "Type": "choice",
+            "Noul": 0,
+            "Choice": "none",
+            "Score": 0,
+            "Probabilities": {
+              "account": 0,
+              "delete": 0,
+              "none": 1,
+              "purchase": 0,
+              "send": 0
+            },
+            "Confidence": 1
+          },
+          "serves": {
+            "Type": "noul",
+            "Noul": 0.95,
+            "Choice": "",
+            "Score": 0,
+            "Probabilities": null,
+            "Confidence": 0
+          },
+          "surprise": {
+            "Type": "noul",
+            "Noul": 0.14,
+            "Choice": "",
+            "Score": 0,
+            "Probabilities": null,
+            "Confidence": 0
+          }
+        },
+        "usage": {
+          "PromptTokens": 1230,
+          "CompletionTokens": 161
+        },
+        "cost": 0.00005166
+      }
+    }
+  ]
+}

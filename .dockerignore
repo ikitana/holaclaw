@@ -1,0 +1,8 @@
+.git
+bin/
+dist/
+.go/
+.env
+.env.local
+auth.toml
+.claude/

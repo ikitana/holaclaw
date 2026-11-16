@@ -1,0 +1,28 @@
+name = "single-tool"
+description = "One obvious tool call, then report the number it returned."
+max_steps = 4
+
+[[tools]]
+name = "weather"
+description = "Current weather for a city."
+parameters = '''{"type":"object","properties":{"city":{"type":"string"}},"required":["city"]}'''
+risk = "read"
+
+  [[tools.responses]]
+  when = { city = "~mirefield" }
+  text = "Mirefield: light rain, 11 C."
+
+  [[tools.responses]]
+  text = "No data for that city."
+
+[[turns]]
+user = "What is the weather in Mirefield right now?"
+
+  [turns.expect]
+  max_steps = 3
+  stop = "final"
+  reply_contains = ["11"]
+
+    [[turns.expect.tool_calls]]
+    name = "weather"
+    args = { city = "Mirefield" }

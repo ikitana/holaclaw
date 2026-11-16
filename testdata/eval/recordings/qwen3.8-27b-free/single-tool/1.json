@@ -1,0 +1,20 @@
+{
+  "model": "qwen3.8-27b-free",
+  "scenario": "single-tool",
+  "run": 1,
+  "steps": [
+    {
+      "step": 1,
+      "digest": "9403bfe588b3d68608fcb0f7c9b26516f2125d55936fbc1e06930897ce77e9e0",
+      "shape": {
+        "messages": 1,
+        "tools": [
+          "weather"
+        ],
+        "system_chars": 871,
+        "last_message": "What is the weather in Mirefield right now?"
+      },
+      "error_kind": "rate_limit"
+    }
+  ]
+}

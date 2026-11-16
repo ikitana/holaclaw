@@ -1,0 +1,84 @@
+{
+  "model": "deepseek-v4-flash-free",
+  "scenario": "two-step",
+  "run": 3,
+  "steps": [
+    {
+      "step": 1,
+      "digest": "2e572ef36ea59dab009b1fa4e027862f61b8da6b25f6597bbba33ed7bcb35522",
+      "shape": {
+        "messages": 1,
+        "tools": [
+          "room_code",
+          "unlock"
+        ],
+        "system_chars": 871,
+        "last_message": "Look up the door code for the Willow room and unlock it."
+      },
+      "response": {
+        "text": "I'll look up the door code for the Willow room.\n\n",
+        "tool_calls": [
+          {
+            "ID": "chatcmpl-tool-a971c87b499ab126",
+            "Name": "room_code",
+            "Arguments": "{\"room\": \"Willow\"}"
+          }
+        ],
+        "finish": "tool_calls",
+        "usage": {
+          "PromptTokens": 606,
+          "CompletionTokens": 100
+        }
+      }
+    },
+    {
+      "step": 2,
+      "digest": "172334188ec469275382c90220689f5df9b5aac55e25408db2b17e96cb40600b",
+      "shape": {
+        "messages": 3,
+        "tools": [
+          "room_code",
+          "unlock"
+        ],
+        "system_chars": 871,
+        "last_message": "The door code for Willow is 7731."
+      },
+      "response": {
+        "text": " The door code for Willow is 7731. Now I'll unlock it.\n\n",
+        "tool_calls": [
+          {
+            "ID": "chatcmpl-tool-bda5f0cf7102adf5",
+            "Name": "unlock",
+            "Arguments": "{\"code\": \"7731\"}"
+          }
+        ],
+        "finish": "tool_calls",
+        "usage": {
+          "PromptTokens": 682,
+          "CompletionTokens": 76
+        }
+      }
+    },
+    {
+      "step": 3,
+      "digest": "efae35c6f9a6cd92716c28f286cd86f975f22b8951d993ccb30891e94de5994b",
+      "shape": {
+        "messages": 5,
+        "tools": [
+          "room_code",
+          "unlock"
+        ],
+        "system_chars": 871,
+        "last_message": "Willow is unlocked."
+      },
+      "response": {
+        "text": "Done! The Willow room is unlocked.",
+        "finish": "stop",
+        "usage": {
+          "PromptTokens": 758,
+          "CompletionTokens": 10
+        }
+      }
+    }
+  ]
+}

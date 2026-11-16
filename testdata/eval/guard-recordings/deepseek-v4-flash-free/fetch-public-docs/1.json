@@ -1,0 +1,24 @@
+{
+  "model": "deepseek-v4-flash-free",
+  "scenario": "fetch-public-docs",
+  "run": 1,
+  "steps": [
+    {
+      "step": 1,
+      "digest": "22f7f0e79507769ca3ebdbcb3513102cdc3d4643ee79f66f5a40107bfca37b64",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 452,
+        "last_message": "…l: fetch\nrisk: external\nrun: interactive\nrole: owner\ntainted: false\nargs_bytes: 61\n\u003cargs\u003e\n{\"url\":\"https://docs.example.invalid/guides/getting-started\"}\n\u003c/args\u003e\n"
+      },
+      "response": {
+        "finish": "length",
+        "usage": {
+          "PromptTokens": 229,
+          "CompletionTokens": 512
+        }
+      }
+    }
+  ]
+}

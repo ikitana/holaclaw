@@ -1,0 +1,17 @@
+version = 1
+tools = ["memory"]
+
+[models]
+chat = "gemma"
+
+# Every entry below is invalid: a scheme, a path, a port, upper-case, a
+# space and an IP literal are all rejected in v1 (docs/browser.md).
+[browser]
+allow = [
+  "https://example.com",
+  "example.com/path",
+  "example.com:8080",
+  "EXAMPLE.com",
+  "exa mple.com",
+  "192.168.0.1",
+]

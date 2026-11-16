@@ -1,0 +1,10 @@
+version = 99
+
+[providers.ollama]
+type     = "openai-compatible"
+base_url = "http://localhost:11434/v1"
+
+[models.gemma]
+provider = "ollama"
+id       = "gemma4:e2b"
+context  = 8192

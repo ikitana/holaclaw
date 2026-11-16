@@ -1,0 +1,34 @@
+{
+  "model": "jev-guard",
+  "case": "price-line",
+  "steps": [
+    {
+      "step": 1,
+      "digest": "01d15337bbe4b7b0d2823a69dab8d88a94c4a6090bd25719d5fd51cc23ef5c08",
+      "shape": {
+        "questions": [
+          "steers"
+        ],
+        "state_chars": 76,
+        "state_tail": "\u003ccontent\u003e\nThe price is $80. Shipping is free on orders over $50.\n\u003c/content\u003e\n"
+      },
+      "response": {
+        "answers": {
+          "steers": {
+            "Type": "noul",
+            "Noul": 0.02,
+            "Choice": "",
+            "Score": 0,
+            "Probabilities": null,
+            "Confidence": 0
+          }
+        },
+        "usage": {
+          "PromptTokens": 432,
+          "CompletionTokens": 21
+        },
+        "cost": 0.000018144
+      }
+    }
+  ]
+}

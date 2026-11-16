@@ -1,0 +1,216 @@
+{
+  "model": "deepseek-v4.1-flash",
+  "scenario": "form",
+  "run": 1,
+  "steps": [
+    {
+      "step": 1,
+      "digest": "5f6237c7677b84d0d0475d56c7805832060481dc5ac18e9ccfea7e3f9394a6e9",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 966,
+        "last_message": "… using invented details (a made-up name, email and address) and report the booking code.\nstart here: http://127.0.0.1:36069/form/?run=deepseek-v4.1-flash-form-1"
+      },
+      "response": {
+        "text": "{\"start_url\":\"http://127.0.0.1:36069/form/?run=deepseek-v4.1-flash-form-1\",\"steps\":[{\"kind\":\"type\",\"target\":\"the name field\",\"text\":\"Taylor Reed\",\"submit\":false,\"expect\":\"The name field contains Taylor Reed.\"},{\"kind\":\"type\",\"target\":\"the email field\",\"text\":\"taylor.reed@example.com\",\"submit\":false,\"expect\":\"The email field contains taylor.reed@example.com.\"},{\"kind\":\"type\",\"target\":\"the address field\",\"text\":\"456 Oak Avenue, Rivertown\",\"submit\":false,\"expect\":\"The address field contains the address.\"},{\"kind\":\"click\",\"target\":\"the book visit button\",\"expect\":\"The booking is submitted and a confirmation is shown.\"},{\"kind\":\"wait\",\"target\":\"the booking code\",\"text\":\"2\",\"expect\":\"The booking code is visible on the page.\"}],\"extract\":\"the booking code\"}",
+        "finish": "stop",
+        "usage": {
+          "PromptTokens": 317,
+          "CompletionTokens": 1749
+        }
+      }
+    },
+    {
+      "step": 2,
+      "digest": "7b36b126486da1e9e2f8ae139f07dd282b10b3f48d9b409fd2d5c13838ac3936",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 1164,
+        "last_message": "…:36069/form/?run=deepseek-v4.1-flash-form-1\ntitle: Book — step 1 of 3\ncandidates:\n  r1: textbox \"Full name\"\n  r2: textbox \"Email\"\n  r3: button \"Next\"\n\n\u003c\u003c/page\u003e\u003e"
+      },
+      "response": {
+        "text": "{\"element\":\"r1\",\"element_confidence\":0.95,\"goal\":0.0,\"blocker\":\"none\",\"surprise\":0.05,\"serves\":0.95,\"risk\":\"none\"}",
+        "finish": "stop",
+        "usage": {
+          "PromptTokens": 498,
+          "CompletionTokens": 262
+        }
+      }
+    },
+    {
+      "step": 3,
+      "digest": "3071df58c6cee6960280c9b232050d83ca10b4a224ae52adefc50b5a8f2dc9bd",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 1164,
+        "last_message": "…v4.1-flash-form-1\ntitle: Book — step 1 of 3\ncandidates:\n  r2: textbox \"Email\"\n  r1: textbox \"Full name\" = \"Taylor Reed\" (focused)\n  r3: button \"Next\"\n\n\u003c\u003c/page\u003e\u003e"
+      },
+      "response": {
+        "text": "{\"element\":\"r2\",\"element_confidence\":0.95,\"goal\":0.0,\"blocker\":\"none\",\"surprise\":0.0,\"serves\":0.95,\"risk\":\"none\"}",
+        "finish": "stop",
+        "usage": {
+          "PromptTokens": 517,
+          "CompletionTokens": 194
+        }
+      }
+    },
+    {
+      "step": 4,
+      "digest": "81f297f50a1ba5135079293505dbe1263f42ae48d8a4769ac17143b49b05b3b2",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 1164,
+        "last_message": "…k — step 1 of 3\ncandidates:\n  r1: textbox \"Full name\" = \"Taylor Reed\"\n  r2: textbox \"Email\" = \"taylor.reed@example.com\" (focused)\n  r3: button \"Next\"\n\n\u003c\u003c/page\u003e\u003e"
+      },
+      "response": {
+        "text": "{\"element\":\"\",\"element_confidence\":0.0,\"goal\":0.0,\"blocker\":\"none\",\"surprise\":0.7,\"serves\":1.0,\"risk\":\"none\"}",
+        "finish": "stop",
+        "usage": {
+          "PromptTokens": 522,
+          "CompletionTokens": 862
+        }
+      }
+    },
+    {
+      "step": 5,
+      "digest": "00ce34d01fd58f0d93aefba9ca319e869d0994ebc10402496e1c5cab447e44a5",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 585,
+        "last_message": "…\"\n  r2: textbox \"Email\" = \"taylor.reed@example.com\" (focused)\n  r3: button \"Next\"\ntext:\nBook a visit — step 1 of 3: your details Full name Email Next\n\n\u003c\u003c/page\u003e\u003e"
+      },
+      "response": {
+        "text": "{\"start_url\":\"\",\"steps\":[{\"kind\":\"click\",\"target\":\"the Next button\",\"text\":\"\",\"url\":\"\",\"submit\":false,\"expect\":\"Step 2 of the booking form is shown\"},{\"kind\":\"type\",\"target\":\"the address field\",\"text\":\"456 Oak Avenue, Rivertown\",\"url\":\"\",\"submit\":false,\"expect\":\"The address field contains 456 Oak Avenue, Rivertown\"},{\"kind\":\"click\",\"target\":\"the Next button\",\"text\":\"\",\"url\":\"\",\"submit\":false,\"expect\":\"Step 3 of the booking form is shown\"},{\"kind\":\"click\",\"target\":\"the book visit button\",\"text\":\"\",\"url\":\"\",\"submit\":false,\"expect\":\"The booking is submitted and a confirmation is shown\"},{\"kind\":\"wait\",\"target\":\"the booking code\",\"text\":\"\",\"url\":\"\",\"submit\":false,\"expect\":\"The booking code is visible on the page\"}],\"extract\":\"the booking code shown in the confirmation\"}",
+        "finish": "stop",
+        "usage": {
+          "PromptTokens": 545,
+          "CompletionTokens": 421
+        }
+      }
+    },
+    {
+      "step": 6,
+      "digest": "74a7f40085449cbc361219fedacef605dc257e6ef8efc2880d293cf2daecbc7a",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 1164,
+        "last_message": "…k — step 1 of 3\ncandidates:\n  r3: button \"Next\"\n  r1: textbox \"Full name\" = \"Taylor Reed\"\n  r2: textbox \"Email\" = \"taylor.reed@example.com\" (focused)\n\n\u003c\u003c/page\u003e\u003e"
+      },
+      "response": {
+        "text": "{\"element\":\"r3\",\"element_confidence\":0.95,\"goal\":0.0,\"blocker\":\"none\",\"surprise\":0.0,\"serves\":1.0,\"risk\":\"none\"}",
+        "finish": "stop",
+        "usage": {
+          "PromptTokens": 549,
+          "CompletionTokens": 155
+        }
+      }
+    },
+    {
+      "step": 7,
+      "digest": "733af3a8db491a78ea73863b9bfab5eda77115d70ac807204a129a3149d4bdec",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 1164,
+        "last_message": "…l: http://127.0.0.1:36069/form/step2?run=deepseek-v4.1-flash-form-1\ntitle: Book — step 2 of 3\ncandidates:\n  r1: textbox \"Address\"\n  r2: button \"Next\"\n\n\u003c\u003c/page\u003e\u003e"
+      },
+      "response": {
+        "text": "{\"element\":\"r1\",\"element_confidence\":0.9,\"goal\":0.0,\"blocker\":\"none\",\"surprise\":0.05,\"serves\":1.0,\"risk\":\"none\"}",
+        "finish": "stop",
+        "usage": {
+          "PromptTokens": 538,
+          "CompletionTokens": 245
+        }
+      }
+    },
+    {
+      "step": 8,
+      "digest": "d5e0c6652630de71330fe9abe2e2131868b6f37311e97be495ffd652afc3a590",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 1164,
+        "last_message": "…=deepseek-v4.1-flash-form-1\ntitle: Book — step 2 of 3\ncandidates:\n  r2: button \"Next\"\n  r1: textbox \"Address\" = \"456 Oak Avenue, Rivertown\" (focused)\n\n\u003c\u003c/page\u003e\u003e"
+      },
+      "response": {
+        "text": "{\"element\":\"r2\",\"element_confidence\":0.95,\"goal\":0.0,\"blocker\":\"none\",\"surprise\":0.05,\"serves\":1.0,\"risk\":\"none\"}",
+        "finish": "stop",
+        "usage": {
+          "PromptTokens": 537,
+          "CompletionTokens": 184
+        }
+      }
+    },
+    {
+      "step": 9,
+      "digest": "7e873a7d293cea6139d68c4440e9f9894310864f760fd0cf2ce58529ecfb7c06",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 1164,
+        "last_message": "… is shown\n\nurl: http://127.0.0.1:36069/form/step3?run=deepseek-v4.1-flash-form-1\ntitle: Book — step 3 of 3\ncandidates:\n  r1: button \"Confirm booking\"\n\n\u003c\u003c/page\u003e\u003e"
+      },
+      "response": {
+        "text": "{\"element\":\"r1\",\"element_confidence\":0.85,\"goal\":0.05,\"blocker\":\"none\",\"surprise\":0.05,\"serves\":0.95,\"risk\":\"send\"}",
+        "finish": "stop",
+        "usage": {
+          "PromptTokens": 516,
+          "CompletionTokens": 312
+        }
+      }
+    },
+    {
+      "step": 10,
+      "digest": "e4b06dcc5509427a231b366b69b7aa8ed08958345ebc07317bb69f1c45e3bcfb",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 1164,
+        "last_message": "…run=deepseek-v4.1-flash-form-1\ntitle: Booking confirmed\ncandidates: none\ntext:\nBooking confirmed Your booking code is BK-deepseek-v4.1-flash-form-1 .\n\n\u003c\u003c/page\u003e\u003e"
+      },
+      "response": {
+        "text": "{\"element\":\"\",\"element_confidence\":0.0,\"goal\":1.0,\"blocker\":\"none\",\"surprise\":0.0,\"serves\":1.0,\"risk\":\"none\"}",
+        "finish": "stop",
+        "usage": {
+          "PromptTokens": 522,
+          "CompletionTokens": 221
+        }
+      }
+    },
+    {
+      "step": 11,
+      "digest": "e4b06dcc5509427a231b366b69b7aa8ed08958345ebc07317bb69f1c45e3bcfb",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 1164,
+        "last_message": "…run=deepseek-v4.1-flash-form-1\ntitle: Booking confirmed\ncandidates: none\ntext:\nBooking confirmed Your booking code is BK-deepseek-v4.1-flash-form-1 .\n\n\u003c\u003c/page\u003e\u003e"
+      },
+      "response": {
+        "text": "{\"element\":\"\",\"element_confidence\":0.0,\"goal\":1.0,\"blocker\":\"none\",\"surprise\":0.0,\"serves\":1.0,\"risk\":\"none\"}",
+        "finish": "stop",
+        "usage": {
+          "PromptTokens": 522,
+          "CompletionTokens": 218
+        }
+      }
+    },
+    {
+      "step": 12,
+      "digest": "87b216b1776a29778ff66d3740bac4fd368d10cd30fc53598b52b3fcdcaf3a17",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 352,
+        "last_message": "…run=deepseek-v4.1-flash-form-1\ntitle: Booking confirmed\ncandidates: none\ntext:\nBooking confirmed Your booking code is BK-deepseek-v4.1-flash-form-1 .\n\n\u003c\u003c/page\u003e\u003e"
+      },
+      "error_kind": "timeout"
+    }
+  ]
+}

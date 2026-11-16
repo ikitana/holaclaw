@@ -1,0 +1,21 @@
+{
+  "model": "qwen3.8-27b-free",
+  "scenario": "two-step",
+  "run": 1,
+  "steps": [
+    {
+      "step": 1,
+      "digest": "2e572ef36ea59dab009b1fa4e027862f61b8da6b25f6597bbba33ed7bcb35522",
+      "shape": {
+        "messages": 1,
+        "tools": [
+          "room_code",
+          "unlock"
+        ],
+        "system_chars": 871,
+        "last_message": "Look up the door code for the Willow room and unlock it."
+      },
+      "error_kind": "rate_limit"
+    }
+  ]
+}

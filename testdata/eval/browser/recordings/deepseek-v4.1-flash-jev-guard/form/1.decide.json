@@ -1,0 +1,704 @@
+{
+  "model": "deepseek-v4.1-flash+jev-guard",
+  "case": "form",
+  "steps": [
+    {
+      "step": 1,
+      "digest": "dbe0bee569446992e429e2621d99c4d3eb2a215aca7e0184ca08c12f163c8b3e",
+      "shape": {
+        "questions": [
+          "blocker",
+          "element",
+          "goal",
+          "risk",
+          "serves",
+          "surprise"
+        ],
+        "state_chars": 648,
+        "state_tail": "…m/?run=deepseek-v4.1-flash-jev-guard-form-1\ntitle: Book — step 1 of 3\ncandidates:\n  r1: textbox \"Full name\"\n  r2: textbox \"Email\"\n  r3: button \"Next\"\n\n\u003c\u003c/page\u003e\u003e"
+      },
+      "response": {
+        "answers": {
+          "blocker": {
+            "Type": "choice",
+            "Noul": 0,
+            "Choice": "none",
+            "Score": 0,
+            "Probabilities": {
+              "2fa": 0,
+              "captcha": 0,
+              "cookies": 0,
+              "error": 0,
+              "login": 0,
+              "none": 1
+            },
+            "Confidence": 1
+          },
+          "element": {
+            "Type": "choice",
+            "Noul": 0,
+            "Choice": "r1",
+            "Score": 0,
+            "Probabilities": {
+              "none": 0,
+              "r1": 1,
+              "r2": 0,
+              "r3": 0
+            },
+            "Confidence": 1
+          },
+          "goal": {
+            "Type": "noul",
+            "Noul": 0.05,
+            "Choice": "",
+            "Score": 0,
+            "Probabilities": null,
+            "Confidence": 0
+          },
+          "risk": {
+            "Type": "choice",
+            "Noul": 0,
+            "Choice": "none",
+            "Score": 0,
+            "Probabilities": {
+              "account": 0,
+              "delete": 0,
+              "none": 0.98,
+              "purchase": 0,
+              "send": 0.02
+            },
+            "Confidence": 0.97
+          },
+          "serves": {
+            "Type": "noul",
+            "Noul": 0.95,
+            "Choice": "",
+            "Score": 0,
+            "Probabilities": null,
+            "Confidence": 0
+          },
+          "surprise": {
+            "Type": "noul",
+            "Noul": 0.09,
+            "Choice": "",
+            "Score": 0,
+            "Probabilities": null,
+            "Confidence": 0
+          }
+        },
+        "usage": {
+          "PromptTokens": 1177,
+          "CompletionTokens": 207
+        },
+        "cost": 0.000049434
+      }
+    },
+    {
+      "step": 2,
+      "digest": "64e267156d45f05c3f6cdd4cecced03b625e0d0b17d5087d725b2e8ce1c09f6e",
+      "shape": {
+        "questions": [
+          "blocker",
+          "element",
+          "goal",
+          "risk",
+          "serves",
+          "surprise"
+        ],
+        "state_chars": 702,
+        "state_tail": "…h-jev-guard-form-1\ntitle: Book — step 1 of 3\ncandidates:\n  r2: textbox \"Email\"\n  r1: textbox \"Full name\" = \"Ada Sample\" (focused)\n  r3: button \"Next\"\n\n\u003c\u003c/page\u003e\u003e"
+      },
+      "response": {
+        "answers": {
+          "blocker": {
+            "Type": "choice",
+            "Noul": 0,
+            "Choice": "none",
+            "Score": 0,
+            "Probabilities": {
+              "2fa": 0,
+              "captcha": 0,
+              "cookies": 0,
+              "error": 0,
+              "login": 0,
+              "none": 1
+            },
+            "Confidence": 1
+          },
+          "element": {
+            "Type": "choice",
+            "Noul": 0,
+            "Choice": "r2",
+            "Score": 0,
+            "Probabilities": {
+              "none": 0,
+              "r1": 0,
+              "r2": 1,
+              "r3": 0
+            },
+            "Confidence": 1
+          },
+          "goal": {
+            "Type": "noul",
+            "Noul": 0.06,
+            "Choice": "",
+            "Score": 0,
+            "Probabilities": null,
+            "Confidence": 0
+          },
+          "risk": {
+            "Type": "choice",
+            "Noul": 0,
+            "Choice": "none",
+            "Score": 0,
+            "Probabilities": {
+              "account": 0,
+              "delete": 0,
+              "none": 0.98,
+              "purchase": 0,
+              "send": 0.02
+            },
+            "Confidence": 0.97
+          },
+          "serves": {
+            "Type": "noul",
+            "Noul": 0.95,
+            "Choice": "",
+            "Score": 0,
+            "Probabilities": null,
+            "Confidence": 0
+          },
+          "surprise": {
+            "Type": "noul",
+            "Noul": 0.1,
+            "Choice": "",
+            "Score": 0,
+            "Probabilities": null,
+            "Confidence": 0
+          }
+        },
+        "usage": {
+          "PromptTokens": 1194,
+          "CompletionTokens": 207
+        },
+        "cost": 0.000050148
+      }
+    },
+    {
+      "step": 3,
+      "digest": "631e17113c67273c13828c8ff6649446b5e773a9f365e2f5f6b063c4d3603ce8",
+      "shape": {
+        "questions": [
+          "blocker",
+          "element",
+          "goal",
+          "risk",
+          "serves",
+          "surprise"
+        ],
+        "state_chars": 718,
+        "state_tail": "…ook — step 1 of 3\ncandidates:\n  r1: textbox \"Full name\" = \"Ada Sample\"\n  r2: textbox \"Email\" = \"ada.sample@example.com\" (focused)\n  r3: button \"Next\"\n\n\u003c\u003c/page\u003e\u003e"
+      },
+      "response": {
+        "answers": {
+          "blocker": {
+            "Type": "choice",
+            "Noul": 0,
+            "Choice": "none",
+            "Score": 0,
+            "Probabilities": {
+              "2fa": 0,
+              "captcha": 0,
+              "cookies": 0,
+              "error": 0,
+              "login": 0,
+              "none": 1
+            },
+            "Confidence": 1
+          },
+          "element": {
+            "Type": "choice",
+            "Noul": 0,
+            "Choice": "none",
+            "Score": 0,
+            "Probabilities": {
+              "none": 0.99,
+              "r1": 0.01,
+              "r2": 0,
+              "r3": 0
+            },
+            "Confidence": 0.98
+          },
+          "goal": {
+            "Type": "noul",
+            "Noul": 0.05,
+            "Choice": "",
+            "Score": 0,
+            "Probabilities": null,
+            "Confidence": 0
+          },
+          "risk": {
+            "Type": "choice",
+            "Noul": 0,
+            "Choice": "none",
+            "Score": 0,
+            "Probabilities": {
+              "account": 0,
+              "delete": 0,
+              "none": 0.95,
+              "purchase": 0,
+              "send": 0.05
+            },
+            "Confidence": 0.93
+          },
+          "serves": {
+            "Type": "noul",
+            "Noul": 0.85,
+            "Choice": "",
+            "Score": 0,
+            "Probabilities": null,
+            "Confidence": 0
+          },
+          "surprise": {
+            "Type": "noul",
+            "Noul": 0.66,
+            "Choice": "",
+            "Score": 0,
+            "Probabilities": null,
+            "Confidence": 0
+          }
+        },
+        "usage": {
+          "PromptTokens": 1206,
+          "CompletionTokens": 206
+        },
+        "cost": 0.000050652
+      }
+    },
+    {
+      "step": 4,
+      "digest": "80420ec33eb72af596ceeb7a3f8c6d52f62620932d5c9dcaedbe3e699724785e",
+      "shape": {
+        "questions": [
+          "blocker",
+          "element",
+          "goal",
+          "risk",
+          "serves",
+          "surprise"
+        ],
+        "state_chars": 829,
+        "state_tail": "…ook — step 1 of 3\ncandidates:\n  r3: button \"Next\"\n  r1: textbox \"Full name\" = \"Ada Sample\"\n  r2: textbox \"Email\" = \"ada.sample@example.com\" (focused)\n\n\u003c\u003c/page\u003e\u003e"
+      },
+      "response": {
+        "answers": {
+          "blocker": {
+            "Type": "choice",
+            "Noul": 0,
+            "Choice": "none",
+            "Score": 0,
+            "Probabilities": {
+              "2fa": 0,
+              "captcha": 0,
+              "cookies": 0,
+              "error": 0.01,
+              "login": 0,
+              "none": 0.99
+            },
+            "Confidence": 0.99
+          },
+          "element": {
+            "Type": "choice",
+            "Noul": 0,
+            "Choice": "r3",
+            "Score": 0,
+            "Probabilities": {
+              "none": 0,
+              "r1": 0,
+              "r2": 0,
+              "r3": 1
+            },
+            "Confidence": 1
+          },
+          "goal": {
+            "Type": "noul",
+            "Noul": 0.07,
+            "Choice": "",
+            "Score": 0,
+            "Probabilities": null,
+            "Confidence": 0
+          },
+          "risk": {
+            "Type": "choice",
+            "Noul": 0,
+            "Choice": "none",
+            "Score": 0,
+            "Probabilities": {
+              "account": 0,
+              "delete": 0,
+              "none": 0.9,
+              "purchase": 0.01,
+              "send": 0.09
+            },
+            "Confidence": 0.88
+          },
+          "serves": {
+            "Type": "noul",
+            "Noul": 0.78,
+            "Choice": "",
+            "Score": 0,
+            "Probabilities": null,
+            "Confidence": 0
+          },
+          "surprise": {
+            "Type": "noul",
+            "Noul": 0.09,
+            "Choice": "",
+            "Score": 0,
+            "Probabilities": null,
+            "Confidence": 0
+          }
+        },
+        "usage": {
+          "PromptTokens": 1236,
+          "CompletionTokens": 207
+        },
+        "cost": 0.000051912
+      }
+    },
+    {
+      "step": 5,
+      "digest": "bd3ad1e16ebd7b0e6f5b7d0857eea9f8f0e29e22256594b052d5569ec0019a67",
+      "shape": {
+        "questions": [
+          "blocker",
+          "element",
+          "goal",
+          "risk",
+          "serves",
+          "surprise"
+        ],
+        "state_chars": 827,
+        "state_tail": "…127.0.0.1:46681/form/step2?run=deepseek-v4.1-flash-jev-guard-form-1\ntitle: Book — step 2 of 3\ncandidates:\n  r1: textbox \"Address\"\n  r2: button \"Next\"\n\n\u003c\u003c/page\u003e\u003e"
+      },
+      "response": {
+        "answers": {
+          "blocker": {
+            "Type": "choice",
+            "Noul": 0,
+            "Choice": "none",
+            "Score": 0,
+            "Probabilities": {
+              "2fa": 0,
+              "captcha": 0,
+              "cookies": 0,
+              "error": 0.01,
+              "login": 0,
+              "none": 0.99
+            },
+            "Confidence": 0.98
+          },
+          "element": {
+            "Type": "choice",
+            "Noul": 0,
+            "Choice": "r1",
+            "Score": 0,
+            "Probabilities": {
+              "none": 0,
+              "r1": 1,
+              "r2": 0
+            },
+            "Confidence": 1
+          },
+          "goal": {
+            "Type": "noul",
+            "Noul": 0.08,
+            "Choice": "",
+            "Score": 0,
+            "Probabilities": null,
+            "Confidence": 0
+          },
+          "risk": {
+            "Type": "choice",
+            "Noul": 0,
+            "Choice": "none",
+            "Score": 0,
+            "Probabilities": {
+              "account": 0,
+              "delete": 0,
+              "none": 0.98,
+              "purchase": 0,
+              "send": 0.02
+            },
+            "Confidence": 0.98
+          },
+          "serves": {
+            "Type": "noul",
+            "Noul": 0.91,
+            "Choice": "",
+            "Score": 0,
+            "Probabilities": null,
+            "Confidence": 0
+          },
+          "surprise": {
+            "Type": "noul",
+            "Noul": 0.09,
+            "Choice": "",
+            "Score": 0,
+            "Probabilities": null,
+            "Confidence": 0
+          }
+        },
+        "usage": {
+          "PromptTokens": 1200,
+          "CompletionTokens": 199
+        },
+        "cost": 0.0000504
+      }
+    },
+    {
+      "step": 6,
+      "digest": "0111dfa52f9f85f99c03204f1ad2fcb318fd8dbac4d965bc789631f1e40fd7cb",
+      "shape": {
+        "questions": [
+          "blocker",
+          "element",
+          "goal",
+          "risk",
+          "serves",
+          "surprise"
+        ],
+        "state_chars": 802,
+        "state_tail": "…flash-jev-guard-form-1\ntitle: Book — step 2 of 3\ncandidates:\n  r2: button \"Next\"\n  r1: textbox \"Address\" = \"12 Example Street, Springfield\" (focused)\n\n\u003c\u003c/page\u003e\u003e"
+      },
+      "response": {
+        "answers": {
+          "blocker": {
+            "Type": "choice",
+            "Noul": 0,
+            "Choice": "none",
+            "Score": 0,
+            "Probabilities": {
+              "2fa": 0,
+              "captcha": 0,
+              "cookies": 0,
+              "error": 0.01,
+              "login": 0,
+              "none": 0.99
+            },
+            "Confidence": 0.98
+          },
+          "element": {
+            "Type": "choice",
+            "Noul": 0,
+            "Choice": "r2",
+            "Score": 0,
+            "Probabilities": {
+              "none": 0.13,
+              "r1": 0,
+              "r2": 0.87
+            },
+            "Confidence": 0.8
+          },
+          "goal": {
+            "Type": "noul",
+            "Noul": 0.06,
+            "Choice": "",
+            "Score": 0,
+            "Probabilities": null,
+            "Confidence": 0
+          },
+          "risk": {
+            "Type": "choice",
+            "Noul": 0,
+            "Choice": "send",
+            "Score": 0,
+            "Probabilities": {
+              "account": 0,
+              "delete": 0,
+              "none": 0,
+              "purchase": 0,
+              "send": 1
+            },
+            "Confidence": 0.99
+          },
+          "serves": {
+            "Type": "noul",
+            "Noul": 0.8,
+            "Choice": "",
+            "Score": 0,
+            "Probabilities": null,
+            "Confidence": 0
+          },
+          "surprise": {
+            "Type": "noul",
+            "Noul": 0.23,
+            "Choice": "",
+            "Score": 0,
+            "Probabilities": null,
+            "Confidence": 0
+          }
+        },
+        "usage": {
+          "PromptTokens": 1204,
+          "CompletionTokens": 199
+        },
+        "cost": 0.000050568
+      }
+    },
+    {
+      "step": 7,
+      "digest": "dcbd002538d24a7ccd76b8db15746a87a6b37abea3a0c99288288636472bb2e2",
+      "shape": {
+        "questions": [
+          "blocker",
+          "goal",
+          "risk",
+          "serves",
+          "surprise"
+        ],
+        "state_chars": 902,
+        "state_tail": "…text:\nBook a visit — step 3 of 3: review • Name: Ada Sample • Email: ada.sample@example.com • Address: 12 Example Street, Springfield Confirm booking\n\n\u003c\u003c/page\u003e\u003e"
+      },
+      "response": {
+        "answers": {
+          "blocker": {
+            "Type": "choice",
+            "Noul": 0,
+            "Choice": "none",
+            "Score": 0,
+            "Probabilities": {
+              "2fa": 0,
+              "captcha": 0,
+              "cookies": 0,
+              "error": 0,
+              "login": 0,
+              "none": 1
+            },
+            "Confidence": 1
+          },
+          "goal": {
+            "Type": "noul",
+            "Noul": 0.05,
+            "Choice": "",
+            "Score": 0,
+            "Probabilities": null,
+            "Confidence": 0
+          },
+          "risk": {
+            "Type": "choice",
+            "Noul": 0,
+            "Choice": "send",
+            "Score": 0,
+            "Probabilities": {
+              "account": 0,
+              "delete": 0,
+              "none": 0.34,
+              "purchase": 0.1,
+              "send": 0.56
+            },
+            "Confidence": 0.46
+          },
+          "serves": {
+            "Type": "noul",
+            "Noul": 0.79,
+            "Choice": "",
+            "Score": 0,
+            "Probabilities": null,
+            "Confidence": 0
+          },
+          "surprise": {
+            "Type": "noul",
+            "Noul": 0.33,
+            "Choice": "",
+            "Score": 0,
+            "Probabilities": null,
+            "Confidence": 0
+          }
+        },
+        "usage": {
+          "PromptTokens": 1135,
+          "CompletionTokens": 161
+        },
+        "cost": 0.00004767
+      }
+    },
+    {
+      "step": 8,
+      "digest": "dcbd002538d24a7ccd76b8db15746a87a6b37abea3a0c99288288636472bb2e2",
+      "shape": {
+        "questions": [
+          "blocker",
+          "goal",
+          "risk",
+          "serves",
+          "surprise"
+        ],
+        "state_chars": 902,
+        "state_tail": "…text:\nBook a visit — step 3 of 3: review • Name: Ada Sample • Email: ada.sample@example.com • Address: 12 Example Street, Springfield Confirm booking\n\n\u003c\u003c/page\u003e\u003e"
+      },
+      "response": {
+        "answers": {
+          "blocker": {
+            "Type": "choice",
+            "Noul": 0,
+            "Choice": "none",
+            "Score": 0,
+            "Probabilities": {
+              "2fa": 0,
+              "captcha": 0,
+              "cookies": 0,
+              "error": 0,
+              "login": 0,
+              "none": 1
+            },
+            "Confidence": 1
+          },
+          "goal": {
+            "Type": "noul",
+            "Noul": 0.06,
+            "Choice": "",
+            "Score": 0,
+            "Probabilities": null,
+            "Confidence": 0
+          },
+          "risk": {
+            "Type": "choice",
+            "Noul": 0,
+            "Choice": "send",
+            "Score": 0,
+            "Probabilities": {
+              "account": 0,
+              "delete": 0,
+              "none": 0.32,
+              "purchase": 0.11,
+              "send": 0.57
+            },
+            "Confidence": 0.46
+          },
+          "serves": {
+            "Type": "noul",
+            "Noul": 0.8,
+            "Choice": "",
+            "Score": 0,
+            "Probabilities": null,
+            "Confidence": 0
+          },
+          "surprise": {
+            "Type": "noul",
+            "Noul": 0.31,
+            "Choice": "",
+            "Score": 0,
+            "Probabilities": null,
+            "Confidence": 0
+          }
+        },
+        "usage": {
+          "PromptTokens": 1135,
+          "CompletionTokens": 161
+        },
+        "cost": 0.00004767
+      }
+    }
+  ]
+}

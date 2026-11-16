@@ -1,0 +1,41 @@
+name = "skill-no-load"
+description = "Skills are listed but none matches the task: load none and answer directly."
+max_steps = 4
+
+[[skills]]
+name = "trip-packing"
+description = "When packing for a trip: a checklist by climate."
+
+[[skills]]
+name = "recipe-scaling"
+description = "When scaling a recipe to more or fewer servings."
+
+[[skills]]
+name = "meeting-notes"
+description = "When turning meeting notes into action items."
+
+# The production schema of skill.load (internal/tool/tools/skill.go).
+[[tools]]
+name = "skill.load"
+description = "Load a skill from the skills list by name. file reads one of its references."
+parameters = '''{"type":"object","properties":{"name":{"type":"string"},"file":{"type":"string"}},"required":["name"]}'''
+risk = "read"
+
+  [[tools.responses]]
+  text = "[skill: loaded · agent skill]\n\n# Loaded\n\nThis skill does not apply here."
+
+[[turns]]
+user = "What is 17 times 3?"
+
+  [turns.expect]
+  no_tool_calls = true
+  reply_contains = ["51"]
+  stop = "final"
+
+[[turns]]
+user = "How do you say 'good morning' in Spanish?"
+
+  [turns.expect]
+  no_tool_calls = true
+  reply_contains = ["buenos"]
+  stop = "final"

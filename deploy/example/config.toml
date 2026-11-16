@@ -1,0 +1,62 @@
+# holaclaw — an example config to start from by hand; `holaclaw init
+# --provider` writes a smaller one. Validate with `holaclaw check`.
+version = 1
+
+[server]
+data_dir = "/var/lib/holaclaw"
+
+[providers.ollama]               # any OpenAI-compatible endpoint
+type     = "openai-compatible"
+base_url = "http://localhost:11434/v1"
+
+[models.local]
+provider = "ollama"
+id       = "gemma4:e2b"
+context  = 8192
+tools    = true
+
+# A cloud model, e.g. as opt-in fallback. Store the key with:
+#   printf %s "$KEY" | holaclaw auth set providers.openrouter api_key
+# [providers.openrouter]
+# type     = "openai-compatible"
+# base_url = "https://openrouter.ai/api/v1"
+# auth     = "api-key"
+# sort     = "throughput"        # a slow route can turn a 2 s plan call into 90 s (docs/models.md)
+#
+# [models.cloud]
+# provider = "openrouter"
+# id       = "deepseek/deepseek-v4.1-flash"
+# context  = 32768
+# tools    = true
+#
+# A decision model as guard for tool calls (experimental transport, ~0.4 s
+# and ~$0.00002 per call). It sees an excerpt of the tool arguments.
+# [models.jev]
+# provider = "openrouter"
+# id       = "~typesafe/jev-latest"
+# api      = "decisions"
+# url      = "https://openrouter.ai/api/alpha/decisions"
+#
+# An image model (~$0.01 per image); enables the image.generate tool.
+# [models.muse]
+# provider = "openrouter"
+# id       = "meta/muse-image"
+# api      = "images"
+#
+# The browser sidecar (§21). Present = the browser is on and every agent gets
+# browser.do (an agent opts out with browser.enabled = false in agent.toml);
+# $HOLACLAW_BROWSER_ENABLED wins over `enabled`. The sidecar runs as its own
+# user from holaclaw-browser.service, `socket` defaults to the path below, and
+# `binary` is only needed when the browser is not on PATH. Visible by default:
+# without Xvfb set headless = true.
+# [browser]
+# enabled   = true
+# socket    = "/run/holaclaw-browser/browser.sock"
+# binary    = "/usr/bin/chromium"
+# headless  = false
+#
+# Recommended with it: a decision model as the agent's `decide` role (one call
+# per step instead of a chat turn):
+#   [models]
+#   decide = "jev"
+# Limit where it may go with `browser.allow` in agent.toml.

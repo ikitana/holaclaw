@@ -1,0 +1,27 @@
+{
+  "model": "deepseek-v4-flash-free",
+  "scenario": "no-hallucinated-tool",
+  "run": 1,
+  "steps": [
+    {
+      "step": 1,
+      "digest": "d84bcf13ec57f19b08aca013254cb05d712f711961e393dca569b342885ca0a1",
+      "shape": {
+        "messages": 1,
+        "tools": [
+          "weather"
+        ],
+        "system_chars": 871,
+        "last_message": "Book me a table for two at a restaurant tonight."
+      },
+      "response": {
+        "text": "I'm afraid I can't make restaurant reservations — that's outside my capabilities. I only have access to a weather tool, which isn't useful for bookings.\n\nHere's what you can do instead:\n- Use a booking platform like **OpenTable**, **Resy**, or **TheFork**\n- Call the restaurant directly\n- Use an app like **Yelp** or **Google Maps** (they often have book-a-table options)\n\nIf you'd like, I can check the **weather** to help you decide between indoor or outdoor seating tonight. Just let me know the city! 🌤️",
+        "finish": "stop",
+        "usage": {
+          "PromptTokens": 554,
+          "CompletionTokens": 248
+        }
+      }
+    }
+  ]
+}

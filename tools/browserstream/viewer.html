@@ -1,0 +1,390 @@
+<!doctype html>
+<!--
+  Dev-only live view (tools/browserstream). Polls /sessions for the running
+  agents and shows one as a tab per browser; picking one opens /stream, whose
+  frames are drawn to the canvas. View-only: no pointer or key events are
+  sent, only page-tab switches within the chosen agent.
+
+  Beside the canvas is the timeline, fed by two feeds that arrive as text
+  messages on the same socket: {"type":"activity"} is the sidecar's own
+  account of the observes and acts it served, {"type":"event"} is a browser.*
+  event from the daemon — what the agent thought it was doing. Neither ever
+  carries the text an action typed, and nothing here would render it if it did.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>browserstream</title>
+<style>
+  html, body { height: 100%; }
+  body { font: 13px system-ui, sans-serif; margin: 0; background: #111; color: #ddd;
+         display: flex; flex-direction: column; }
+  #agents { display: flex; gap: 4px; padding: 8px; background: #1b1b1b; flex-wrap: wrap; }
+  #agents button, #pages button, #filters button {
+    background: #333; color: #ddd; border: 1px solid #555; padding: 4px 10px; cursor: pointer;
+  }
+  #agents button.active, #pages button.active { border-color: #7aa; color: #cff; }
+  #agents button:hover, #pages button:hover, #filters button:hover { background: #3c3c3c; }
+  #empty { padding: 8px; color: #886; }
+  #pages { display: flex; gap: 4px; padding: 4px 8px; flex-wrap: wrap; }
+  #pages button { max-width: 22em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  #status { padding: 4px 8px; color: #9a9; }
+  #main { display: flex; flex: 1 1 auto; min-height: 0; gap: 8px; }
+  #view { flex: 1 1 auto; min-width: 0; overflow: auto; }
+  canvas { display: block; margin: 8px auto; background: #000; max-width: 100%; }
+
+  #timeline { flex: 0 0 38%; min-width: 360px; display: flex; flex-direction: column;
+              min-height: 0; background: #161616; border-left: 1px solid #2a2a2a; }
+  #filters { display: flex; gap: 10px; align-items: center; flex-wrap: wrap;
+             padding: 6px 8px; background: #1b1b1b; border-bottom: 1px solid #2a2a2a; color: #aaa; }
+  #filters label { cursor: pointer; user-select: none; }
+  #log { flex: 1 1 auto; overflow-y: auto; padding: 4px 0 12px;
+         font: 12px ui-monospace, SFMono-Regular, Menlo, monospace; }
+  .row { padding: 2px 8px; white-space: pre-wrap; word-break: break-word; border-left: 3px solid transparent; }
+  .row:hover { background: #1d1d1d; }
+  .t { color: #666; margin-right: 6px; }
+  .row.event { color: #9cc7ee; border-left-color: #2d4d66; }
+  .row.act { color: #bfe7bf; border-left-color: #2f5a2f; }
+  .row.observe { color: #9a9a9a; border-left-color: #3a3a3a; cursor: pointer; }
+  .row.bad { color: #e9a3a3; border-left-color: #6b2f2f; }
+  .row.note { color: #c8b88a; border-left-color: #5a4c26; }
+  .detail { display: none; padding: 2px 8px 6px 34px; color: #8fa3b8; white-space: pre-wrap; }
+  .row.open + .detail { display: block; }
+  body.hide-event .row.event, body.hide-event .row.event + .detail { display: none; }
+  body.hide-activity .row.act, body.hide-activity .row.observe,
+  body.hide-activity .row.act + .detail, body.hide-activity .row.observe + .detail { display: none; }
+  body.hide-observe .row.observe, body.hide-observe .row.observe + .detail { display: none; }
+</style>
+</head>
+<body>
+<div id="agents"></div>
+<div id="empty">waiting for a browser to start…</div>
+<div id="pages"></div>
+<div id="status">idle</div>
+<div id="main">
+  <div id="view"><canvas id="screen" width="1280" height="1200"></canvas></div>
+  <aside id="timeline">
+    <div id="filters">
+      <label><input type="checkbox" id="f-event" checked> agent events</label>
+      <label><input type="checkbox" id="f-activity" checked> sidecar activity</label>
+      <label><input type="checkbox" id="f-observe" checked> show observes</label>
+      <button id="clear">clear</button>
+    </div>
+    <div id="log"></div>
+  </aside>
+</div>
+<script>
+(function () {
+  "use strict";
+  var $ = function (id) { return document.getElementById(id); };
+  var canvas = $("screen"), ctx = canvas.getContext("2d");
+  var log = $("log");
+  var ws = null, current = "";
+  var maxRows = 600;
+
+  function say(text) { $("status").textContent = text; }
+
+  // --- agent discovery --------------------------------------------------------
+
+  function pollSessions() {
+    fetch("/sessions").then(function (r) { return r.json(); }).then(renderAgents).catch(function () {});
+  }
+
+  function renderAgents(sessions) {
+    var box = $("agents");
+    box.textContent = "";
+    $("empty").hidden = sessions.length > 0;
+    sessions.forEach(function (s) {
+      var b = document.createElement("button");
+      b.textContent = s.agent + " (" + (s.tabs || []).length + ")";
+      if (s.agent === current) { b.className = "active"; }
+      b.onclick = function () { watch(s.agent); };
+      box.appendChild(b);
+    });
+    if (!current && sessions.length > 0) { watch(sessions[0].agent); }
+  }
+
+  // --- stream ------------------------------------------------------------------
+
+  function watch(agent) {
+    if (agent === current && ws) { return; }
+    if (ws) { ws.close(); ws = null; }
+    current = agent;
+    var url = location.origin.replace(/^http/, "ws") + "/stream?agent=" + encodeURIComponent(agent);
+    ws = new WebSocket(url);
+    ws.binaryType = "blob";
+    ws.onopen = function () { say("connecting to " + agent + "…"); };
+    ws.onclose = function () { if (current === agent) { say(agent + ": disconnected"); } };
+    ws.onerror = function () { say(agent + ": stream error"); };
+    ws.onmessage = onMessage;
+  }
+
+  function onMessage(e) {
+    if (typeof e.data === "string") {
+      var m;
+      try { m = JSON.parse(e.data); } catch (err) { return; }
+      if (m.type === "status") { say(m.text); }
+      else if (m.type === "meta") { renderPages(m.tabs || []); }
+      else if (m.type === "activity" && m.activity) { addActivity(m.activity); }
+      else if (m.type === "event" && m.event) { addEvent(m.event); }
+      return;
+    }
+    createImageBitmap(e.data).then(function (bmp) {
+      if (canvas.width !== bmp.width || canvas.height !== bmp.height) {
+        canvas.width = bmp.width;
+        canvas.height = bmp.height;
+      }
+      ctx.drawImage(bmp, 0, 0);
+      bmp.close();
+    }).catch(function () {});
+  }
+
+  function renderPages(tabs) {
+    var box = $("pages");
+    box.textContent = "";
+    tabs.forEach(function (tab) {
+      var b = document.createElement("button");
+      b.textContent = tab.title || tab.url || tab.id;
+      if (tab.active) { b.className = "active"; }
+      b.onclick = function () {
+        if (ws && ws.readyState === 1) { ws.send(JSON.stringify({ type: "tab", tab: tab.id })); }
+      };
+      box.appendChild(b);
+    });
+  }
+
+  // --- the timeline --------------------------------------------------------------
+
+  function stamp(iso) {
+    var d = iso ? new Date(iso) : new Date();
+    if (isNaN(d.getTime())) { d = new Date(); }
+    var p = function (n, w) { return String(n).padStart(w, "0"); };
+    return p(d.getMinutes(), 2) + ":" + p(d.getSeconds(), 2) + "." + p(d.getMilliseconds(), 3);
+  }
+
+  function atBottom() {
+    return log.scrollHeight - log.scrollTop - log.clientHeight < 40;
+  }
+
+  // push appends one row, and a detail block under it when there is one to
+  // expand. Everything goes in as text: nothing from a page is ever HTML here.
+  function push(cls, iso, text, detail) {
+    var stick = atBottom();
+    var row = document.createElement("div");
+    row.className = "row " + cls;
+    var t = document.createElement("span");
+    t.className = "t";
+    t.textContent = stamp(iso);
+    row.appendChild(t);
+    row.appendChild(document.createTextNode(text));
+    log.appendChild(row);
+    if (detail) {
+      var d = document.createElement("div");
+      d.className = "detail";
+      d.textContent = detail;
+      log.appendChild(d);
+      row.onclick = function () { row.classList.toggle("open"); };
+    }
+    while (log.childElementCount > maxRows) { log.removeChild(log.firstChild); }
+    if (stick) { log.scrollTop = log.scrollHeight; }
+  }
+
+  function num(v, digits) {
+    return (typeof v === "number") ? v.toFixed(digits) : null;
+  }
+
+  // --- source A: the sidecar's own activity ---------------------------------------
+
+  function flags(c) {
+    var out = [];
+    if (c.expanded) { out.push("expanded"); }
+    if (c.invalid) { out.push("invalid"); }
+    if (c.required) { out.push("required"); }
+    if (c.haspopup) { out.push("opens " + c.haspopup); }
+    if (c.secret) { out.push("secret"); }
+    if (c.disabled) { out.push("disabled"); }
+    if (c.offscreen) { out.push("offscreen"); }
+    if (c.focused) { out.push("focused"); }
+    return out.length ? " [" + out.join("|") + "]" : "";
+  }
+
+  function shortlistText(list) {
+    return list.map(function (c) {
+      var line = c.ref + " " + (c.role || "?") + " \"" + (c.name || "") + "\"";
+      if (c.value) { line += " = \"" + c.value + "\""; }
+      return line + flags(c);
+    }).join("\n");
+  }
+
+  function addActivity(a) {
+    var bits = [];
+    if (a.op === "observe") {
+      bits.push("observe");
+      bits.push((a.candidates || 0) + "/" + (a.total || 0) + " candidates");
+      if (a.text_bytes) {
+        bits.push("text " + a.text_bytes + "B" + (a.text_around ? " around " + a.text_around : "") +
+                  (a.truncated ? " (cut)" : ""));
+      }
+      if (a.hints && a.hints.length) { bits.push("hints: " + a.hints.join(", ")); }
+      if (a.alerts && a.alerts.length) { bits.push("alerts: «" + a.alerts.join("» «") + "»"); }
+      if (a.loading) { bits.push("loading"); }
+      if (!a.ok) { bits.push("failed" + (a.code ? " " + a.code : "")); }
+      bits.push(a.took_ms + " ms");
+      push(a.ok === false ? "observe bad" : "observe", a.at, bits.join(" · "),
+           (a.shortlist && a.shortlist.length) ? shortlistText(a.shortlist) : "");
+      return;
+    }
+    // act
+    if (a.kind === "wait") {
+      bits.push("act wait until " + (a.until || "quiet"));
+      bits.push("quiet " + (a.quiet ? "✓" : "✗"));
+    } else {
+      var head = "act " + (a.kind || "?");
+      if (a.ref) { head += " " + a.ref; }
+      if (a.target) { head += " → " + a.target; }
+      if (a.kind === "navigate" && a.url) { head += " → " + a.url; }
+      bits.push(head);
+      if (a.clear) { bits.push("clear"); }
+      if (a.submit) { bits.push("submit"); }
+      bits.push(a.ok ? "ok" : ("failed" + (a.code ? " " + a.code : "")));
+      if (a.navigated) { bits.push("navigated"); }
+      if (a.kind !== "navigate" && a.url) { bits.push(a.url); }
+    }
+    bits.push(a.took_ms + " ms");
+    push(a.ok ? "act" : "act bad", a.at, bits.join(" · "));
+  }
+
+  // --- source B: the agent's own account (daemon events) ---------------------------
+
+  function moveLine(n, m) {
+    var line = "move #" + n + ": " + (m.action || "?");
+    if (m.target) { line += " " + m.target; }
+    if (m.expect) { line += " → expect: " + m.expect; }
+    return line;
+  }
+
+  function stepLine(at) {
+    if (at.until) {
+      return "wait until " + at.until + " · quiet " + (at.quiet ? "✓" : "✗") + " · " + at.took_ms + " ms";
+    }
+    if (at.held) {
+      // The run admitting it is going nowhere: no move, no scores, only the
+      // reason in internal/browser's own words.
+      return "step #" + at.n + " held: " + at.held +
+        (at.why ? " · " + at.why : "") + " · " + at.took_ms + " ms";
+    }
+    var bits = ["step #" + at.n + " " + (at.action || "?")];
+    if (at.strategy) { bits.push(at.strategy); }
+    if (at.target) { bits.push(at.target); } else if (at.ref) { bits.push(at.ref); }
+    if (at.role) { bits.push(at.role); }
+    if (num(at.effect_p, 2) !== null) { bits.push("effect " + num(at.effect_p, 2)); }
+    if (num(at.goal_p, 2) !== null) { bits.push("goal " + num(at.goal_p, 2)); }
+    if (num(at.load_p, 2) !== null) { bits.push("load " + num(at.load_p, 2)); }
+    if (at.risk) { bits.push("risk " + at.risk); }
+    if (typeof at.rung === "number") { bits.push("rung " + at.rung); }
+    if (at.opened) { bits.push("opened"); }
+    if (at.panel) { bits.push("panel"); }
+    if (at.picked) { bits.push("picked " + (at.pick_target || at.pick_ref || "")); }
+    if (at.url) { bits.push(at.url); }
+    bits.push(at.took_ms + " ms");
+    return bits.join(" · ");
+  }
+
+  function finishedLine(at) {
+    var bits = ["task finished: " + (at.outcome || "?")];
+    if (at.steps) { bits.push(at.steps + " steps"); }
+    if (at.move_calls) { bits.push(at.move_calls + " move calls"); }
+    if (at.decision_calls) { bits.push(at.decision_calls + " decision calls"); }
+    if (at.move_budget) { bits.push("budget " + at.move_budget); }
+    if (at.waits) { bits.push(at.waits + " waits"); }
+    if (at.recoveries) { bits.push(at.recoveries + " recoveries"); }
+    if (at.prompt_tokens || at.output_tokens) {
+      bits.push("tokens " + (at.prompt_tokens || 0) + "/" + (at.output_tokens || 0));
+    }
+    if (at.extract_by) { bits.push("extract by " + at.extract_by); }
+    if (at.downloads) { bits.push(at.downloads + " downloads"); }
+    if (num(at.cost, 4) !== null && at.cost) { bits.push("cost " + num(at.cost, 4)); }
+    bits.push(at.took_ms + " ms");
+    return bits.join(" · ");
+  }
+
+  function addEvent(ev) {
+    var at = ev.attrs || {}, when = ev.time, cls = "event";
+    var lines = [];
+    switch (ev.type) {
+      case "browser.task.started":
+        lines.push("task started · agent " + (at.agent || "?") +
+                   (at.decider ? " · decider " + at.decider : "") + (at.detached ? " · detached" : ""));
+        break;
+      case "browser.task.finished":
+        lines.push(finishedLine(at));
+        break;
+      case "browser.move":
+        (at.moves || []).forEach(function (m) { lines.push(moveLine(at.n, m)); });
+        var tail = [];
+        if (at.done) { tail.push("done"); }
+        if (at.blocked) { tail.push("blocked: " + at.blocked); }
+        if (at.dropped) { tail.push(at.dropped + " dropped"); }
+        if (at.retried) { tail.push("retried"); }
+        if (at.prompt_tokens || at.output_tokens) {
+          tail.push("tokens " + (at.prompt_tokens || 0) + "/" + (at.output_tokens || 0));
+        }
+        tail.push(at.took_ms + " ms");
+        lines.push("move #" + at.n + " · " + tail.join(" · "));
+        break;
+      case "browser.step":
+        lines.push(stepLine(at));
+        break;
+      case "browser.blocked":
+        cls = "event note";
+        lines.push("blocked: " + (at.why || "?"));
+        break;
+      case "browser.download":
+        cls = "event note";
+        lines.push("download" + (at.name ? " " + at.name : "") + (at.size ? " · " + at.size + "B" : ""));
+        break;
+      case "approval.requested":
+        // The one thing that makes a run look frozen: it is waiting for a
+        // person to answer in the chat, and nothing here will move until then.
+        cls = "event bad";
+        lines.push("WAITING FOR APPROVAL" + (at.kind ? " (" + at.kind + ")" : "") +
+                   (at.summary ? ": " + at.summary : "") + " — answer it in the chat");
+        break;
+      case "approval.resolved":
+        cls = "event note";
+        lines.push("approval " + (at.status || at.decision || "resolved"));
+        break;
+      default:
+        cls = "event note";
+        lines.push(ev.type.replace(/^browser\./, "") + " " + compact(at));
+    }
+    lines.forEach(function (line) { push(cls, when, line); });
+  }
+
+  // compact renders the attributes of an event this page has no line for.
+  function compact(at) {
+    return Object.keys(at).map(function (k) {
+      var v = at[k];
+      return k + "=" + (typeof v === "object" ? JSON.stringify(v) : String(v));
+    }).join(" · ");
+  }
+
+  // --- filters ---------------------------------------------------------------------
+
+  function filter(id, cls) {
+    var box = $(id);
+    var apply = function () { document.body.classList.toggle(cls, !box.checked); };
+    box.onchange = apply;
+    apply();
+  }
+  filter("f-event", "hide-event");
+  filter("f-activity", "hide-activity");
+  filter("f-observe", "hide-observe");
+  $("clear").onclick = function () { log.textContent = ""; };
+
+  pollSessions();
+  setInterval(pollSessions, 1500);
+})();
+</script>
+</body>
+</html>

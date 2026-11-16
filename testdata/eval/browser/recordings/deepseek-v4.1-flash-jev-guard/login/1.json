@@ -1,0 +1,25 @@
+{
+  "model": "deepseek-v4.1-flash+jev-guard",
+  "scenario": "login",
+  "run": 1,
+  "steps": [
+    {
+      "step": 1,
+      "digest": "79ea8d467a6080820a3d159b4c131da2d4120ac175524b4473a53ccecd90e052",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 966,
+        "last_message": "…Sign in to the mail inbox and report the subject of the newest message.\nstart here: http://127.0.0.1:46681/login/inbox?run=deepseek-v4.1-flash-jev-guard-login-1"
+      },
+      "response": {
+        "text": "{\"start_url\":\"http://127.0.0.1:46681/login/inbox?run=deepseek-v4.1-flash-jev-guard-login-1\",\"steps\":[{\"kind\":\"open\",\"target\":\"the sign-in page\",\"url\":\"http://127.0.0.1:46681/login/inbox?run=deepseek-v4.1-flash-jev-guard-login-1\",\"expect\":\"A sign-in form asking for an email and password is shown.\"},{\"kind\":\"wait\",\"target\":\"the sign-in form\",\"expect\":\"The email and password fields are ready for input, and the script stops here because a person must sign in.\"}],\"extract\":\"\"}",
+        "finish": "stop",
+        "usage": {
+          "PromptTokens": 317,
+          "CompletionTokens": 257
+        }
+      }
+    }
+  ]
+}

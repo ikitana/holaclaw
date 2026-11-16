@@ -1,0 +1,28 @@
+version = 1
+tools = ["memory", "files", "fetch", "attach", "task.create"]
+
+[models]
+chat = "local"
+# fallback = "cloud"             # opt-in; every use is a trace event
+# guard    = "jev"               # classifier for tool calls; see guard_mode below
+# image    = "muse"              # turns image.generate on
+# decide   = "jev"               # browser.do's per-step decisions; without it the chat model decides every step, slowly
+# plan     = "cloud"             # fast chat model to plan a browser task; unset = the chat role
+
+[policy]
+read     = "allow"
+write    = "allow"
+external = "allow"
+exec     = "deny"                # add "exec" to tools and set "ask" to enable
+# guard_mode      = "recommend"  # recommend: advice on approvals · auto: allow / deny, nobody is asked
+# guard_threshold = 0.7
+
+# [limits]
+# images_per_day = 20
+
+# The browser (§21): with the browser on in config.toml the agent gets
+# browser.do. Without an allow-list it may open any site — the policy gate,
+# the taint and the per-step approvals still apply.
+# [browser]
+# enabled = false                # keep this agent off the browser
+# allow   = ["wikipedia.org", "example.com"]

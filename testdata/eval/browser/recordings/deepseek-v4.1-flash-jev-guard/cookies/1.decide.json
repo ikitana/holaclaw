@@ -1,0 +1,339 @@
+{
+  "model": "deepseek-v4.1-flash+jev-guard",
+  "case": "cookies",
+  "steps": [
+    {
+      "step": 1,
+      "digest": "52e281de6a87a87c94fc7b9cc65b22d8cef0f6e2f2ff16b69050437c0bd08f4f",
+      "shape": {
+        "questions": [
+          "blocker",
+          "element",
+          "goal",
+          "risk",
+          "serves",
+          "surprise"
+        ],
+        "state_chars": 590,
+        "state_tail": "…tle: Example Contact\ncandidates:\n  r1: button \"Accept all\"\n  r2: button \"Manage\"\ntext:\nWe use cookies to remember your preferences. Accept all Manage\n\n\u003c\u003c/page\u003e\u003e"
+      },
+      "response": {
+        "answers": {
+          "blocker": {
+            "Type": "choice",
+            "Noul": 0,
+            "Choice": "cookies",
+            "Score": 0,
+            "Probabilities": {
+              "2fa": 0,
+              "captcha": 0,
+              "cookies": 0.99,
+              "error": 0,
+              "login": 0,
+              "none": 0.01
+            },
+            "Confidence": 0.99
+          },
+          "element": {
+            "Type": "choice",
+            "Noul": 0,
+            "Choice": "none",
+            "Score": 0,
+            "Probabilities": {
+              "none": 0.95,
+              "r1": 0.04,
+              "r2": 0.01
+            },
+            "Confidence": 0.93
+          },
+          "goal": {
+            "Type": "noul",
+            "Noul": 0.34,
+            "Choice": "",
+            "Score": 0,
+            "Probabilities": null,
+            "Confidence": 0
+          },
+          "risk": {
+            "Type": "choice",
+            "Noul": 0,
+            "Choice": "none",
+            "Score": 0,
+            "Probabilities": {
+              "account": 0.01,
+              "delete": 0,
+              "none": 0.98,
+              "purchase": 0,
+              "send": 0.01
+            },
+            "Confidence": 0.97
+          },
+          "serves": {
+            "Type": "noul",
+            "Noul": 0.62,
+            "Choice": "",
+            "Score": 0,
+            "Probabilities": null,
+            "Confidence": 0
+          },
+          "surprise": {
+            "Type": "noul",
+            "Noul": 0.79,
+            "Choice": "",
+            "Score": 0,
+            "Probabilities": null,
+            "Confidence": 0
+          }
+        },
+        "usage": {
+          "PromptTokens": 1139,
+          "CompletionTokens": 198
+        },
+        "cost": 0.000047838
+      }
+    },
+    {
+      "step": 2,
+      "digest": "d9dbcccfd0aa22f0121dd453116ebb924449435776658ff65a0a57193df0837b",
+      "shape": {
+        "questions": [
+          "blocker",
+          "element",
+          "goal",
+          "risk",
+          "serves",
+          "surprise"
+        ],
+        "state_chars": 827,
+        "state_tail": "…tle: Example Contact\ncandidates:\n  r1: button \"Accept all\"\n  r2: button \"Manage\"\ntext:\nWe use cookies to remember your preferences. Accept all Manage\n\n\u003c\u003c/page\u003e\u003e"
+      },
+      "response": {
+        "answers": {
+          "blocker": {
+            "Type": "choice",
+            "Noul": 0,
+            "Choice": "cookies",
+            "Score": 0,
+            "Probabilities": {
+              "2fa": 0,
+              "captcha": 0,
+              "cookies": 0.99,
+              "error": 0,
+              "login": 0,
+              "none": 0.01
+            },
+            "Confidence": 0.99
+          },
+          "element": {
+            "Type": "choice",
+            "Noul": 0,
+            "Choice": "r1",
+            "Score": 0,
+            "Probabilities": {
+              "none": 0.15,
+              "r1": 0.85
+            },
+            "Confidence": 0.69
+          },
+          "goal": {
+            "Type": "noul",
+            "Noul": 0.11,
+            "Choice": "",
+            "Score": 0,
+            "Probabilities": null,
+            "Confidence": 0
+          },
+          "risk": {
+            "Type": "choice",
+            "Noul": 0,
+            "Choice": "none",
+            "Score": 0,
+            "Probabilities": {
+              "account": 0.09,
+              "delete": 0.01,
+              "none": 0.88,
+              "purchase": 0,
+              "send": 0.02
+            },
+            "Confidence": 0.84
+          },
+          "serves": {
+            "Type": "noul",
+            "Noul": 0.8,
+            "Choice": "",
+            "Score": 0,
+            "Probabilities": null,
+            "Confidence": 0
+          },
+          "surprise": {
+            "Type": "noul",
+            "Noul": 0.56,
+            "Choice": "",
+            "Score": 0,
+            "Probabilities": null,
+            "Confidence": 0
+          }
+        },
+        "usage": {
+          "PromptTokens": 1172,
+          "CompletionTokens": 191
+        },
+        "cost": 0.000049224
+      }
+    },
+    {
+      "step": 3,
+      "digest": "98f8fc58c4cd6a5bb52d0425f96945a2e74f4d8185284b6dc7308ceaf8b9673a",
+      "shape": {
+        "questions": [
+          "blocker",
+          "goal",
+          "risk",
+          "serves",
+          "surprise"
+        ],
+        "state_chars": 573,
+        "state_tail": "…uard-cookies-1\ntitle: Example Contact\ncandidates: none\ntext:\nContact Example Co. Address: 42 Example Street, Springfield, ST 55555 Phone: +1-555-0142\n\n\u003c\u003c/page\u003e\u003e"
+      },
+      "response": {
+        "answers": {
+          "blocker": {
+            "Type": "choice",
+            "Noul": 0,
+            "Choice": "none",
+            "Score": 0,
+            "Probabilities": {
+              "2fa": 0,
+              "captcha": 0,
+              "cookies": 0.07,
+              "error": 0.01,
+              "login": 0,
+              "none": 0.92
+            },
+            "Confidence": 0.91
+          },
+          "goal": {
+            "Type": "noul",
+            "Noul": 0.78,
+            "Choice": "",
+            "Score": 0,
+            "Probabilities": null,
+            "Confidence": 0
+          },
+          "risk": {
+            "Type": "choice",
+            "Noul": 0,
+            "Choice": "none",
+            "Score": 0,
+            "Probabilities": {
+              "account": 0,
+              "delete": 0,
+              "none": 1,
+              "purchase": 0,
+              "send": 0
+            },
+            "Confidence": 1
+          },
+          "serves": {
+            "Type": "noul",
+            "Noul": 0.89,
+            "Choice": "",
+            "Score": 0,
+            "Probabilities": null,
+            "Confidence": 0
+          },
+          "surprise": {
+            "Type": "noul",
+            "Noul": 0.58,
+            "Choice": "",
+            "Score": 0,
+            "Probabilities": null,
+            "Confidence": 0
+          }
+        },
+        "usage": {
+          "PromptTokens": 1068,
+          "CompletionTokens": 161
+        },
+        "cost": 0.000044856
+      }
+    },
+    {
+      "step": 4,
+      "digest": "98f8fc58c4cd6a5bb52d0425f96945a2e74f4d8185284b6dc7308ceaf8b9673a",
+      "shape": {
+        "questions": [
+          "blocker",
+          "goal",
+          "risk",
+          "serves",
+          "surprise"
+        ],
+        "state_chars": 573,
+        "state_tail": "…uard-cookies-1\ntitle: Example Contact\ncandidates: none\ntext:\nContact Example Co. Address: 42 Example Street, Springfield, ST 55555 Phone: +1-555-0142\n\n\u003c\u003c/page\u003e\u003e"
+      },
+      "response": {
+        "answers": {
+          "blocker": {
+            "Type": "choice",
+            "Noul": 0,
+            "Choice": "none",
+            "Score": 0,
+            "Probabilities": {
+              "2fa": 0,
+              "captcha": 0,
+              "cookies": 0.1,
+              "error": 0.01,
+              "login": 0,
+              "none": 0.89
+            },
+            "Confidence": 0.87
+          },
+          "goal": {
+            "Type": "noul",
+            "Noul": 0.8,
+            "Choice": "",
+            "Score": 0,
+            "Probabilities": null,
+            "Confidence": 0
+          },
+          "risk": {
+            "Type": "choice",
+            "Noul": 0,
+            "Choice": "none",
+            "Score": 0,
+            "Probabilities": {
+              "account": 0,
+              "delete": 0,
+              "none": 1,
+              "purchase": 0,
+              "send": 0
+            },
+            "Confidence": 1
+          },
+          "serves": {
+            "Type": "noul",
+            "Noul": 0.9,
+            "Choice": "",
+            "Score": 0,
+            "Probabilities": null,
+            "Confidence": 0
+          },
+          "surprise": {
+            "Type": "noul",
+            "Noul": 0.54,
+            "Choice": "",
+            "Score": 0,
+            "Probabilities": null,
+            "Confidence": 0
+          }
+        },
+        "usage": {
+          "PromptTokens": 1068,
+          "CompletionTokens": 161
+        },
+        "cost": 0.000044856
+      }
+    }
+  ]
+}

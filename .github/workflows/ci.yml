@@ -1,0 +1,37 @@
+name: ci
+
+on:
+  # Run on pushes to main so caches get saved on the default branch, which all
+  # PRs can restore from (PR-scoped caches don't help across PRs).
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+# Cancel superseded runs on the same ref so stacked pushes don't queue behind
+# each other for runners.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/ci-setup
+        with:
+          go-cache-key: check
+      # Browser, docgen and bench tests are too slow for every PR; both jobs
+      # skip them with -short. docs-check catches a stale docs/reference
+      # without them.
+      - run: nix develop --command just build vet lint test-short docs-check
+
+  race:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/ci-setup
+        with:
+          go-cache-key: race
+      - run: nix develop --command just test-race-short

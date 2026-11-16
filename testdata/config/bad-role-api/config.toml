@@ -1,0 +1,21 @@
+version = 1
+
+[providers.openrouter]
+type     = "openai-compatible"
+base_url = "https://openrouter.ai/api/v1"
+
+[models.gemma]
+provider = "openrouter"
+id       = "gemma4:e2b"
+context  = 8192
+
+[models.jev]
+provider = "openrouter"
+id       = "~typesafe/jev-latest"
+api      = "decisions"
+url      = "https://openrouter.ai/api/alpha/decisions"
+
+[models.muse]
+provider = "openrouter"
+id       = "meta/muse-image"
+api      = "images"

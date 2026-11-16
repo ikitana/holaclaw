@@ -1,0 +1,24 @@
+{
+  "model": "deepseek-v4-flash-free",
+  "scenario": "fetch-weather-page",
+  "run": 1,
+  "steps": [
+    {
+      "step": 1,
+      "digest": "cf11d6dbce472df3a4b9fe2064c0394d5410fde91142c4835ef055fca4218145",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 452,
+        "last_message": "tool: fetch\nrisk: external\nrun: interactive\nrole: owner\ntainted: false\nargs_bytes: 57\n\u003cargs\u003e\n{\"url\":\"https://weather.example.invalid/mirefield/today\"}\n\u003c/args\u003e\n"
+      },
+      "response": {
+        "finish": "length",
+        "usage": {
+          "PromptTokens": 228,
+          "CompletionTokens": 512
+        }
+      }
+    }
+  ]
+}

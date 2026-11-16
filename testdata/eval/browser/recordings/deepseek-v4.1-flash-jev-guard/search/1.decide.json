@@ -1,0 +1,264 @@
+{
+  "model": "deepseek-v4.1-flash+jev-guard",
+  "case": "search",
+  "steps": [
+    {
+      "step": 1,
+      "digest": "fb490e14ed2b371614eaa277174865cde240121d9b7d1533558a6bc36f33b2c1",
+      "shape": {
+        "questions": [
+          "blocker",
+          "element",
+          "goal",
+          "risk",
+          "serves",
+          "surprise"
+        ],
+        "state_chars": 613,
+        "state_tail": "…search/?run=deepseek-v4.1-flash-jev-guard-search-1\ntitle: Example Outdoors — Search\ncandidates:\n  r1: textbox \"Search products\"\n  r2: button \"Search\"\n\n\u003c\u003c/page\u003e\u003e"
+      },
+      "response": {
+        "answers": {
+          "blocker": {
+            "Type": "choice",
+            "Noul": 0,
+            "Choice": "none",
+            "Score": 0,
+            "Probabilities": {
+              "2fa": 0,
+              "captcha": 0,
+              "cookies": 0,
+              "error": 0,
+              "login": 0,
+              "none": 1
+            },
+            "Confidence": 1
+          },
+          "element": {
+            "Type": "choice",
+            "Noul": 0,
+            "Choice": "r1",
+            "Score": 0,
+            "Probabilities": {
+              "none": 0,
+              "r1": 1,
+              "r2": 0
+            },
+            "Confidence": 1
+          },
+          "goal": {
+            "Type": "noul",
+            "Noul": 0.1,
+            "Choice": "",
+            "Score": 0,
+            "Probabilities": null,
+            "Confidence": 0
+          },
+          "risk": {
+            "Type": "choice",
+            "Noul": 0,
+            "Choice": "none",
+            "Score": 0,
+            "Probabilities": {
+              "account": 0,
+              "delete": 0,
+              "none": 1,
+              "purchase": 0,
+              "send": 0
+            },
+            "Confidence": 1
+          },
+          "serves": {
+            "Type": "noul",
+            "Noul": 0.95,
+            "Choice": "",
+            "Score": 0,
+            "Probabilities": null,
+            "Confidence": 0
+          },
+          "surprise": {
+            "Type": "noul",
+            "Noul": 0.1,
+            "Choice": "",
+            "Score": 0,
+            "Probabilities": null,
+            "Confidence": 0
+          }
+        },
+        "usage": {
+          "PromptTokens": 1154,
+          "CompletionTokens": 199
+        },
+        "cost": 0.000048468
+      }
+    },
+    {
+      "step": 2,
+      "digest": "bccae4efdf2e9ee2fe189fe8ebca5283f78e738e5a1bcbdacad8bb4585ab3197",
+      "shape": {
+        "questions": [
+          "blocker",
+          "element",
+          "goal",
+          "risk",
+          "serves",
+          "surprise"
+        ],
+        "state_chars": 714,
+        "state_tail": "…1: textbox \"Search products\" = \"Trailhead\"\n  r2: button \"Search\"\ntext:\nExample Outdoors Search products Search Results • Trailhead Kettle 2L — $34.50\n\n\u003c\u003c/page\u003e\u003e"
+      },
+      "response": {
+        "answers": {
+          "blocker": {
+            "Type": "choice",
+            "Noul": 0,
+            "Choice": "none",
+            "Score": 0,
+            "Probabilities": {
+              "2fa": 0,
+              "captcha": 0,
+              "cookies": 0,
+              "error": 0,
+              "login": 0,
+              "none": 1
+            },
+            "Confidence": 1
+          },
+          "element": {
+            "Type": "choice",
+            "Noul": 0,
+            "Choice": "r3",
+            "Score": 0,
+            "Probabilities": {
+              "none": 0,
+              "r1": 0,
+              "r2": 0,
+              "r3": 1
+            },
+            "Confidence": 1
+          },
+          "goal": {
+            "Type": "noul",
+            "Noul": 0.08,
+            "Choice": "",
+            "Score": 0,
+            "Probabilities": null,
+            "Confidence": 0
+          },
+          "risk": {
+            "Type": "choice",
+            "Noul": 0,
+            "Choice": "none",
+            "Score": 0,
+            "Probabilities": {
+              "account": 0,
+              "delete": 0,
+              "none": 1,
+              "purchase": 0,
+              "send": 0
+            },
+            "Confidence": 1
+          },
+          "serves": {
+            "Type": "noul",
+            "Noul": 0.93,
+            "Choice": "",
+            "Score": 0,
+            "Probabilities": null,
+            "Confidence": 0
+          },
+          "surprise": {
+            "Type": "noul",
+            "Noul": 0.08,
+            "Choice": "",
+            "Score": 0,
+            "Probabilities": null,
+            "Confidence": 0
+          }
+        },
+        "usage": {
+          "PromptTokens": 1226,
+          "CompletionTokens": 207
+        },
+        "cost": 0.000051492
+      }
+    },
+    {
+      "step": 3,
+      "digest": "45df8110876f229d73d38c29d3ddd18471b3b7e1f87089405710b8aa5942b451",
+      "shape": {
+        "questions": [
+          "blocker",
+          "goal",
+          "risk",
+          "serves",
+          "surprise"
+        ],
+        "state_chars": 697,
+        "state_tail": "…← Back to search\"\ntext:\n← Back to search Trailhead Kettle 2L Price: $34.50 Specifications Capacity: 2 litres Material: stainless steel Weight: 480 g.\n\n\u003c\u003c/page\u003e\u003e"
+      },
+      "response": {
+        "answers": {
+          "blocker": {
+            "Type": "choice",
+            "Noul": 0,
+            "Choice": "none",
+            "Score": 0,
+            "Probabilities": {
+              "2fa": 0,
+              "captcha": 0,
+              "cookies": 0,
+              "error": 0.01,
+              "login": 0,
+              "none": 0.99
+            },
+            "Confidence": 0.99
+          },
+          "goal": {
+            "Type": "noul",
+            "Noul": 0.82,
+            "Choice": "",
+            "Score": 0,
+            "Probabilities": null,
+            "Confidence": 0
+          },
+          "risk": {
+            "Type": "choice",
+            "Noul": 0,
+            "Choice": "none",
+            "Score": 0,
+            "Probabilities": {
+              "account": 0,
+              "delete": 0,
+              "none": 1,
+              "purchase": 0,
+              "send": 0
+            },
+            "Confidence": 1
+          },
+          "serves": {
+            "Type": "noul",
+            "Noul": 0.86,
+            "Choice": "",
+            "Score": 0,
+            "Probabilities": null,
+            "Confidence": 0
+          },
+          "surprise": {
+            "Type": "noul",
+            "Noul": 0.49,
+            "Choice": "",
+            "Score": 0,
+            "Probabilities": null,
+            "Confidence": 0
+          }
+        },
+        "usage": {
+          "PromptTokens": 1104,
+          "CompletionTokens": 161
+        },
+        "cost": 0.000046368
+      }
+    }
+  ]
+}

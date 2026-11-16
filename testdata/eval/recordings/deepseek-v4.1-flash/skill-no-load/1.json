@@ -1,0 +1,47 @@
+{
+  "model": "deepseek-v4.1-flash",
+  "scenario": "skill-no-load",
+  "run": 1,
+  "steps": [
+    {
+      "step": 1,
+      "digest": "d608a9bac1dad220d5b8a78f81106270bfc31ff8712b2cf75c0436329584fc50",
+      "shape": {
+        "messages": 1,
+        "tools": [
+          "skill.load"
+        ],
+        "system_chars": 1223,
+        "last_message": "What is 17 times 3?"
+      },
+      "response": {
+        "text": "17 × 3 = 51.",
+        "finish": "stop",
+        "usage": {
+          "PromptTokens": 590,
+          "CompletionTokens": 13
+        }
+      }
+    },
+    {
+      "step": 2,
+      "digest": "e9ba4ef320ec35e453b4d086dc2f513136f7ef9a7b0033383eccc44f6cc3062f",
+      "shape": {
+        "messages": 3,
+        "tools": [
+          "skill.load"
+        ],
+        "system_chars": 1223,
+        "last_message": "How do you say 'good morning' in Spanish?"
+      },
+      "response": {
+        "text": "\"Good morning\" in Spanish is **buenos días**.\n\nNote: it's plural — literally \"good days\" — so it stays *buenos días* even when you're greeting just one person. A casual shortening you'll also hear is *buenas*.",
+        "finish": "stop",
+        "usage": {
+          "PromptTokens": 614,
+          "CompletionTokens": 61
+        }
+      }
+    }
+  ]
+}

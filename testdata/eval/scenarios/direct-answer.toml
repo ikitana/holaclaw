@@ -1,0 +1,21 @@
+name = "direct-answer"
+description = "A question the model can answer alone. Tools exist but must stay untouched."
+max_steps = 4
+
+[[tools]]
+name = "weather"
+description = "Current weather for a city."
+parameters = '''{"type":"object","properties":{"city":{"type":"string"}},"required":["city"]}'''
+risk = "read"
+
+  [[tools.responses]]
+  text = "Sunny, 18 C."
+
+[[turns]]
+user = "What is 12 plus 30? Reply with the number only, do not use any tool."
+
+  [turns.expect]
+  no_tool_calls = true
+  reply_regex = "42"
+  max_steps = 1
+  stop = "final"

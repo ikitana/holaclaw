@@ -1,0 +1,53 @@
+{
+  "model": "deepseek-v4.1-flash",
+  "scenario": "tool-args",
+  "run": 1,
+  "steps": [
+    {
+      "step": 1,
+      "digest": "a78c7d0982e0d99fe07e4b553bb32866b0fe77762c5127484031ea9baefe94e3",
+      "shape": {
+        "messages": 1,
+        "tools": [
+          "brew"
+        ],
+        "system_chars": 871,
+        "last_message": "Brew 3 cups of rooibos, please."
+      },
+      "response": {
+        "tool_calls": [
+          {
+            "ID": "chatcmpl-tool-ba48c010e1673459",
+            "Name": "brew",
+            "Arguments": "{\"size\": 3, \"kind\": \"rooibos\"}"
+          }
+        ],
+        "finish": "tool_calls",
+        "usage": {
+          "PromptTokens": 546,
+          "CompletionTokens": 73
+        }
+      }
+    },
+    {
+      "step": 2,
+      "digest": "8b09d9157b36665043d5334f1c2f44e9bd34ed45c6ddb5cc384e288d99cccb56",
+      "shape": {
+        "messages": 3,
+        "tools": [
+          "brew"
+        ],
+        "system_chars": 871,
+        "last_message": "Brewing started."
+      },
+      "response": {
+        "text": "Done — brewing 3 cups of rooibos. ☕",
+        "finish": "stop",
+        "usage": {
+          "PromptTokens": 618,
+          "CompletionTokens": 16
+        }
+      }
+    }
+  ]
+}

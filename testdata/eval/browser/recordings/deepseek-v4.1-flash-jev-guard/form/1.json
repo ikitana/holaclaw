@@ -1,0 +1,61 @@
+{
+  "model": "deepseek-v4.1-flash+jev-guard",
+  "scenario": "form",
+  "run": 1,
+  "steps": [
+    {
+      "step": 1,
+      "digest": "c68e151f7977d1906b9970ab5c413380b1c3555b5a657d54b35a0a49bcc7a867",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 966,
+        "last_message": "…ented details (a made-up name, email and address) and report the booking code.\nstart here: http://127.0.0.1:46681/form/?run=deepseek-v4.1-flash-jev-guard-form-1"
+      },
+      "response": {
+        "text": "{\n  \"start_url\": \"http://127.0.0.1:46681/form/?run=deepseek-v4.1-flash-jev-guard-form-1\",\n  \"steps\": [\n    {\n      \"kind\": \"type\",\n      \"target\": \"the name field\",\n      \"text\": \"Ada Sample\",\n      \"url\": \"\",\n      \"submit\": false,\n      \"expect\": \"The name field contains the made-up name Ada Sample.\"\n    },\n    {\n      \"kind\": \"type\",\n      \"target\": \"the email field\",\n      \"text\": \"ada.sample@example.com\",\n      \"url\": \"\",\n      \"submit\": false,\n      \"expect\": \"The email field contains the made-up address ada.sample@example.com.\"\n    },\n    {\n      \"kind\": \"type\",\n      \"target\": \"the address field\",\n      \"text\": \"12 Example Street, Springfield\",\n      \"url\": \"\",\n      \"submit\": false,\n      \"expect\": \"The address field contains the made-up address.\"\n    },\n    {\n      \"kind\": \"click\",\n      \"target\": \"the submit button\",\n      \"text\": \"\",\n      \"url\": \"\",\n      \"submit\": false,\n      \"expect\": \"The form is submitted and a confirmation view appears.\"\n    },\n    {\n      \"kind\": \"wait\",\n      \"target\": \"the booking confirmation\",\n      \"text\": \"\",\n      \"url\": \"\",\n      \"submit\": false,\n      \"expect\": \"The confirmation with a booking code is visible.\"\n    }\n  ],\n  \"extract\": \"The booking code shown on the confirmation page.\"\n}",
+        "finish": "stop",
+        "usage": {
+          "PromptTokens": 321,
+          "CompletionTokens": 620
+        }
+      }
+    },
+    {
+      "step": 2,
+      "digest": "3eb4734da2969633af9e3b9ed095a92d9402ff19a24e8dbf0c4cdbfb876ab11e",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 585,
+        "last_message": "…e\"\n  r2: textbox \"Email\" = \"ada.sample@example.com\" (focused)\n  r3: button \"Next\"\ntext:\nBook a visit — step 1 of 3: your details Full name Email Next\n\n\u003c\u003c/page\u003e\u003e"
+      },
+      "response": {
+        "text": "{\"start_url\":\"\",\"steps\":[{\"kind\":\"click\",\"target\":\"the Next button\",\"text\":\"\",\"url\":\"\",\"submit\":false,\"expect\":\"Step 2 of the booking form appears with an address field\"},{\"kind\":\"type\",\"target\":\"the address field\",\"text\":\"12 Example Street, Springfield\",\"url\":\"\",\"submit\":false,\"expect\":\"The address field contains the made-up address 12 Example Street, Springfield\"},{\"kind\":\"click\",\"target\":\"the submit button\",\"text\":\"\",\"url\":\"\",\"submit\":false,\"expect\":\"The form is submitted and a confirmation view appears\"},{\"kind\":\"wait\",\"target\":\"the booking confirmation\",\"text\":\"\",\"url\":\"\",\"submit\":false,\"expect\":\"The confirmation with a booking code is visible\"}],\"extract\":\"the booking code shown on the booking confirmation\"}",
+        "finish": "stop",
+        "usage": {
+          "PromptTokens": 553,
+          "CompletionTokens": 432
+        }
+      }
+    },
+    {
+      "step": 3,
+      "digest": "89fb8c74e9eb6a129e4ee6956e788e48f332a4a9e5a7c146d0bd4b1883a63127",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 352,
+        "last_message": "…text:\nBook a visit — step 3 of 3: review • Name: Ada Sample • Email: ada.sample@example.com • Address: 12 Example Street, Springfield Confirm booking\n\n\u003c\u003c/page\u003e\u003e"
+      },
+      "response": {
+        "text": "not found",
+        "finish": "stop",
+        "usage": {
+          "PromptTokens": 256,
+          "CompletionTokens": 195
+        }
+      }
+    }
+  ]
+}

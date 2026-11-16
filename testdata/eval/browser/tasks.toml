@@ -1,0 +1,53 @@
+# The browser eval's task list (docs/browser.md).
+#
+# Every entry names one synthetic site of tools/eval/internal/sites — what the
+# site serves, the intent handed to the executor, the expected outcome, the
+# blocker or risk it must go through and the check it must pass all live in
+# that package. This file only says which of them run, in which order, and
+# which one of them may have its approval granted.
+#
+# approve = true means the scripted Humans answers yes to that task's one
+# approval request; everywhere else it answers no, and Takeover always answers
+# no — nobody is watching an eval run. The checkout task's whole point is the
+# refusal, so it is never granted.
+#
+# autocomplete's traps, in the order the agent hits them: a cookie modal that
+# must be dismissed before the form underneath is clickable; two station
+# fields that are autocompletes — a suggestion must be clicked, since typing
+# alone never commits a station; a trip-type box that is a div, not an input,
+# so it must be clicked open and an option clicked rather than typed into; and
+# a date field that is readonly and only accepts a day clicked in its dialog.
+
+[[tasks]]
+name = "login"
+
+[[tasks]]
+name = "cookies"
+
+[[tasks]]
+name = "form"
+approve = true # the booking is a "send": granted, so the confirmation is checked
+
+[[tasks]]
+name = "search"
+
+[[tasks]]
+name = "table"
+
+[[tasks]]
+name = "inject"
+
+[[tasks]]
+name = "checkout"
+
+[[tasks]]
+name = "download"
+
+[[tasks]]
+name = "captcha"
+
+[[tasks]]
+name = "popup"
+
+[[tasks]]
+name = "autocomplete" # one-way, so the round-trip's second table isn't a second right answer

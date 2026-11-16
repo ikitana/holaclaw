@@ -1,0 +1,22 @@
+name = "no-hallucinated-tool"
+description = "Nothing in the toolbox covers the request; the model must say so instead of inventing a call."
+max_steps = 4
+
+[[tools]]
+name = "weather"
+description = "Current weather for a city."
+parameters = '''{"type":"object","properties":{"city":{"type":"string"}},"required":["city"]}'''
+risk = "read"
+
+  [[tools.responses]]
+  text = "Cloudy, 9 C."
+
+[[turns]]
+user = "Book me a table for two at a restaurant tonight."
+
+  [turns.expect]
+  no_tool_calls = true
+  forbid_tools = ["weather"]
+  max_steps = 2
+  stop = "final"
+  reply_regex = "(?i)can(no|')t|cannot|unable|no tool|do not have|don't have"

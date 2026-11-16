@@ -1,0 +1,41 @@
+# Twenty public pages and the one control a step would have to find on each.
+# Format: url<TAB>role[|role…]<TAB>name-substring (case-insensitive; an empty
+# substring means "any control of that role"). Alternative roles are listed
+# where a site is free to call the same control a combobox or a textbox.
+#
+# Nothing here is logged in to and nothing is typed: the tool loads the page,
+# observes once, and looks for the control in the candidate list.
+
+# Search boxes — the case jev-browser had to leave the a11y tree for.
+https://duckduckgo.com/	combobox|searchbox|textbox	search
+https://www.bing.com/	combobox|searchbox|textbox	search
+https://en.wikipedia.org/wiki/Main_Page	searchbox|combobox|textbox	search
+
+# Google Flights — the owner's task; three fields on one page.
+https://www.google.com/travel/flights	combobox|textbox	where from
+https://www.google.com/travel/flights	combobox|textbox	where to
+https://www.google.com/travel/flights	textbox|combobox|button	departure
+
+# A login form (the username field only; no credentials are ever typed).
+https://github.com/login	textbox	username
+
+# Cookie-consent banners.
+https://www.theguardian.com/international	link	news
+https://www.nytimes.com/	link	world
+
+# E-commerce and newspaper search.
+https://www.ebay.com/	combobox|searchbox|textbox	search
+https://www.amazon.com/	combobox|searchbox|textbox	search
+https://www.bbc.com/	button|link|searchbox|textbox	search bbc
+https://www.reddit.com/	searchbox|combobox|textbox	search
+
+# Pagination.
+https://datatables.net/examples/basic_init/zero_configuration.html	link|button	next
+https://news.ycombinator.com/	link	=more
+
+# A select, a plain login form, a date picker, a contenteditable editor.
+https://the-internet.herokuapp.com/dropdown	combobox|listbox	
+https://the-internet.herokuapp.com/login	textbox	username
+https://demoqa.com/date-picker	textbox	select date
+https://www.booking.com/	button|textbox|combobox	check-in
+https://quilljs.com/	textbox	

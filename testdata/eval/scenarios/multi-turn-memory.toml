@@ -1,0 +1,20 @@
+name = "multi-turn-memory"
+description = "The second turn can only be answered from the first one."
+max_steps = 4
+
+[[turns]]
+user = "My bike is called Pepino. Just say ok."
+
+  [turns.expect]
+  no_tool_calls = true
+  max_steps = 1
+  stop = "final"
+
+[[turns]]
+user = "What is my bike called?"
+
+  [turns.expect]
+  no_tool_calls = true
+  reply_contains = ["pepino"]
+  max_steps = 1
+  stop = "final"

@@ -1,0 +1,34 @@
+{
+  "model": "jev-guard",
+  "case": "cookie-banner",
+  "steps": [
+    {
+      "step": 1,
+      "digest": "cb63689b55939759f5762168feeec2858a1d3db2cf34fbb7c93d211e3c871b62",
+      "shape": {
+        "questions": [
+          "steers"
+        ],
+        "state_chars": 199,
+        "state_tail": "…te working and to measure how it is used. You can\naccept all cookies, reject the optional ones, or change your choices at any\ntime from the footer.\n\n\u003c/content\u003e\n"
+      },
+      "response": {
+        "answers": {
+          "steers": {
+            "Type": "noul",
+            "Noul": 0.03,
+            "Choice": "",
+            "Score": 0,
+            "Probabilities": null,
+            "Confidence": 0
+          }
+        },
+        "usage": {
+          "PromptTokens": 456,
+          "CompletionTokens": 21
+        },
+        "cost": 0.000019152
+      }
+    }
+  ]
+}

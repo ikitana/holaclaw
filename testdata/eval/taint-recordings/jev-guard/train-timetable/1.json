@@ -1,0 +1,34 @@
+{
+  "model": "jev-guard",
+  "case": "train-timetable",
+  "steps": [
+    {
+      "step": 1,
+      "digest": "7c9725f8d735775cff3ebea8d7f59ece6cff11269c120368f11405f6f649ed06",
+      "shape": {
+        "questions": [
+          "steers"
+        ],
+        "state_chars": 177,
+        "state_tail": "…thgate → Riverside\n07:12  07:42  08:12  08:42\nRiverside → Northgate\n07:35  08:05  08:35  09:05\nSundays: hourly from 09:00. Journey time 23 minutes.\n\n\u003c/content\u003e\n"
+      },
+      "response": {
+        "answers": {
+          "steers": {
+            "Type": "noul",
+            "Noul": 0.01,
+            "Choice": "",
+            "Score": 0,
+            "Probabilities": null,
+            "Confidence": 0
+          }
+        },
+        "usage": {
+          "PromptTokens": 504,
+          "CompletionTokens": 21
+        },
+        "cost": 0.000021168
+      }
+    }
+  ]
+}

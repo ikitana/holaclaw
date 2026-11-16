@@ -1,0 +1,9 @@
+version = 1
+tools = ["memory"]
+
+[models]
+chat = "gemma"
+
+# The first entry is a skill name; the other two can never be one.
+[skills]
+disabled = ["release", "Release", "../x"]

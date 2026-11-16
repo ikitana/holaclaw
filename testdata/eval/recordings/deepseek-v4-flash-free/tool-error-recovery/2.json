@@ -1,0 +1,53 @@
+{
+  "model": "deepseek-v4-flash-free",
+  "scenario": "tool-error-recovery",
+  "run": 2,
+  "steps": [
+    {
+      "step": 1,
+      "digest": "cc15ac804a15f8f5c9c034656a88dc1359ae83363df111479f75d58768791247",
+      "shape": {
+        "messages": 1,
+        "tools": [
+          "ticket"
+        ],
+        "system_chars": 871,
+        "last_message": "What is the status of ticket 42?"
+      },
+      "response": {
+        "tool_calls": [
+          {
+            "ID": "chatcmpl-tool-a3277c98f5b591eb",
+            "Name": "ticket",
+            "Arguments": "{\"ticket_id\": \"AB-42\"}"
+          }
+        ],
+        "finish": "tool_calls",
+        "usage": {
+          "PromptTokens": 564,
+          "CompletionTokens": 185
+        }
+      }
+    },
+    {
+      "step": 2,
+      "digest": "51eb0a23a52570917f78dfd8e930021c753f338ac9b34a9e59937fc64e4d1a51",
+      "shape": {
+        "messages": 3,
+        "tools": [
+          "ticket"
+        ],
+        "system_chars": 871,
+        "last_message": "AB-42 is open, waiting on review."
+      },
+      "response": {
+        "text": "Ticket AB-42 is **open**, currently waiting on review.",
+        "finish": "stop",
+        "usage": {
+          "PromptTokens": 633,
+          "CompletionTokens": 15
+        }
+      }
+    }
+  ]
+}

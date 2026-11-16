@@ -1,0 +1,20 @@
+{
+  "model": "qwen3.8-27b-free",
+  "scenario": "tool-error-recovery",
+  "run": 1,
+  "steps": [
+    {
+      "step": 1,
+      "digest": "cc15ac804a15f8f5c9c034656a88dc1359ae83363df111479f75d58768791247",
+      "shape": {
+        "messages": 1,
+        "tools": [
+          "ticket"
+        ],
+        "system_chars": 871,
+        "last_message": "What is the status of ticket 42?"
+      },
+      "error_kind": "rate_limit"
+    }
+  ]
+}

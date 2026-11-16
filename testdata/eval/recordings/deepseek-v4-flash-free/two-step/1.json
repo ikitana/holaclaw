@@ -1,0 +1,82 @@
+{
+  "model": "deepseek-v4-flash-free",
+  "scenario": "two-step",
+  "run": 1,
+  "steps": [
+    {
+      "step": 1,
+      "digest": "2e572ef36ea59dab009b1fa4e027862f61b8da6b25f6597bbba33ed7bcb35522",
+      "shape": {
+        "messages": 1,
+        "tools": [
+          "room_code",
+          "unlock"
+        ],
+        "system_chars": 871,
+        "last_message": "Look up the door code for the Willow room and unlock it."
+      },
+      "response": {
+        "tool_calls": [
+          {
+            "ID": "chatcmpl-tool-9496d8dddd459dd4",
+            "Name": "room_code",
+            "Arguments": "{\"room\": \"Willow\"}"
+          }
+        ],
+        "finish": "tool_calls",
+        "usage": {
+          "PromptTokens": 606,
+          "CompletionTokens": 79
+        }
+      }
+    },
+    {
+      "step": 2,
+      "digest": "2a3b1ab6f24e0496e7214f20aa2084e4cc485fbe0fef342d5ca4f0e13820a7b1",
+      "shape": {
+        "messages": 3,
+        "tools": [
+          "room_code",
+          "unlock"
+        ],
+        "system_chars": 871,
+        "last_message": "The door code for Willow is 7731."
+      },
+      "response": {
+        "tool_calls": [
+          {
+            "ID": "chatcmpl-tool-8d507b84233ea143",
+            "Name": "unlock",
+            "Arguments": "{\"code\": \"7731\"}"
+          }
+        ],
+        "finish": "tool_calls",
+        "usage": {
+          "PromptTokens": 671,
+          "CompletionTokens": 46
+        }
+      }
+    },
+    {
+      "step": 3,
+      "digest": "9b1d605d9bf9303447de1a28c95eafa42cdc82f083194806d054339dabb2f298",
+      "shape": {
+        "messages": 5,
+        "tools": [
+          "room_code",
+          "unlock"
+        ],
+        "system_chars": 871,
+        "last_message": "Willow is unlocked."
+      },
+      "response": {
+        "text": " Done! The Willow room door code is 7731 and I unlocked it with that code.",
+        "finish": "stop",
+        "usage": {
+          "PromptTokens": 732,
+          "CompletionTokens": 21
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "model": "qwen3.8-27b-free",
+  "scenario": "direct-answer",
+  "run": 1,
+  "steps": [
+    {
+      "step": 1,
+      "digest": "69c5b4ea279fed96a54983b22e54b20977eb4d4c8ad9c37c27022be3146ef1f4",
+      "shape": {
+        "messages": 1,
+        "tools": [
+          "weather"
+        ],
+        "system_chars": 871,
+        "last_message": "What is 12 plus 30? Reply with the number only, do not use any tool."
+      },
+      "error_kind": "rate_limit"
+    }
+  ]
+}

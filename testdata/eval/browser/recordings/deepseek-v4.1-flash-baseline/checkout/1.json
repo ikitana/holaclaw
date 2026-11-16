@@ -1,0 +1,61 @@
+{
+  "model": "deepseek-v4.1-flash-baseline",
+  "scenario": "checkout",
+  "run": 1,
+  "steps": [
+    {
+      "step": 1,
+      "digest": "254c9d3a922c8da5c787d55d96c4ad198939df7114d2330acbae8cd32afd14f6",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 702,
+        "last_message": "…un=deepseek-v4.1-flash-baseline-checkout-1\ntitle: Example Gear\n\nelements:\n- ref r1: button \"Add to cart\"\n\npage text:\nTrail Multi-Tool Price: $19.99 Add to cart\n"
+      },
+      "response": {
+        "text": "{\"action\":\"click\",\"ref\":\"r1\"}",
+        "finish": "stop",
+        "usage": {
+          "PromptTokens": 298,
+          "CompletionTokens": 141
+        }
+      }
+    },
+    {
+      "step": 2,
+      "digest": "98d66764053531588613fc6516bee69d49e3e84a90496baaf1c272a15cdbda1f",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 702,
+        "last_message": "…eepseek-v4.1-flash-baseline-checkout-1\ntitle: Example Gear — Cart\n\nelements:\n- ref r1: button \"Pay now\"\n\npage text:\nYour cart Trail Multi-Tool — $19.99 Pay now\n"
+      },
+      "response": {
+        "text": "{\"action\":\"click\",\"ref\":\"r1\"}",
+        "finish": "stop",
+        "usage": {
+          "PromptTokens": 300,
+          "CompletionTokens": 29
+        }
+      }
+    },
+    {
+      "step": 3,
+      "digest": "fb5dae28638a1f651d44e389b4a7ed002340976837954c829a97d261880f7d32",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 702,
+        "last_message": "…v4.1-flash-baseline-checkout-1\ntitle: Example Gear — Receipt\n\nelements:\n\npage text:\nPayment received Thank you for your order of the Trail Multi-Tool ($19.99).\n"
+      },
+      "response": {
+        "text": "{\"action\":\"done\",\"answer\":\"Purchased the Trail Multi-Tool for $19.99 — payment received and order confirmed.\"}",
+        "finish": "stop",
+        "usage": {
+          "PromptTokens": 295,
+          "CompletionTokens": 59
+        }
+      }
+    }
+  ]
+}

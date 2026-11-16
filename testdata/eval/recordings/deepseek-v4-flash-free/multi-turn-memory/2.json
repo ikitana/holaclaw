@@ -1,0 +1,43 @@
+{
+  "model": "deepseek-v4-flash-free",
+  "scenario": "multi-turn-memory",
+  "run": 2,
+  "steps": [
+    {
+      "step": 1,
+      "digest": "2c0236ef78e795e420968063763d8aa89719b5a94681a787de1590834b52c45a",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 871,
+        "last_message": "My bike is called Pepino. Just say ok."
+      },
+      "response": {
+        "text": "ok.",
+        "finish": "stop",
+        "usage": {
+          "PromptTokens": 288,
+          "CompletionTokens": 48
+        }
+      }
+    },
+    {
+      "step": 2,
+      "digest": "1619d502dc49d51264f0954bda8385318ec5d6f4e11746c76fd110752807a4f5",
+      "shape": {
+        "messages": 3,
+        "tools": [],
+        "system_chars": 871,
+        "last_message": "What is my bike called?"
+      },
+      "response": {
+        "text": "Pepino.",
+        "finish": "stop",
+        "usage": {
+          "PromptTokens": 300,
+          "CompletionTokens": 85
+        }
+      }
+    }
+  ]
+}

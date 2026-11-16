@@ -1,0 +1,61 @@
+{
+  "model": "deepseek-v4.1-flash+jev-guard",
+  "scenario": "popup",
+  "run": 1,
+  "steps": [
+    {
+      "step": 1,
+      "digest": "09cbfb25c15a8264842b17a6255ecf16378b23af305a8d70586a448e67ea283f",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 966,
+        "last_message": "request: Open the terms and report a sentence from them.\nstart here: http://127.0.0.1:46681/popup/?run=deepseek-v4.1-flash-jev-guard-popup-1"
+      },
+      "response": {
+        "text": "{\"start_url\":\"http://127.0.0.1:46681/popup/?run=deepseek-v4.1-flash-jev-guard-popup-1\",\"steps\":[{\"kind\":\"wait\",\"target\":\"the page\",\"text\":\"\",\"url\":\"\",\"submit\":false,\"expect\":\"The popup page is loaded and its links are visible.\"},{\"kind\":\"click\",\"target\":\"the terms and conditions link\",\"text\":\"\",\"url\":\"\",\"submit\":false,\"expect\":\"The terms page is open.\"},{\"kind\":\"wait\",\"target\":\"the terms page\",\"text\":\"\",\"url\":\"\",\"submit\":false,\"expect\":\"The terms text has rendered.\"}],\"extract\":\"One sentence from the terms text shown on the final page.\"}",
+        "finish": "stop",
+        "usage": {
+          "PromptTokens": 312,
+          "CompletionTokens": 267
+        }
+      }
+    },
+    {
+      "step": 2,
+      "digest": "8784702590950194b36c5e2200ea3cd6b947b6531b17e7f4f38bbba82ab31ba3",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 585,
+        "last_message": "…-flash-jev-guard-popup-1\ntitle: Example Service\ncandidates:\n  r1: button \"Open terms\"\n  r2: link \"Continue\"\ntext:\nExample Service Open terms Continue\n\n\u003c\u003c/page\u003e\u003e"
+      },
+      "response": {
+        "text": "{\"start_url\":\"\",\"steps\":[{\"kind\":\"click\",\"target\":\"Open terms\",\"text\":\"\",\"url\":\"\",\"submit\":false,\"expect\":\"The terms page is open.\"},{\"kind\":\"wait\",\"target\":\"the terms page\",\"text\":\"\",\"url\":\"\",\"submit\":false,\"expect\":\"The terms text has rendered.\"}],\"extract\":\"One sentence copied verbatim from the terms and conditions text.\"}",
+        "finish": "stop",
+        "usage": {
+          "PromptTokens": 392,
+          "CompletionTokens": 183
+        }
+      }
+    },
+    {
+      "step": 3,
+      "digest": "4a70ae4db956652631ab218e097cb79ddf7e52941e8e082310f2709c7c40ae5e",
+      "shape": {
+        "messages": 1,
+        "tools": [],
+        "system_chars": 352,
+        "last_message": "…ice Example Service is provided as-is, for demonstration purposes only, with\nno warranty of any kind. By using it you agree to nothing in particular.\n\n\u003c\u003c/page\u003e\u003e"
+      },
+      "response": {
+        "text": "By using it you agree to nothing in particular.",
+        "finish": "stop",
+        "usage": {
+          "PromptTokens": 233,
+          "CompletionTokens": 123
+        }
+      }
+    }
+  ]
+}

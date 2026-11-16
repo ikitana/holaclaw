@@ -1,0 +1,82 @@
+{
+  "model": "deepseek-v4.1-flash",
+  "scenario": "two-step",
+  "run": 1,
+  "steps": [
+    {
+      "step": 1,
+      "digest": "2e572ef36ea59dab009b1fa4e027862f61b8da6b25f6597bbba33ed7bcb35522",
+      "shape": {
+        "messages": 1,
+        "tools": [
+          "room_code",
+          "unlock"
+        ],
+        "system_chars": 871,
+        "last_message": "Look up the door code for the Willow room and unlock it."
+      },
+      "response": {
+        "tool_calls": [
+          {
+            "ID": "chatcmpl-tool-a3dfeaac9119ddc8",
+            "Name": "room_code",
+            "Arguments": "{\"room\": \"Willow\"}"
+          }
+        ],
+        "finish": "tool_calls",
+        "usage": {
+          "PromptTokens": 543,
+          "CompletionTokens": 76
+        }
+      }
+    },
+    {
+      "step": 2,
+      "digest": "6768e920e10ba8901b943b9be8ad5a3b29532a6b9e9ec004cfd863a12be998ce",
+      "shape": {
+        "messages": 3,
+        "tools": [
+          "room_code",
+          "unlock"
+        ],
+        "system_chars": 871,
+        "last_message": "The door code for Willow is 7731."
+      },
+      "response": {
+        "tool_calls": [
+          {
+            "ID": "chatcmpl-tool-ba5a5f2d2d5913ac",
+            "Name": "unlock",
+            "Arguments": "{\"code\": \"7731\"}"
+          }
+        ],
+        "finish": "tool_calls",
+        "usage": {
+          "PromptTokens": 602,
+          "CompletionTokens": 48
+        }
+      }
+    },
+    {
+      "step": 3,
+      "digest": "b408d6e387826967c5c2c40b669655981c154a9a629a51858928ebeecff6b62c",
+      "shape": {
+        "messages": 5,
+        "tools": [
+          "room_code",
+          "unlock"
+        ],
+        "system_chars": 871,
+        "last_message": "Willow is unlocked."
+      },
+      "response": {
+        "text": "Done — the Willow room code is **7731** and the door is now unlocked. 🔓",
+        "finish": "stop",
+        "usage": {
+          "PromptTokens": 657,
+          "CompletionTokens": 22
+        }
+      }
+    }
+  ]
+}

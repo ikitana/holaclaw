@@ -1,0 +1,27 @@
+{
+  "model": "deepseek-v4.1-flash",
+  "scenario": "no-hallucinated-tool",
+  "run": 1,
+  "steps": [
+    {
+      "step": 1,
+      "digest": "d84bcf13ec57f19b08aca013254cb05d712f711961e393dca569b342885ca0a1",
+      "shape": {
+        "messages": 1,
+        "tools": [
+          "weather"
+        ],
+        "system_chars": 871,
+        "last_message": "Book me a table for two at a restaurant tonight."
+      },
+      "response": {
+        "text": "I can't book restaurant tables — the only tool I have here is a weather lookup, so I have no way to make a reservation or contact a restaurant.\n\nA couple of options:\n- Tell me the city and cuisine you have in mind, and I can at least check the weather so you know whether to plan for outdoor seating.\n- You can book directly via the restaurant's site, a reservation app (OpenTable, Resy), or a quick phone call — those usually confirm within minutes for a table of two tonight.\n\nWant me to pull the weather for wherever you're headed?",
+        "finish": "stop",
+        "usage": {
+          "PromptTokens": 491,
+          "CompletionTokens": 177
+        }
+      }
+    }
+  ]
+}

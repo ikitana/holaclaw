@@ -1,0 +1,75 @@
+# Models the eval harness may drive (tools/eval/README.md).
+#
+# The API key is never written here: key_env names the environment variable
+# that holds it (the dev shell exports OPENROUTER_KEY). A model whose variable
+# is unset is skipped with a message, never failed.
+#
+# HARD RULE: only synthetic scenarios go to these models. No private data,
+# no real conversations, names, credentials or repository contents.
+
+[[models]]
+name = "deepseek-v4-flash-free"
+base_url = "https://openrouter.ai/api/v1"
+id = "deepseek/deepseek-v4-flash-0731:free"
+context = 32768
+tools = true
+key_env = "OPENROUTER_KEY"
+
+[[models]]
+name = "qwen3.8-27b-free"
+base_url = "https://openrouter.ai/api/v1"
+id = "qwen/qwen3.8-27b:free"
+context = 32768
+tools = true
+thinking_tags = ["think"]
+key_env = "OPENROUTER_KEY"
+
+[[models]]
+name = "nemotron-3.5-lightning-free"
+base_url = "https://openrouter.ai/api/v1"
+id = "nvidia/nemotron-3.5-lightning:free"
+context = 16384
+tools = true
+key_env = "OPENROUTER_KEY"
+
+# Tiny stand-in: expected to struggle, that is the point.
+[[models]]
+name = "lfm-2.5-2.6b-free"
+base_url = "https://openrouter.ai/api/v1"
+id = "liquid/lfm-2.5-2.6b:free"
+context = 8192
+tools = true
+key_env = "OPENROUTER_KEY"
+
+# Reference candidate for the `guard` role (docs/models.md), used by
+# `eval guard`. Its pricing is unknown, so it is marked paid: it only runs
+# with --paid, and never by accident.
+[[models]]
+name = "jev-guard"
+base_url = "https://openrouter.ai/api/v1"
+id = "typesafe/jev-1.13"
+context = 16384
+tools = false
+key_env = "OPENROUTER_KEY"
+paid = true
+
+# Paid: excluded unless --paid is passed. Spend is reported.
+[[models]]
+name = "deepseek-v4.1-flash"
+base_url = "https://openrouter.ai/api/v1"
+id = "deepseek/deepseek-v4.1-flash"
+context = 65536
+tools = true
+key_env = "OPENROUTER_KEY"
+paid = true
+sort = "throughput"   # measured: 1.9 s plans vs 7–22 s (docs/models.md)
+
+# Local Ollama, no key needed:
+#
+# [[models]]
+# name = "gemma-local"
+# base_url = "http://localhost:11434/v1"
+# id = "gemma4:e2b"
+# context = 8192
+# tools = true
+# schema_profile = ""

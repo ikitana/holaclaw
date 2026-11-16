@@ -1,0 +1,27 @@
+{
+  "model": "deepseek-v4-flash-free",
+  "scenario": "no-hallucinated-tool",
+  "run": 2,
+  "steps": [
+    {
+      "step": 1,
+      "digest": "d84bcf13ec57f19b08aca013254cb05d712f711961e393dca569b342885ca0a1",
+      "shape": {
+        "messages": 1,
+        "tools": [
+          "weather"
+        ],
+        "system_chars": 871,
+        "last_message": "Book me a table for two at a restaurant tonight."
+      },
+      "response": {
+        "text": " I'm sorry, but I don't have the ability to make restaurant reservations — I only have access to a weather lookup tool.\n\nHere's what I can help with instead:\n- Check the **evening weather** in your area so you can pick whether to sit inside or on a patio\n- If you tell me your city, I can check the forecast\n\nLet me know if any of that would help!",
+        "finish": "stop",
+        "usage": {
+          "PromptTokens": 554,
+          "CompletionTokens": 179
+        }
+      }
+    }
+  ]
+}
