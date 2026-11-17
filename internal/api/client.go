@@ -140,6 +140,15 @@ func (c *Client) ResolveApproval(ctx context.Context, id string, in gen.Approval
 	return out, err
 }
 
+// ListTasks is every task, newest first.
+func (c *Client) ListTasks(ctx context.Context) ([]gen.Task, error) {
+	var out struct {
+		Tasks []gen.Task `json:"tasks"`
+	}
+	err := c.do(ctx, http.MethodGet, "/tasks", nil, &out)
+	return out.Tasks, err
+}
+
 // ListTraces summarises the traces of one session, newest first. It is what a
 // client walks to find the trace it then reads whole with GetTrace.
 func (c *Client) ListTraces(ctx context.Context, sessionID string) ([]gen.TraceSummary, error) {
