@@ -39,5 +39,7 @@ the doc for each part. The docs under `docs/` describe the code as it is.
   ([ARCHITECTURE.md §7](ARCHITECTURE.md#7-stability-contract)).
 - Do not commit, push or rewrite history unless you are asked to.
 - Write commit messages in the [Conventional Commits](https://www.conventionalcommits.org/)
-  format (`feat: ...`, `fix(scope): ...`). Do not add AI attribution
-  (`Co-Authored-By: Claude ...` or similar trailers) to commits.
+  format (`feat: ...`, `fix(scope): ...`).
+- Do not add AI attribution anywhere: no `Co-Authored-By: Claude ...` or
+  similar trailers on commits, and no "Generated with ..." footers or other
+  AI credits in issues, pull requests, comments or reviews.
