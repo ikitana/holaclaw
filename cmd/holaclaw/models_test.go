@@ -37,7 +37,7 @@ func TestModelsFailures(t *testing.T) {
 		srv, hits := modelsServer(t, http.StatusOK, servedModels)
 		dir := compatConfig(t, srv.URL, "gemma4:e2b")
 		code, out, errOut := runCLI(t, "", "models", "nope", "--config", dir)
-		if code != 1 || out != "" || !strings.Contains(errOut, `unknown provider "nope"`) || hits.Load() != 0 {
+		if code != 1 || out != "" || !strings.Contains(errOut, `unknown provider "nope": the config has main`) || hits.Load() != 0 {
 			t.Fatalf("exit = %d, requests = %d, want 1 and 0\n%s%s", code, hits.Load(), out, errOut)
 		}
 	})

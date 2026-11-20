@@ -203,7 +203,12 @@ func cmdModels(ctx context.Context, c *cli, name string) error {
 	}
 	pc, ok := a.Config.Providers[name]
 	if !ok {
-		return fmt.Errorf("unknown provider %q", name)
+		names := make([]string, 0, len(a.Config.Providers))
+		for n := range a.Config.Providers {
+			names = append(names, n)
+		}
+		sort.Strings(names)
+		return fmt.Errorf("unknown provider %q: the config has %s", name, strings.Join(names, ", "))
 	}
 	p, err := app.NewProvider(pc, a.Secrets, nil)
 	if err != nil {
