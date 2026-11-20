@@ -28,6 +28,7 @@ let
       target.bash # /bin/sh, for the entrypoint
       target.coreutils
       target.gnused
+      target.nano # for editing the config inside the container
       target.util-linux # setpriv
       target.cacert
     ] ++ lib.optionals browser [
