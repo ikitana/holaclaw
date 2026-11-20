@@ -281,6 +281,9 @@ pays for.
 | `BUD001` | warning, error | an agent's fixed prompt is over 1500 tokens, or a quarter of its chat model's window |
 | `BRW006` | warning | an agent with the browser has no `decide` model |
 
+`holaclaw models <provider>` prints the ids a provider serves, the list
+`MOD003` checks against.
+
 The events, all in the trace ([reference/events.md](reference/events.md)):
 
 | Event | When |

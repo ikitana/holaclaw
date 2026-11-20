@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"sort"
 	"strings"
 	"time"
 
@@ -180,4 +181,47 @@ func clip(s string, n int) string {
 		return s
 	}
 	return string(r[:n]) + "…"
+}
+
+func newModelsCmd(c *cli) *cobra.Command {
+	return &cobra.Command{
+		Use:   "models <provider>",
+		Short: "list the model ids a provider serves",
+		Args:  cobra.ExactArgs(1),
+		RunE:  func(cmd *cobra.Command, args []string) error { return cmdModels(cmd.Context(), c, args[0]) },
+	}
+}
+
+// cmdModels prints the model ids a provider serves for its credentials, one
+// per line: the values a `models.<name>.id` can take, and the list MOD003
+// checks against. Listing only reads the credentials, which the running
+// daemon owns.
+func cmdModels(ctx context.Context, c *cli, name string) error {
+	a, err := app.Static(c.configDir)
+	if err != nil {
+		return err
+	}
+	pc, ok := a.Config.Providers[name]
+	if !ok {
+		return fmt.Errorf("unknown provider %q", name)
+	}
+	p, err := app.NewProvider(pc, a.Secrets, nil)
+	if err != nil {
+		return err
+	}
+	lister, ok := p.(provider.ModelLister)
+	if !ok {
+		return fmt.Errorf("provider %s cannot list its models", name)
+	}
+	ctx, cancel := context.WithTimeout(ctx, check.ProbeTimeout)
+	defer cancel()
+	ids, err := lister.Models(ctx)
+	if err != nil {
+		return err
+	}
+	sort.Strings(ids)
+	for _, id := range ids {
+		_, _ = fmt.Fprintln(c.stdout, id)
+	}
+	return nil
 }

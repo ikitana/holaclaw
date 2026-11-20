@@ -205,8 +205,8 @@ func (a *App) newProvider(pc config.Provider) (provider.Provider, error) {
 }
 
 // NewProvider builds the provider of one `[providers.<name>]` table: the one
-// place that maps a provider type to its implementation. `holaclaw check`
-// uses it too, with no event sink.
+// place that maps a provider type to its implementation. `holaclaw check` and
+// `holaclaw models` use it too, with no event sink.
 func NewProvider(pc config.Provider, sec *secrets.File, events event.Sink) (provider.Provider, error) {
 	switch pc.Type {
 	case "openai-compatible":

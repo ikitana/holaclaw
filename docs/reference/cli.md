@@ -132,6 +132,14 @@ usage: holaclaw check [flags]
 | `--only string` |  | comma-separated rule ids or prefixes to run |
 | `--skip string` |  | comma-separated rule ids or prefixes to skip |
 
+### `holaclaw models`
+
+list the model ids a provider serves
+
+```
+usage: holaclaw models <provider>
+```
+
 ### `holaclaw prompt-size`
 
 offline token breakdown of an agent's prompt
