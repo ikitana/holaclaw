@@ -417,3 +417,23 @@ func TestDialRejectsAnEmptyAddress(t *testing.T) {
 		t.Fatalf("base = %q", c.base)
 	}
 }
+
+func TestRestartDaemon(t *testing.T) {
+	h := newHarness(t)
+	// A daemon that cannot restart itself says so.
+	errorBody(t, h.do(http.MethodPost, "/restart", h.adminToken, nil), http.StatusNotImplemented, CodeNotImplemented)
+
+	var restarts int
+	h.b.Restart = func() { restarts++ }
+	errorBody(t, h.do(http.MethodPost, "/restart", h.ownerToken, nil), http.StatusForbidden, CodeForbidden)
+	errorBody(t, h.do(http.MethodPost, "/restart", "", nil), http.StatusUnauthorized, CodeUnauthorized)
+	if restarts != 0 {
+		t.Fatalf("a refused restart restarted the daemon (%d restarts)", restarts)
+	}
+
+	resp := h.do(http.MethodPost, "/restart", h.adminToken, nil)
+	_ = resp.Body.Close()
+	if resp.StatusCode != http.StatusAccepted || restarts != 1 {
+		t.Fatalf("restart = %d, %d restarts", resp.StatusCode, restarts)
+	}
+}

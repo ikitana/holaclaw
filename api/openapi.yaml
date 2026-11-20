@@ -686,6 +686,20 @@ paths:
       responses:
         '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/Status' } } } }
         default: { $ref: '#/components/responses/Error' }
+  /restart:
+    post:
+      tags: [system]
+      operationId: restartDaemon
+      x-scope: admin
+      description: |
+        Restarts the daemon in its process, so it reads its config again.
+        The daemon answers first; expect the connection to drop, and the
+        daemon back within seconds. A new binary, or anything decided before the
+        daemon starts, such as the entrypoint of the container image, needs a
+        restart of the service or of the container.
+      responses:
+        '202': { description: The daemon is restarting }
+        default: { $ref: '#/components/responses/Error' }
   /agents:
     get:
       tags: [system]
