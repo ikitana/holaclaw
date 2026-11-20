@@ -92,11 +92,10 @@ type Input struct {
 	// allocated for a model (docs/models.md). nil skips MOD002 entirely —
 	// the caller passes nil for an offline check.
 	Probe func(ctx context.Context, providerName string, m provider.Model) (int, string, error)
-	// Models lists the model ids a provider serves, for MOD003. live is
-	// false when the list is not the provider's own answer but a built-in
-	// guess; ErrNoModelList means the provider cannot be asked. nil skips
-	// MOD003 entirely, as for Probe.
-	Models func(ctx context.Context, providerName string) (ids []string, live bool, err error)
+	// Models lists the model ids a provider serves, for MOD003.
+	// ErrNoModelList means the provider cannot be asked. nil skips MOD003
+	// entirely, as for Probe.
+	Models func(ctx context.Context, providerName string) ([]string, error)
 	// KnownTools is the registered tool and group names, for rules that need
 	// to reason about tool selection beyond what config.Validate already
 	// checked.

@@ -277,7 +277,7 @@ pays for.
 | `NET003` | error | a provider with a key is reached over plain `http` on a non-loopback host |
 | `MOD001` | warning | a model's `context` is under 4096 |
 | `MOD002` | error | a model's `context` is more than Ollama or llama.cpp allocated; skipped with `--offline` |
-| `MOD003` | error, warning | a model's `id` is not one its provider serves; a warning when a codex subscription's own list could not be read; skipped with `--offline` |
+| `MOD003` | error | a model's `id` is not one its provider serves; skipped with `--offline` |
 | `BUD001` | warning, error | an agent's fixed prompt is over 1500 tokens, or a quarter of its chat model's window |
 | `BRW006` | warning | an agent with the browser has no `decide` model |
 

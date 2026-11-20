@@ -7,9 +7,10 @@ import (
 	"holaclaw/internal/provider"
 )
 
-// Models lists the model ids the endpoint serves, from GET <base_url>/models,
-// so `holaclaw check` can tell a configured id it does not serve
-// (docs/models.md). An answer without a single id is an error: it says
+var _ provider.ModelLister = (*Client)(nil)
+
+// Models lists the model ids the endpoint serves, from GET <base_url>/models
+// (provider.ModelLister). An answer without a single id is an error: it says
 // nothing about what the endpoint serves.
 func (c *Client) Models(ctx context.Context) ([]string, error) {
 	var out struct {

@@ -17,7 +17,6 @@ import (
 	"holaclaw/internal/config"
 	"holaclaw/internal/connector"
 	"holaclaw/internal/provider"
-	"holaclaw/internal/provider/codex"
 	"holaclaw/internal/provider/openaicompat"
 	"holaclaw/internal/skill"
 	"holaclaw/internal/store"
@@ -211,57 +210,30 @@ func probeFor(cfg *config.Config, sec *secrets.File) func(context.Context, strin
 			return 0, "", openaicompat.ErrProbeUnsupported
 		}
 		return openaicompat.New(openaicompat.Options{
-			Name: pc.Name, BaseURL: pc.BaseURL, APIKey: apiKeyOf(pc, sec),
+			Name: pc.Name, BaseURL: pc.BaseURL, APIKey: app.APIKey(pc, sec),
 		}).ProbeContext(ctx, m)
 	}
 }
 
-// codexCheckOptions is where MOD003 reaches a codex provider; the tests point
-// it at a fake upstream.
-var codexCheckOptions codex.Options
-
-// modelsFor asks a provider for the model ids it serves (MOD003): an
-// OpenAI-compatible endpoint lists them itself, and a signed-in codex
-// subscription answers with the account's list or, failing that, the pinned
-// one. The codex tokens are only read: the running daemon owns them.
-func modelsFor(cfg *config.Config, sec *secrets.File) func(context.Context, string) ([]string, bool, error) {
-	return func(ctx context.Context, name string) ([]string, bool, error) {
-		if cfg == nil {
-			return nil, false, check.ErrNoModelList
+// modelsFor asks a provider for the model ids it serves (MOD003). Any
+// provider that is a provider.ModelLister answers; one that is not has no
+// list. Listing only reads the credentials, which the running daemon owns.
+func modelsFor(cfg *config.Config, sec *secrets.File) func(context.Context, string) ([]string, error) {
+	return func(ctx context.Context, name string) ([]string, error) {
+		// Without a readable auth.toml there are no credentials to list with.
+		if cfg == nil || sec == nil {
+			return nil, check.ErrNoModelList
 		}
-		pc := cfg.Providers[name]
-		switch {
-		case pc.Type == "openai-compatible":
-			ids, err := openaicompat.New(openaicompat.Options{
-				Name: pc.Name, BaseURL: pc.BaseURL, APIKey: apiKeyOf(pc, sec),
-			}).Models(ctx)
-			return ids, true, err
-		case pc.Type == "codex" && pc.Auth != "api-key" && sec != nil:
-			opts := codexCheckOptions
-			opts.Name, opts.Secrets = pc.Name, sec
-			ids, source, err := codex.New(opts).StoredModels(ctx)
-			if err != nil { // not signed in
-				return nil, false, check.ErrNoModelList
-			}
-			return ids, source == codex.SourceLive, nil
+		p, err := app.NewProvider(cfg.Providers[name], sec, nil)
+		if err != nil {
+			return nil, check.ErrNoModelList
 		}
-		return nil, false, check.ErrNoModelList
-	}
-}
-
-// apiKeyOf resolves a provider key the way the daemon does: an `env:VAR`
-// reference in config.toml wins, otherwise auth.toml.
-func apiKeyOf(pc config.Provider, sec *secrets.File) func() string {
-	if pc.APIKey != "" {
-		return func() string {
-			v, _ := config.ResolveEnv(pc.APIKey)
-			return v
+		lister, ok := p.(provider.ModelLister)
+		if !ok {
+			return nil, check.ErrNoModelList
 		}
+		return lister.Models(ctx)
 	}
-	if sec == nil {
-		return nil
-	}
-	return sec.Lookup(secrets.Providers, pc.Name, "api_key")
 }
 
 // split turns a comma-separated flag value into a list.

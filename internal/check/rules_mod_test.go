@@ -109,8 +109,8 @@ func TestMOD002(t *testing.T) {
 
 func TestMOD003(t *testing.T) {
 	// models answers every provider with the same list.
-	models := func(live bool, ids ...string) func(context.Context, string) ([]string, bool, error) {
-		return func(context.Context, string) ([]string, bool, error) { return ids, live, nil }
+	models := func(ids ...string) func(context.Context, string) ([]string, error) {
+		return func(context.Context, string) ([]string, error) { return ids, nil }
 	}
 	run := func(in *Input) []Finding { return mod003Rule().Run(context.Background(), in) }
 
@@ -120,7 +120,7 @@ func TestMOD003(t *testing.T) {
 		}
 	})
 	t.Run("id served: no finding", func(t *testing.T) {
-		fs := run(&Input{Config: minimalConfig(), Models: models(true, "qwen3:8b", "gemma4:e2b")})
+		fs := run(&Input{Config: minimalConfig(), Models: models("qwen3:8b", "gemma4:e2b")})
 		if len(fs) != 0 {
 			t.Fatalf("findings = %v, want none", fs)
 		}
@@ -130,12 +130,12 @@ func TestMOD003(t *testing.T) {
 		m := cfg.Models["gemma"]
 		m.ID = "gemma4"
 		cfg.Models["gemma"] = m
-		if fs := run(&Input{Config: cfg, Models: models(true, "gemma4:latest")}); len(fs) != 0 {
+		if fs := run(&Input{Config: cfg, Models: models("gemma4:latest")}); len(fs) != 0 {
 			t.Fatalf("findings = %v, want none", fs)
 		}
 	})
 	t.Run("id not served: error", func(t *testing.T) {
-		fs := run(&Input{Config: minimalConfig(), Models: models(true, "qwen3:8b", "llama4")})
+		fs := run(&Input{Config: minimalConfig(), Models: models("qwen3:8b", "llama4")})
 		if len(fs) != 1 || fs[0].ID != "MOD003" || fs[0].Severity != SeverityError {
 			t.Fatalf("findings = %+v", fs)
 		}
@@ -148,26 +148,17 @@ func TestMOD003(t *testing.T) {
 			}
 		}
 	})
-	t.Run("id not in a guessed list: warning", func(t *testing.T) {
-		fs := run(&Input{Config: minimalConfig(), Models: models(false, "gpt-6.1-sol")})
-		if len(fs) != 1 || fs[0].ID != "MOD003" || fs[0].Severity != SeverityWarning {
-			t.Fatalf("findings = %+v", fs)
-		}
-		if fs[0].Key != "models.gemma.id" || !strings.Contains(fs[0].Message, "gpt-6.1-sol") {
-			t.Errorf("finding = %+v", fs[0])
-		}
-	})
 	t.Run("no model list: no finding", func(t *testing.T) {
-		fs := run(&Input{Config: minimalConfig(), Models: func(context.Context, string) ([]string, bool, error) {
-			return nil, false, fmt.Errorf("codex: %w", ErrNoModelList)
+		fs := run(&Input{Config: minimalConfig(), Models: func(context.Context, string) ([]string, error) {
+			return nil, fmt.Errorf("main: %w", ErrNoModelList)
 		}})
 		if len(fs) != 0 {
 			t.Fatalf("findings = %v, want none", fs)
 		}
 	})
 	t.Run("network error: info", func(t *testing.T) {
-		fs := run(&Input{Config: minimalConfig(), Models: func(context.Context, string) ([]string, bool, error) {
-			return nil, false, errors.New("connection refused")
+		fs := run(&Input{Config: minimalConfig(), Models: func(context.Context, string) ([]string, error) {
+			return nil, errors.New("connection refused")
 		}})
 		if len(fs) != 1 || fs[0].ID != "MOD003" || fs[0].Severity != SeverityInfo || fs[0].Key != "providers.ollama" {
 			t.Fatalf("findings = %+v", fs)
@@ -175,9 +166,9 @@ func TestMOD003(t *testing.T) {
 	})
 	t.Run("timeout: info", func(t *testing.T) {
 		start := time.Now()
-		fs := run(&Input{Config: minimalConfig(), Models: func(ctx context.Context, _ string) ([]string, bool, error) {
+		fs := run(&Input{Config: minimalConfig(), Models: func(ctx context.Context, _ string) ([]string, error) {
 			<-ctx.Done()
-			return nil, false, ctx.Err()
+			return nil, ctx.Err()
 		}})
 		if time.Since(start) > 2*ProbeTimeout {
 			t.Fatalf("listing took too long: %v", time.Since(start))
@@ -192,12 +183,12 @@ func TestMOD003(t *testing.T) {
 		cfg.Models["decide"] = config.Model{Name: "decide", Provider: "ollama", ID: "missing-b", URL: "http://localhost:9000/decide"}
 		cfg.Models["orphan"] = config.Model{Name: "orphan", Provider: "gone", ID: "missing-c"}
 		var calls atomic.Int32
-		fs := run(&Input{Config: cfg, Models: func(_ context.Context, name string) ([]string, bool, error) {
+		fs := run(&Input{Config: cfg, Models: func(_ context.Context, name string) ([]string, error) {
 			calls.Add(1)
 			if name != "ollama" {
 				t.Errorf("asked for provider %q", name)
 			}
-			return []string{"gemma4:e2b"}, true, nil
+			return []string{"gemma4:e2b"}, nil
 		}})
 		if calls.Load() != 1 {
 			t.Errorf("calls = %d, want 1", calls.Load())
@@ -211,7 +202,7 @@ func TestMOD003(t *testing.T) {
 		for i := range maxListedModels + 5 {
 			ids = append(ids, fmt.Sprintf("model-%02d", i))
 		}
-		fs := run(&Input{Config: minimalConfig(), Models: models(true, ids...)})
+		fs := run(&Input{Config: minimalConfig(), Models: models(ids...)})
 		if len(fs) != 1 {
 			t.Fatalf("findings = %+v", fs)
 		}

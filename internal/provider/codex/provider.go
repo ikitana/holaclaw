@@ -28,21 +28,8 @@ import (
 	"holaclaw/internal/provider/responses"
 )
 
-// PinnedModels is the fallback list used whenever the unofficial model
-// endpoint cannot be reached or answers with nothing: the ids a ChatGPT
-// account may use, recommended first, from
-// https://learn.chatgpt.com/docs/models on 2026-10-16. OpenAI retires them
-// every few months; gpt-6-astra needs ChatGPT credits.
-var PinnedModels = []string{"gpt-6.1-sol", "gpt-6-luna", "gpt-6-astra"}
-
-// Model list sources, as reported by ModelsWithSource.
-const (
-	SourceLive   = "live"
-	SourcePinned = "pinned"
-)
-
-// modelsTimeout bounds the live model lookup: the endpoint is unofficial and
-// unstable, and a slow answer must never delay a start-up.
+// modelsTimeout bounds the model lookup: the endpoint is unofficial and
+// unstable.
 const modelsTimeout = 5 * time.Second
 
 // Options configures a Provider. Every field has a usable default; the URL and
@@ -71,7 +58,10 @@ type Provider struct {
 	session   string // stable per Provider, used when a request carries none
 }
 
-var _ provider.Provider = (*Provider)(nil)
+var (
+	_ provider.Provider    = (*Provider)(nil)
+	_ provider.ModelLister = (*Provider)(nil)
+)
 
 // New builds a subscription-mode provider.
 func New(opts Options) *Provider {
@@ -183,48 +173,24 @@ func (p *Provider) headers(req provider.Request) map[string]string {
 	return h
 }
 
-// Models lists the model ids the account can use.
+// Models lists the model ids the account can use (provider.ModelLister). It
+// sends the access token auth.toml holds as it is and never refreshes it: a
+// refresh from a process that is not the daemon would spend the daemon's
+// refresh token. An expired token, an answer without a single id and an
+// instance that is not logged in are errors.
 func (p *Provider) Models(ctx context.Context) ([]string, error) {
-	models, _, err := p.ModelsWithSource(ctx)
-	return models, err
-}
-
-// ModelsWithSource is Models plus where the list came from: "live" when the
-// unofficial endpoint answered, "pinned" when it did not. Any failure is a
-// pinned list, not an error — a model list is not worth failing a start-up for.
-func (p *Provider) ModelsWithSource(ctx context.Context) ([]string, string, error) {
-	live, err := p.liveModels(ctx)
-	if err != nil || len(live) == 0 {
-		return append([]string(nil), PinnedModels...), SourcePinned, nil
-	}
-	return live, SourceLive, nil
-}
-
-// StoredModels is ModelsWithSource for a process that does not own the tokens
-// (`holaclaw check`): it sends the access token auth.toml holds as it is and
-// never refreshes it, because a refresh spends the refresh token of a running
-// daemon and writes auth.toml. An expired token is a pinned list; an instance
-// that is not logged in is an auth error.
-func (p *Provider) StoredModels(ctx context.Context) ([]string, string, error) {
 	t := p.auth.store.load()
-	if t.Access == "" && t.Refresh == "" {
-		return nil, "", p.auth.authError("codex is not logged in: " + loginHint)
+	if t.Access == "" {
+		return nil, p.auth.authError("codex is not logged in: " + loginHint)
 	}
-	if t.Access != "" {
-		if live, err := p.fetchModels(ctx, t.Access, t.AccountID); err == nil && len(live) > 0 {
-			return live, SourceLive, nil
-		}
-	}
-	return append([]string(nil), PinnedModels...), SourcePinned, nil
-}
-
-// liveModels asks the unofficial model endpoint with a valid access token.
-func (p *Provider) liveModels(ctx context.Context) ([]string, error) {
-	token, err := p.auth.token(ctx)
+	ids, err := p.fetchModels(ctx, t.Access, t.AccountID)
 	if err != nil {
 		return nil, err
 	}
-	return p.fetchModels(ctx, token, p.auth.accountID())
+	if len(ids) == 0 {
+		return nil, &provider.Error{Kind: provider.ErrServer, Provider: p.name, Message: "the model list is empty"}
+	}
+	return ids, nil
 }
 
 // fetchModels is the one request to the model endpoint, under its own short

@@ -266,6 +266,14 @@ type Transcriber interface {
 	Transcribe(ctx context.Context, model Model, mime string, audio []byte) (string, Usage, error)
 }
 
+// ModelLister is implemented by providers that can list the model ids they
+// serve for their credentials. Models only reads the stored credentials, and
+// never refreshes or rewrites them: any process may call it, not only the
+// daemon that owns them.
+type ModelLister interface {
+	Models(ctx context.Context) ([]string, error)
+}
+
 // Collect drains a stream and returns the final response. onText, if not nil,
 // receives each visible text delta.
 func Collect(s Stream, onText func(string)) (*Response, error) {

@@ -22,8 +22,8 @@ const MinContextTokens = 4096
 const ProbeTimeout = 5 * time.Second
 
 // ErrNoModelList is what Input.Models returns for a provider that cannot be
-// asked for its models (a codex instance that is not signed in): MOD003 has
-// nothing to say about it.
+// asked for its models (it is no provider.ModelLister): MOD003 has nothing to
+// say about it.
 var ErrNoModelList = errors.New("check: the provider has no model list")
 
 // maxListedModels caps the ids a MOD003 message quotes: a gateway serves
@@ -163,8 +163,8 @@ func mod003Rule() Rule {
 					defer wg.Done()
 					pctx, cancel := context.WithTimeout(ctx, ProbeTimeout)
 					defer cancel()
-					ids, live, err := in.Models(pctx, providerName)
-					results[i] = mod003Findings(in.Config, providerName, byProvider[providerName], ids, live, err)
+					ids, err := in.Models(pctx, providerName)
+					results[i] = mod003Findings(in.Config, providerName, byProvider[providerName], ids, err)
 				}(i, providerName)
 			}
 			wg.Wait()
@@ -173,7 +173,7 @@ func mod003Rule() Rule {
 	}
 }
 
-func mod003Findings(cfg *config.Config, providerName string, models, ids []string, live bool, err error) []Finding {
+func mod003Findings(cfg *config.Config, providerName string, models, ids []string, err error) []Finding {
 	switch {
 	case errors.Is(err, ErrNoModelList):
 		return nil
@@ -193,21 +193,14 @@ func mod003Findings(cfg *config.Config, providerName string, models, ids []strin
 		if slices.Contains(ids, id) || slices.Contains(ids, id+":latest") {
 			continue
 		}
-		f := Finding{
+		out = append(out, Finding{
 			ID:       "MOD003",
 			Severity: SeverityError,
 			File:     config.FileConfig,
 			Key:      "models." + name + ".id",
 			Message:  fmt.Sprintf("%s does not serve %q; it serves: %s", providerName, id, listModels(ids)),
 			Fix:      fmt.Sprintf("set models.%s.id to an id %s serves", name, providerName),
-		}
-		if !live {
-			// A list that is not the provider's own answer is a guess.
-			f.Severity = SeverityWarning
-			f.Message = fmt.Sprintf("%q is not in the built-in list for %s, used because its own list could not be read: %s",
-				id, providerName, listModels(ids))
-		}
-		out = append(out, f)
+		})
 	}
 	return out
 }

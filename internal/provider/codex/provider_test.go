@@ -134,90 +134,27 @@ func TestUnauthorizedTwiceIsAuthError(t *testing.T) {
 	}
 }
 
+// Models lists with the stored access token and never owns the tokens:
+// nothing is refreshed and auth.toml is left as it was, so `holaclaw check`
+// can call it beside a running daemon.
 func TestModels(t *testing.T) {
-	t.Run("live", func(t *testing.T) {
+	t.Run("the account's list", func(t *testing.T) {
 		f := newFake(t)
 		f.models = jsonHandler(http.StatusOK, fixture(t, "models.json"))
 		sec := newSecrets(t)
 		seedFresh(t, sec, "codex")
 		p := newProvider(t, f, sec, newClock(), event.Discard)
 
-		models, source, err := p.ModelsWithSource(context.Background())
-		if err != nil {
-			t.Fatalf("models: %v", err)
-		}
-		if source != SourceLive {
-			t.Errorf("source = %q, want live", source)
-		}
-		if len(models) != 2 || models[0] != "gpt-6.1-sol" {
-			t.Errorf("models = %v", models)
-		}
-		rec := f.last("/backend-api/codex/models")
-		if rec.Header.Get("originator") != Originator {
-			t.Errorf("originator header missing")
-		}
-		if rec.Header.Get("chatgpt-account-id") != storedAccount {
-			t.Errorf("account header = %q", rec.Header.Get("chatgpt-account-id"))
-		}
-	})
-
-	cases := []struct {
-		name    string
-		handler http.HandlerFunc
-	}{
-		{"server error", jsonHandler(http.StatusInternalServerError, `{"error":"nope"}`)},
-		{"empty list", jsonHandler(http.StatusOK, `{"data":[]}`)},
-		{"garbage", jsonHandler(http.StatusOK, `not json at all`)},
-	}
-	for _, tc := range cases {
-		t.Run("pinned on "+tc.name, func(t *testing.T) {
-			f := newFake(t)
-			f.models = tc.handler
-			sec := newSecrets(t)
-			seedFresh(t, sec, "codex")
-			p := newProvider(t, f, sec, newClock(), event.Discard)
-
-			models, source, err := p.ModelsWithSource(context.Background())
-			if err != nil {
-				t.Fatalf("models: %v", err)
-			}
-			if source != SourcePinned {
-				t.Errorf("source = %q, want pinned", source)
-			}
-			if len(models) != len(PinnedModels) || models[0] != PinnedModels[0] {
-				t.Errorf("models = %v, want the pinned list", models)
-			}
-		})
-	}
-
-	t.Run("pinned when not logged in", func(t *testing.T) {
-		f := newFake(t)
-		sec := newSecrets(t)
-		p := newProvider(t, f, sec, newClock(), event.Discard)
-		models, source, err := p.ModelsWithSource(context.Background())
-		if err != nil || source != SourcePinned || len(models) == 0 {
-			t.Fatalf("models = %v, source = %q, err = %v", models, source, err)
-		}
-	})
-}
-
-// `holaclaw check` lists the models without owning the tokens: nothing is
-// refreshed and auth.toml is left as it was.
-func TestStoredModels(t *testing.T) {
-	t.Run("live", func(t *testing.T) {
-		f := newFake(t)
-		f.models = jsonHandler(http.StatusOK, fixture(t, "models.json"))
-		sec := newSecrets(t)
-		seedFresh(t, sec, "codex")
-		p := newProvider(t, f, sec, newClock(), event.Discard)
-
-		models, source, err := p.StoredModels(context.Background())
-		if err != nil || source != SourceLive || len(models) != 2 {
-			t.Fatalf("models = %v, source = %q, err = %v", models, source, err)
+		models, err := p.Models(context.Background())
+		if err != nil || len(models) != 2 || models[0] != "gpt-6.1-sol" {
+			t.Fatalf("models = %v, err = %v", models, err)
 		}
 		rec := f.last("/backend-api/codex/models")
 		if rec.Header.Get("Authorization") != "Bearer "+noClaimsAccess {
 			t.Errorf("the stored access token was not sent")
+		}
+		if rec.Header.Get("originator") != Originator {
+			t.Errorf("originator header missing")
 		}
 		if rec.Header.Get("chatgpt-account-id") != storedAccount {
 			t.Errorf("account header = %q", rec.Header.Get("chatgpt-account-id"))
@@ -231,9 +168,8 @@ func TestStoredModels(t *testing.T) {
 		seedStale(t, sec, "codex")
 		p := newProvider(t, f, sec, newClock(), event.Discard)
 
-		models, source, err := p.StoredModels(context.Background())
-		if err != nil || source != SourcePinned || len(models) != len(PinnedModels) {
-			t.Fatalf("models = %v, source = %q, err = %v", models, source, err)
+		if models, err := p.Models(context.Background()); err == nil {
+			t.Fatalf("models = %v, want an error", models)
 		}
 		if c := f.count(pathOAuthToken); c != 0 {
 			t.Errorf("refreshes = %d, want 0", c)
@@ -251,16 +187,15 @@ func TestStoredModels(t *testing.T) {
 		{"empty list", jsonHandler(http.StatusOK, `{"data":[]}`)},
 		{"garbage", jsonHandler(http.StatusOK, `not json at all`)},
 	} {
-		t.Run("pinned on "+tc.name, func(t *testing.T) {
+		t.Run("an error on "+tc.name, func(t *testing.T) {
 			f := newFake(t)
 			f.models = tc.handler
 			sec := newSecrets(t)
 			seedFresh(t, sec, "codex")
 			p := newProvider(t, f, sec, newClock(), event.Discard)
 
-			models, source, err := p.StoredModels(context.Background())
-			if err != nil || source != SourcePinned || len(models) != len(PinnedModels) {
-				t.Fatalf("models = %v, source = %q, err = %v", models, source, err)
+			if models, err := p.Models(context.Background()); err == nil {
+				t.Fatalf("models = %v, want an error", models)
 			}
 		})
 	}
@@ -268,9 +203,12 @@ func TestStoredModels(t *testing.T) {
 	t.Run("not logged in", func(t *testing.T) {
 		f := newFake(t)
 		p := newProvider(t, f, newSecrets(t), newClock(), event.Discard)
-		models, _, err := p.StoredModels(context.Background())
+		models, err := p.Models(context.Background())
 		if provider.KindOf(err) != provider.ErrAuth || models != nil {
 			t.Fatalf("models = %v, err = %v, want an auth error", models, err)
+		}
+		if c := f.count("/backend-api/codex/models"); c != 0 {
+			t.Errorf("requests = %d, want 0", c)
 		}
 	})
 }

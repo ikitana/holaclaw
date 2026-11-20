@@ -13,7 +13,6 @@ import (
 
 	"holaclaw/internal/auth/secrets"
 	"holaclaw/internal/config"
-	"holaclaw/internal/provider/codex"
 )
 
 // MOD003: `check` asks each provider for the model ids it serves
@@ -160,10 +159,25 @@ func codexUpstream(t *testing.T, status int, body string) *atomic.Int32 {
 		_, _ = io.WriteString(w, body)
 	}))
 	t.Cleanup(srv.Close)
-	prev := codexCheckOptions
-	codexCheckOptions = codex.Options{AuthBaseURL: srv.URL, InferenceURL: srv.URL + "/backend-api/codex/responses"}
-	t.Cleanup(func() { codexCheckOptions = prev })
+	prev := http.DefaultTransport
+	http.DefaultTransport = redirect{host: "chatgpt.com", to: srv.Listener.Addr().String(), next: prev}
+	t.Cleanup(func() { http.DefaultTransport = prev })
 	return &hits
+}
+
+// redirect sends the requests for one host to a test server instead: `check`
+// builds its providers from the config alone, with their real addresses.
+type redirect struct {
+	host, to string
+	next     http.RoundTripper
+}
+
+func (r redirect) RoundTrip(req *http.Request) (*http.Response, error) {
+	if req.URL.Host == r.host {
+		req = req.Clone(req.Context())
+		req.URL.Scheme, req.URL.Host = "http", r.to
+	}
+	return r.next.RoundTrip(req)
 }
 
 // codexConfig puts the model on a codex subscription; signedIn stores a
@@ -214,11 +228,10 @@ func TestCheckCodexModel(t *testing.T) {
 		}
 	})
 
-	// The live list did not answer: the pinned one is a guess, so a miss is
-	// a warning. The tokens are the daemon's: nothing refreshes or rewrites
-	// them, expired as they are.
-	t.Run("not in the pinned list: warning", func(t *testing.T) {
-		codexUpstream(t, http.StatusInternalServerError, `{"error":"nope"}`)
+	// The tokens are the daemon's: nothing refreshes or rewrites them,
+	// expired as they are, and a list that cannot be read is never an error.
+	t.Run("list unavailable: info, auth.toml untouched", func(t *testing.T) {
+		codexUpstream(t, http.StatusUnauthorized, `{"error":"expired"}`)
 		dir := codexConfig(t, "gpt-6.1-luna", true)
 		authPath := filepath.Join(dir, "secrets", "auth.toml")
 		before, err := os.ReadFile(authPath)
@@ -226,11 +239,11 @@ func TestCheckCodexModel(t *testing.T) {
 			t.Fatal(err)
 		}
 		code, out, _ := runCLI(t, "", "check", "--config", dir, "--only", "MOD003")
-		if code != 1 {
-			t.Fatalf("exit = %d, want 1\n%s", code, out)
+		if code != 0 {
+			t.Fatalf("exit = %d, want 0\n%s", code, out)
 		}
-		if !strings.Contains(out, "MOD003 warning: config.toml: models.gemma.id:") || !strings.Contains(out, codex.PinnedModels[0]) {
-			t.Errorf("no MOD003 warning naming the pinned ids:\n%s", out)
+		if !strings.Contains(out, "MOD003 info: config.toml: providers.main: could not list the models of main") {
+			t.Errorf("no MOD003 info:\n%s", out)
 		}
 		after, err := os.ReadFile(authPath)
 		if err != nil {
@@ -241,18 +254,22 @@ func TestCheckCodexModel(t *testing.T) {
 		}
 	})
 
-	t.Run("in the pinned list: no finding", func(t *testing.T) {
-		codexUpstream(t, http.StatusInternalServerError, `{"error":"nope"}`)
-		dir := codexConfig(t, codex.PinnedModels[0], true)
+	t.Run("not signed in: info, no request", func(t *testing.T) {
+		hits := codexUpstream(t, http.StatusOK, codexLive)
+		dir := codexConfig(t, "gpt-6.1-luna", false)
 		code, out, _ := runCLI(t, "", "check", "--config", dir, "--only", "MOD003")
-		if code != 0 || strings.Contains(out, "MOD003") {
-			t.Fatalf("exit = %d, want 0 and no MOD003\n%s", code, out)
+		if code != 0 || hits.Load() != 0 {
+			t.Fatalf("exit = %d, requests = %d, want 0 and 0\n%s", code, hits.Load(), out)
+		}
+		if !strings.Contains(out, "MOD003 info: config.toml: providers.main: could not list the models of main") {
+			t.Errorf("no MOD003 info:\n%s", out)
 		}
 	})
 
-	t.Run("not signed in: no finding", func(t *testing.T) {
+	// With an API key the provider cannot list its models: nothing is asked.
+	t.Run("no model list: no finding", func(t *testing.T) {
 		hits := codexUpstream(t, http.StatusOK, codexLive)
-		dir := codexConfig(t, "gpt-6.1-luna", false)
+		dir := modelsConfig(t, "type = \"codex\"\nauth = \"api-key\"", "gpt-6.1-luna")
 		code, out, _ := runCLI(t, "", "check", "--config", dir, "--only", "MOD003")
 		if code != 0 || strings.Contains(out, "MOD003") || hits.Load() != 0 {
 			t.Fatalf("exit = %d, requests = %d, want 0 and 0, no MOD003\n%s", code, hits.Load(), out)

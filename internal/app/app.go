@@ -197,37 +197,52 @@ func (a *App) Close() error {
 }
 
 func (a *App) newProvider(pc config.Provider) (provider.Provider, error) {
+	p, err := NewProvider(pc, a.Secrets, sinkProxy{a})
+	if cp, ok := p.(*codex.Provider); ok {
+		a.Codex[pc.Name] = cp
+	}
+	return p, err
+}
+
+// NewProvider builds the provider of one `[providers.<name>]` table: the one
+// place that maps a provider type to its implementation. `holaclaw check`
+// uses it too, with no event sink.
+func NewProvider(pc config.Provider, sec *secrets.File, events event.Sink) (provider.Provider, error) {
 	switch pc.Type {
 	case "openai-compatible":
 		return openaicompat.New(openaicompat.Options{
 			Name:          pc.Name,
 			BaseURL:       pc.BaseURL,
-			APIKey:        a.apiKey(pc),
+			APIKey:        APIKey(pc, sec),
 			MaxConcurrent: pc.MaxConcurrent,
 			Sort:          pc.Sort,
 		}), nil
 	case "codex":
 		if pc.Auth == "api-key" {
-			return codex.NewAPIKey(pc.Name, a.Secrets), nil
+			return codex.NewAPIKey(pc.Name, sec), nil
 		}
-		p := codex.New(codex.Options{Name: pc.Name, Secrets: a.Secrets, Events: sinkProxy{a}, MaxConcurrent: pc.MaxConcurrent})
-		a.Codex[pc.Name] = p
-		return p, nil
+		return codex.New(codex.Options{Name: pc.Name, Secrets: sec, Events: events, MaxConcurrent: pc.MaxConcurrent}), nil
 	default:
 		return nil, fmt.Errorf("provider %s: unknown type %q", pc.Name, pc.Type)
 	}
 }
 
-// apiKey resolves a provider key on every request: an `env:VAR` reference in
+func (a *App) apiKey(pc config.Provider) func() string { return APIKey(pc, a.Secrets) }
+
+// APIKey resolves a provider key on every request: an `env:VAR` reference in
 // config.toml wins, otherwise auth.toml. Rotated secrets work without rewiring.
-func (a *App) apiKey(pc config.Provider) func() string {
+// A nil sec, an auth.toml `holaclaw check` could not read, holds no key.
+func APIKey(pc config.Provider, sec *secrets.File) func() string {
 	if pc.APIKey != "" {
 		return func() string {
 			v, _ := config.ResolveEnv(pc.APIKey)
 			return v
 		}
 	}
-	return a.Secrets.Lookup(secrets.Providers, pc.Name, "api_key")
+	if sec == nil {
+		return nil
+	}
+	return sec.Lookup(secrets.Providers, pc.Name, "api_key")
 }
 
 // ModelRef resolves a configured model name to its profile and provider.
