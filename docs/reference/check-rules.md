@@ -30,6 +30,7 @@ warning for a skill folder that does not parse.
 | POL002 | info | Agent lists the `exec` tool while `policy.exec = "deny"` | remove `"exec"` from `tools` |
 | MOD001 | warning | `model.context` is under 4096 | raise it, or use a bigger model |
 | MOD002 | error/info | Configured `context` exceeds what the runtime (Ollama/llama.cpp) actually allocated; needs `Input.Probe` | raise `num_ctx`/`n_ctx`, or lower `models.<name>.context` |
+| MOD003 | error/warning/info | The provider does not serve `models.<name>.id`: it is not in the list an OpenAI-compatible endpoint answers at `<base_url>/models`, or in the one a signed-in codex subscription may use (a warning when that is the pinned list, not the account's own). A model with its own `url` is not checked; info when the list cannot be read; needs `Input.Models` | set `models.<name>.id` to an id the finding lists |
 | BUD001 | warning/error | Agent's fixed prompt overhead (system + tool schemas) is over 1500 tokens, or over 1/4 of the chat model's window; also reports a `BudgetError` from the builder. Connector schemas are left out | drop tools or shorten the persona |
 | BUD002 | warning | Agent's connector tools (the `connectors` fragment plus every connector schema, from the cached tool lists) are over 1/4 of the chat model's window | grant fewer connectors, or use a model with a larger window |
 | DAT001 | error | The data directory cannot be created or is not writable | make it writable, or set `server.data_dir` |

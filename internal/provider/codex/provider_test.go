@@ -201,6 +201,80 @@ func TestModels(t *testing.T) {
 	})
 }
 
+// `holaclaw check` lists the models without owning the tokens: nothing is
+// refreshed and auth.toml is left as it was.
+func TestStoredModels(t *testing.T) {
+	t.Run("live", func(t *testing.T) {
+		f := newFake(t)
+		f.models = jsonHandler(http.StatusOK, fixture(t, "models.json"))
+		sec := newSecrets(t)
+		seedFresh(t, sec, "codex")
+		p := newProvider(t, f, sec, newClock(), event.Discard)
+
+		models, source, err := p.StoredModels(context.Background())
+		if err != nil || source != SourceLive || len(models) != 2 {
+			t.Fatalf("models = %v, source = %q, err = %v", models, source, err)
+		}
+		rec := f.last("/backend-api/codex/models")
+		if rec.Header.Get("Authorization") != "Bearer "+noClaimsAccess {
+			t.Errorf("the stored access token was not sent")
+		}
+		if rec.Header.Get("chatgpt-account-id") != storedAccount {
+			t.Errorf("account header = %q", rec.Header.Get("chatgpt-account-id"))
+		}
+	})
+
+	t.Run("an expired token is not refreshed", func(t *testing.T) {
+		f := newFake(t) // f.oauth is unset: a refresh fails the test
+		f.models = jsonHandler(http.StatusUnauthorized, fixture(t, "unauthorized.json"))
+		sec := newSecrets(t)
+		seedStale(t, sec, "codex")
+		p := newProvider(t, f, sec, newClock(), event.Discard)
+
+		models, source, err := p.StoredModels(context.Background())
+		if err != nil || source != SourcePinned || len(models) != len(PinnedModels) {
+			t.Fatalf("models = %v, source = %q, err = %v", models, source, err)
+		}
+		if c := f.count(pathOAuthToken); c != 0 {
+			t.Errorf("refreshes = %d, want 0", c)
+		}
+		if got, _ := sec.Get(secrets.Providers, "codex", keyRefreshToken); got != storedRefresh {
+			t.Errorf("the stored refresh token changed")
+		}
+	})
+
+	for _, tc := range []struct {
+		name    string
+		handler http.HandlerFunc
+	}{
+		{"server error", jsonHandler(http.StatusInternalServerError, `{"error":"nope"}`)},
+		{"empty list", jsonHandler(http.StatusOK, `{"data":[]}`)},
+		{"garbage", jsonHandler(http.StatusOK, `not json at all`)},
+	} {
+		t.Run("pinned on "+tc.name, func(t *testing.T) {
+			f := newFake(t)
+			f.models = tc.handler
+			sec := newSecrets(t)
+			seedFresh(t, sec, "codex")
+			p := newProvider(t, f, sec, newClock(), event.Discard)
+
+			models, source, err := p.StoredModels(context.Background())
+			if err != nil || source != SourcePinned || len(models) != len(PinnedModels) {
+				t.Fatalf("models = %v, source = %q, err = %v", models, source, err)
+			}
+		})
+	}
+
+	t.Run("not logged in", func(t *testing.T) {
+		f := newFake(t)
+		p := newProvider(t, f, newSecrets(t), newClock(), event.Discard)
+		models, _, err := p.StoredModels(context.Background())
+		if provider.KindOf(err) != provider.ErrAuth || models != nil {
+			t.Fatalf("models = %v, err = %v, want an auth error", models, err)
+		}
+	})
+}
+
 // A request without a session id gets the provider's own stable one.
 func TestSessionIDFallback(t *testing.T) {
 	f := newFake(t)

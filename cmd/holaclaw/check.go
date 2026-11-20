@@ -17,6 +17,7 @@ import (
 	"holaclaw/internal/config"
 	"holaclaw/internal/connector"
 	"holaclaw/internal/provider"
+	"holaclaw/internal/provider/codex"
 	"holaclaw/internal/provider/openaicompat"
 	"holaclaw/internal/skill"
 	"holaclaw/internal/store"
@@ -92,6 +93,7 @@ func cmdCheck(ctx context.Context, c *cli, o checkOptions) error {
 	}
 	if !*offline {
 		in.Probe = probeFor(cfg, sec)
+		in.Models = modelsFor(cfg, sec)
 	}
 
 	findings := check.Run(ctx, in, split(*only), split(*skip))
@@ -211,6 +213,39 @@ func probeFor(cfg *config.Config, sec *secrets.File) func(context.Context, strin
 		return openaicompat.New(openaicompat.Options{
 			Name: pc.Name, BaseURL: pc.BaseURL, APIKey: apiKeyOf(pc, sec),
 		}).ProbeContext(ctx, m)
+	}
+}
+
+// codexCheckOptions is where MOD003 reaches a codex provider; the tests point
+// it at a fake upstream.
+var codexCheckOptions codex.Options
+
+// modelsFor asks a provider for the model ids it serves (MOD003): an
+// OpenAI-compatible endpoint lists them itself, and a signed-in codex
+// subscription answers with the account's list or, failing that, the pinned
+// one. The codex tokens are only read: the running daemon owns them.
+func modelsFor(cfg *config.Config, sec *secrets.File) func(context.Context, string) ([]string, bool, error) {
+	return func(ctx context.Context, name string) ([]string, bool, error) {
+		if cfg == nil {
+			return nil, false, check.ErrNoModelList
+		}
+		pc := cfg.Providers[name]
+		switch {
+		case pc.Type == "openai-compatible":
+			ids, err := openaicompat.New(openaicompat.Options{
+				Name: pc.Name, BaseURL: pc.BaseURL, APIKey: apiKeyOf(pc, sec),
+			}).Models(ctx)
+			return ids, true, err
+		case pc.Type == "codex" && pc.Auth != "api-key" && sec != nil:
+			opts := codexCheckOptions
+			opts.Name, opts.Secrets = pc.Name, sec
+			ids, source, err := codex.New(opts).StoredModels(ctx)
+			if err != nil { // not signed in
+				return nil, false, check.ErrNoModelList
+			}
+			return ids, source == codex.SourceLive, nil
+		}
+		return nil, false, check.ErrNoModelList
 	}
 }
 

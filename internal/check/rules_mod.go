@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"slices"
+	"strings"
 	"sync"
 	"time"
 
@@ -16,8 +18,17 @@ import (
 // windows leave no room for tool schemas or a useful reply.
 const MinContextTokens = 4096
 
-// ProbeTimeout bounds each MOD002 network probe.
+// ProbeTimeout bounds each MOD002 and MOD003 network probe.
 const ProbeTimeout = 5 * time.Second
+
+// ErrNoModelList is what Input.Models returns for a provider that cannot be
+// asked for its models (a codex instance that is not signed in): MOD003 has
+// nothing to say about it.
+var ErrNoModelList = errors.New("check: the provider has no model list")
+
+// maxListedModels caps the ids a MOD003 message quotes: a gateway serves
+// hundreds.
+const maxListedModels = 20
 
 // mod001Rule: a context window under MinContextTokens is nearly always a
 // mistake — there is barely room for the fixed prompt overhead, let alone a
@@ -121,4 +132,90 @@ func mod002Finding(name, providerName string, configured, allocated int, err err
 	default:
 		return Finding{}
 	}
+}
+
+// mod003Rule: asks every provider for the model ids it serves, concurrently
+// and once each, and reports the configured ids that are not among them. A
+// model with its own url is not served at the provider's base_url, and is
+// left out. in.Models == nil skips the rule entirely, as for MOD002.
+func mod003Rule() Rule {
+	return Rule{
+		ID:      "MOD003",
+		Summary: "the provider does not serve a configured model id",
+		Run: func(ctx context.Context, in *Input) []Finding {
+			if in.Config == nil || in.Models == nil {
+				return nil
+			}
+			byProvider := map[string][]string{}
+			for _, name := range sortedKeys(in.Config.Models) {
+				m := in.Config.Models[name]
+				if _, ok := in.Config.Providers[m.Provider]; !ok || m.ID == "" || m.URL != "" {
+					continue
+				}
+				byProvider[m.Provider] = append(byProvider[m.Provider], name)
+			}
+			providers := sortedKeys(byProvider)
+			results := make([][]Finding, len(providers))
+			var wg sync.WaitGroup
+			for i, providerName := range providers {
+				wg.Add(1)
+				go func(i int, providerName string) {
+					defer wg.Done()
+					pctx, cancel := context.WithTimeout(ctx, ProbeTimeout)
+					defer cancel()
+					ids, live, err := in.Models(pctx, providerName)
+					results[i] = mod003Findings(in.Config, providerName, byProvider[providerName], ids, live, err)
+				}(i, providerName)
+			}
+			wg.Wait()
+			return slices.Concat(results...)
+		},
+	}
+}
+
+func mod003Findings(cfg *config.Config, providerName string, models, ids []string, live bool, err error) []Finding {
+	switch {
+	case errors.Is(err, ErrNoModelList):
+		return nil
+	case err != nil:
+		return []Finding{{
+			ID:       "MOD003",
+			Severity: SeverityInfo,
+			File:     config.FileConfig,
+			Key:      "providers." + providerName,
+			Message:  fmt.Sprintf("could not list the models of %s: %s", providerName, err),
+		}}
+	}
+	var out []Finding
+	for _, name := range models {
+		id := cfg.Models[name].ID
+		// Ollama serves a name without a tag as its `latest`.
+		if slices.Contains(ids, id) || slices.Contains(ids, id+":latest") {
+			continue
+		}
+		f := Finding{
+			ID:       "MOD003",
+			Severity: SeverityError,
+			File:     config.FileConfig,
+			Key:      "models." + name + ".id",
+			Message:  fmt.Sprintf("%s does not serve %q; it serves: %s", providerName, id, listModels(ids)),
+			Fix:      fmt.Sprintf("set models.%s.id to an id %s serves", name, providerName),
+		}
+		if !live {
+			// A list that is not the provider's own answer is a guess.
+			f.Severity = SeverityWarning
+			f.Message = fmt.Sprintf("%q is not in the built-in list for %s, used because its own list could not be read: %s",
+				id, providerName, listModels(ids))
+		}
+		out = append(out, f)
+	}
+	return out
+}
+
+// listModels quotes at most maxListedModels ids, and says how many it left out.
+func listModels(ids []string) string {
+	if len(ids) <= maxListedModels {
+		return strings.Join(ids, ", ")
+	}
+	return fmt.Sprintf("%s and %d more", strings.Join(ids[:maxListedModels], ", "), len(ids)-maxListedModels)
 }

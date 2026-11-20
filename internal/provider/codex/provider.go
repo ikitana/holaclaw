@@ -200,12 +200,36 @@ func (p *Provider) ModelsWithSource(ctx context.Context) ([]string, string, erro
 	return live, SourceLive, nil
 }
 
-// liveModels asks the unofficial model endpoint, under its own short deadline.
+// StoredModels is ModelsWithSource for a process that does not own the tokens
+// (`holaclaw check`): it sends the access token auth.toml holds as it is and
+// never refreshes it, because a refresh spends the refresh token of a running
+// daemon and writes auth.toml. An expired token is a pinned list; an instance
+// that is not logged in is an auth error.
+func (p *Provider) StoredModels(ctx context.Context) ([]string, string, error) {
+	t := p.auth.store.load()
+	if t.Access == "" && t.Refresh == "" {
+		return nil, "", p.auth.authError("codex is not logged in: " + loginHint)
+	}
+	if t.Access != "" {
+		if live, err := p.fetchModels(ctx, t.Access, t.AccountID); err == nil && len(live) > 0 {
+			return live, SourceLive, nil
+		}
+	}
+	return append([]string(nil), PinnedModels...), SourcePinned, nil
+}
+
+// liveModels asks the unofficial model endpoint with a valid access token.
 func (p *Provider) liveModels(ctx context.Context) ([]string, error) {
 	token, err := p.auth.token(ctx)
 	if err != nil {
 		return nil, err
 	}
+	return p.fetchModels(ctx, token, p.auth.accountID())
+}
+
+// fetchModels is the one request to the model endpoint, under its own short
+// deadline.
+func (p *Provider) fetchModels(ctx context.Context, token, accountID string) ([]string, error) {
 	ctx, cancel := context.WithTimeout(ctx, modelsTimeout)
 	defer cancel()
 
@@ -216,8 +240,8 @@ func (p *Provider) liveModels(ctx context.Context) ([]string, error) {
 	req.Header.Set("Accept", "application/json")
 	req.Header.Set("Authorization", "Bearer "+token)
 	req.Header.Set("originator", Originator)
-	if id := p.auth.accountID(); id != "" {
-		req.Header.Set("chatgpt-account-id", id)
+	if accountID != "" {
+		req.Header.Set("chatgpt-account-id", accountID)
 	}
 
 	resp, err := p.hc.Do(req)
