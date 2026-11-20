@@ -62,6 +62,7 @@ Generated from `api/openapi.yaml`. Every operation below declares an
 | DELETE | `/memory/{id}` | `forgetMemory` | admin |  |
 | GET | `/models` | `listModels` | client |  |
 | POST | `/pair` | `pairDevice` | client | Pairs a device with a `holaclaw` invite: the code is the whole |
+| GET | `/providers/{name}/models` | `listProviderModels` | admin | The model ids the provider serves for its credentials: the values a |
 | GET | `/sessions` | `listSessions` | client | The sessions of the caller's identity, admin tokens included, without rooms. |
 | POST | `/sessions` | `createSession` | client |  |
 | DELETE | `/sessions/{id}` | `deleteSession` | client | Cascades to messages, events, blobs and recall. |

@@ -277,8 +277,19 @@ pays for.
 | `NET003` | error | a provider with a key is reached over plain `http` on a non-loopback host |
 | `MOD001` | warning | a model's `context` is under 4096 |
 | `MOD002` | error | a model's `context` is more than Ollama or llama.cpp allocated; skipped with `--offline` |
+| `MOD003` | error | a model's `id` is not one its provider serves; skipped with `--offline` |
 | `BUD001` | warning, error | an agent's fixed prompt is over 1500 tokens, or a quarter of its chat model's window |
 | `BRW006` | warning | an agent with the browser has no `decide` model |
+
+`holaclaw models <provider>` prints the ids a provider serves, the list
+`MOD003` checks against. Both ask the running daemon, which holds the provider
+as the turns use it, and the provider itself when no daemon runs.
+
+A provider retires ids while the daemon runs. The daemon asks its providers at
+start and every 24 hours, and logs a warning for each model whose `id` is not
+served. It starts all the same: a turn on that model fails with the provider's
+error. `GET /v1/providers/{name}/models` answers the list, with admin scope
+([reference/api.md](reference/api.md)).
 
 The events, all in the trace ([reference/events.md](reference/events.md)):
 

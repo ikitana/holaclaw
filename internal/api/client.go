@@ -578,6 +578,17 @@ func responseError(resp *http.Response) error {
 	return e
 }
 
+// ProviderModels lists the model ids a provider serves. A *ClientError with
+// Status 404 is an unknown provider, 501 one that cannot list its models and
+// 502 a list that could not be read.
+func (c *Client) ProviderModels(ctx context.Context, provider string) ([]string, error) {
+	var out struct {
+		Models []string `json:"models"`
+	}
+	err := c.do(ctx, http.MethodGet, "/providers/"+url.PathEscape(provider)+"/models", nil, &out)
+	return out.Models, err
+}
+
 // StartProviderLogin begins a device-code login (Codex) in the daemon.
 func (c *Client) StartProviderLogin(ctx context.Context, provider string) (gen.DeviceLogin, error) {
 	var out gen.DeviceLogin
