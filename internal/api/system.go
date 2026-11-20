@@ -1,6 +1,7 @@
 package api
 
 import (
+	"context"
 	"errors"
 	"net/http"
 	"sort"
@@ -12,6 +13,7 @@ import (
 	"holaclaw/internal/config"
 	"holaclaw/internal/event"
 	"holaclaw/internal/memory"
+	"holaclaw/internal/provider"
 	"holaclaw/internal/store"
 )
 
@@ -99,6 +101,36 @@ func (h *handlers) ListModels(w http.ResponseWriter, _ *http.Request) {
 	writeJSON(w, http.StatusOK, struct {
 		Models []gen.ModelInfo `json:"models"`
 	}{out})
+}
+
+// modelListTimeout bounds a provider's answer to ListProviderModels.
+const modelListTimeout = 5 * time.Second
+
+// ListProviderModels asks a provider for the model ids it serves, on every
+// call. An unknown provider is a 404, one that cannot list its models a 501
+// and a list that cannot be read a 502 with the provider's error, which never
+// holds a secret.
+func (h *handlers) ListProviderModels(w http.ResponseWriter, r *http.Request, name string) {
+	p, ok := h.b.Providers[name]
+	if !ok {
+		notFound(w)
+		return
+	}
+	lister, ok := p.(provider.ModelLister)
+	if !ok {
+		writeError(w, http.StatusNotImplemented, CodeNotImplemented, "provider "+name+" cannot list its models")
+		return
+	}
+	ctx, cancel := context.WithTimeout(r.Context(), modelListTimeout)
+	defer cancel()
+	ids, err := lister.Models(ctx)
+	if err != nil {
+		writeError(w, http.StatusBadGateway, CodeInternal, err.Error())
+		return
+	}
+	writeJSON(w, http.StatusOK, struct {
+		Models []string `json:"models"`
+	}{ids})
 }
 
 // GetTrace joins the events and the messages of one trace: the full round trip,

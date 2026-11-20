@@ -14,7 +14,7 @@ the provider is declared supported; all of them live in `auth.go`
 6. Error codes `authorization_pending | slow_down | expired_token | access_denied`; `invalid_grant | invalid_request | unauthorized_client | refresh_token_reuse_detected` mean logged out (`invalid_request` may be too aggressive).
 7. `slow_down` widens the poll interval by 5 s.
 8. Account id claim: `https://api.openai.com/auth → chatgpt_account_id`; expiry from `exp`.
-9. Model list at `<backend>/codex/models`. The pinned fallback ids come from OpenAI's Codex models page; `gpt-6.1-sol` was confirmed against the live service on 2026-10-16.
+9. Model list at `<backend>/codex/models`. `gpt-6.1-sol` was confirmed against the live service on 2026-10-16.
 10. `originator` is sent on auth requests too; header names `chatgpt-account-id`, `originator`, `session_id`.
 
 When upstream drifts: update the fixtures in `testdata/`, then the form

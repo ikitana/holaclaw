@@ -702,6 +702,22 @@ paths:
       responses:
         '200': { description: OK, content: { application/json: { schema: { type: object, required: [models], properties: { models: { type: array, items: { $ref: '#/components/schemas/ModelInfo' } } } } } } }
         default: { $ref: '#/components/responses/Error' }
+  /providers/{name}/models:
+    parameters:
+      - { name: name, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [system]
+      operationId: listProviderModels
+      x-scope: admin
+      description: |
+        The model ids the provider serves for its credentials: the values a
+        `models.<name>.id` can take. The provider is asked on every call.
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { type: object, required: [models], properties: { models: { type: array, items: { type: string } } } } } } }
+        '404': { $ref: '#/components/responses/Error', description: "No provider of that name." }
+        '501': { $ref: '#/components/responses/Error', description: "The provider cannot list its models." }
+        '502': { $ref: '#/components/responses/Error', description: "The provider's list could not be read." }
+        default: { $ref: '#/components/responses/Error' }
   /credentials/{provider}:
     parameters:
       - { name: provider, in: path, required: true, schema: { type: string } }

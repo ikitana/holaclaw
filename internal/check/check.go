@@ -92,6 +92,10 @@ type Input struct {
 	// allocated for a model (docs/models.md). nil skips MOD002 entirely —
 	// the caller passes nil for an offline check.
 	Probe func(ctx context.Context, providerName string, m provider.Model) (int, string, error)
+	// Models lists the model ids a provider serves, for MOD003.
+	// ErrNoModelList means the provider cannot be asked. nil skips MOD003
+	// entirely, as for Probe.
+	Models func(ctx context.Context, providerName string) ([]string, error)
 	// KnownTools is the registered tool and group names, for rules that need
 	// to reason about tool selection beyond what config.Validate already
 	// checked.
@@ -101,7 +105,7 @@ type Input struct {
 	// nil means "no tools configured" rather than "skip the rule".
 	Specs func(agent string) []provider.ToolSpec
 	// Offline skips the rules that touch a socket (BRW004); the network
-	// rules skip themselves by having no Probe.
+	// rules skip themselves by having no Probe and no Models.
 	Offline bool
 	// SkillRoots returns the two skill roots of an agent (app.SkillRoots);
 	// nil skips every SKL rule.
@@ -120,7 +124,7 @@ func Rules() []Rule {
 		net001Rule(), net002Rule(), net003Rule(),
 		acc001Rule(), acc002Rule(), acc003Rule(),
 		pol001Rule(), pol002Rule(),
-		mod001Rule(), mod002Rule(),
+		mod001Rule(), mod002Rule(), mod003Rule(),
 		bud001Rule(), bud002Rule(),
 		dat001Rule(), dat002Rule(),
 		brw001Rule(), brw002Rule(), brw003Rule(), brw004Rule(), brw005Rule(), brw006Rule(),

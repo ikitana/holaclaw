@@ -29,6 +29,7 @@ import (
 	"holaclaw/internal/connector/oauth"
 	"holaclaw/internal/event"
 	"holaclaw/internal/memory"
+	"holaclaw/internal/provider"
 	"holaclaw/internal/session"
 	"holaclaw/internal/store"
 )
@@ -79,6 +80,9 @@ type Backend struct {
 	ChannelLinker func(name string) channel.Linker
 	// ProviderLogin is the device-code flow (docs/models.md); nil answers 501.
 	ProviderLogin ProviderLoginBackend
+	// Providers is the configured providers by name, asked for the model ids
+	// they serve (provider.ModelLister).
+	Providers map[string]provider.Provider
 	// Connectors is the connector manager (docs/connectors.md §8); nil
 	// answers 501.
 	Connectors ConnectorBackend
@@ -218,6 +222,7 @@ var scopes = map[string]auth.Scope{
 	"getStatus":            auth.ScopeClient,
 	"listAgents":           auth.ScopeClient,
 	"listModels":           auth.ScopeClient,
+	"listProviderModels":   auth.ScopeAdmin,
 	"putCredentials":       auth.ScopeAdmin,
 	"loginProvider":        auth.ScopeAdmin,
 	"getProviderLogin":     auth.ScopeAdmin,
@@ -312,6 +317,7 @@ var routes = map[route]string{
 	{"GET", "/status"}:                             "getStatus",
 	{"GET", "/agents"}:                             "listAgents",
 	{"GET", "/models"}:                             "listModels",
+	{"GET", "/providers/{name}/models"}:            "listProviderModels",
 	{"PUT", "/credentials/{provider}"}:             "putCredentials",
 	{"POST", "/credentials/{provider}/login"}:      "loginProvider",
 	{"GET", "/credentials/{provider}/login"}:       "getProviderLogin",
