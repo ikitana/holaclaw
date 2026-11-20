@@ -22,7 +22,9 @@ RUN apt-get update \
  && install -d -o holaclaw -g holaclaw -m 700 /etc/holaclaw-secrets
 COPY deploy/docker/entrypoint.sh /usr/local/bin/holaclaw-entrypoint
 COPY deploy/docker/holaclaw.sh /usr/local/bin/holaclaw
-ENV HOLACLAW_CONFIG=/etc/holaclaw \
+# HOLACLAW_CONTAINER has `holaclaw restart` point at a restart of the container.
+ENV HOLACLAW_CONTAINER=1 \
+    HOLACLAW_CONFIG=/etc/holaclaw \
     HOLACLAW_LISTEN=0.0.0.0:8484 \
     HOLACLAW_ALLOW_INSECURE_TRANSPORT=true
 EXPOSE 8484

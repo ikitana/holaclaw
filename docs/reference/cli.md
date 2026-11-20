@@ -59,6 +59,19 @@ usage: holaclaw init [flags]
 | `--provider string` |  | the provider to write a config for: openai\|openai-codex\|openrouter\|openai-compat |
 | `--token-file string` |  | also create an init binding with one admin token, and write the token to this new file, mode 0600 |
 
+### `holaclaw restart`
+
+restart the daemon, which reads its config again
+
+```
+usage: holaclaw restart [flags]
+```
+
+| Flag | Default | Description |
+|---|---|---|
+| `--addr string` |  | daemon base URL or socket path ($HOLACLAW_ADDR) |
+| `--token string` |  | API token, for a TCP address; prefer $HOLACLAW_TOKEN — an argument is visible to every process in "ps" |
+
 ### `holaclaw run`
 
 start the daemon

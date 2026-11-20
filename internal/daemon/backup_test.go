@@ -167,3 +167,30 @@ func TestRestoreRestartsOntoTheBackup(t *testing.T) {
 		t.Errorf("%d backup.restored events, want 1", restored)
 	}
 }
+
+// A restart through the API comes back on the config as it is now.
+func TestRestartReadsTheConfigAgain(t *testing.T) {
+	e := start(t, opts{})
+	e.stop() // the owner exists; from here on the daemon runs under Serve
+	e.serve()
+	ctx := context.Background()
+
+	tools := func() ([]string, bool) {
+		agents, err := e.client.ListAgents(ctx)
+		if err != nil || len(agents) != 1 {
+			return nil, false
+		}
+		return agents[0].Tools, true
+	}
+	if got, _ := tools(); len(got) != 1 {
+		t.Fatalf("tools before the restart = %v", got)
+	}
+	writeConfig(t, e, opts{tools: "[]"}, e.model.URL())
+	if err := e.client.Restart(ctx); err != nil {
+		t.Fatalf("Restart: %v", err)
+	}
+	e.await("the daemon to come back on the new config", func() bool {
+		got, ok := tools()
+		return ok && len(got) == 0
+	})
+}

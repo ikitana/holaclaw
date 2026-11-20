@@ -83,7 +83,7 @@ func newRoot(c *cli) *cobra.Command {
 			root.AddCommand(cmd)
 		}
 	}
-	add(groupDaemon, newInitCmd(c), newRunCmd(c), newStatusCmd(c), newBrowserCmd(c), newVersionCmd(c))
+	add(groupDaemon, newInitCmd(c), newRunCmd(c), newRestartCmd(c), newStatusCmd(c), newBrowserCmd(c), newVersionCmd(c))
 	add(groupChat, newChatCmd(c))
 	add(groupInspect, newCheckCmd(c), newPromptSizeCmd(c), newTraceCmd(c))
 	add(groupAdmin, newLoginCmd(c), newLogoutCmd(c), newConfigCmd(c), newAuthCmd(c), newTokenCmd(c),
