@@ -77,6 +77,11 @@ It prints a URL and a code:
 Open https://auth.openai.com/codex/device and enter the code: XXXX-XXXXX
 ```
 
+Your ChatGPT account must allow this kind of sign-in: enable **device code
+sign-in** in ChatGPT's Security Settings first. With it off, OpenAI's page
+refuses the code and tells you to run `codex login` again: enable the setting
+and run `holaclaw login codex` again instead.
+
 Open the URL on any device, sign in with your ChatGPT account, enter the code
 and approve. The command returns `codex: logged in`. You do this once: the
 daemon refreshes the tokens from then on. If they are ever revoked,

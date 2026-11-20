@@ -15,6 +15,7 @@ import (
 
 	"holaclaw/internal/api"
 	"holaclaw/internal/api/gen"
+	"holaclaw/internal/provider/codex"
 )
 
 // loginPoll is how often a login is polled while the user acts on the code.
@@ -159,8 +160,9 @@ func nameNotArg(_ *cobra.Command, args []string) error {
 	return fmt.Errorf("unexpected argument %q; name the instance with --name %s", args[0], args[0])
 }
 
-// loginLine is the command that links channel name of type typ; the name is
-// left out when it is the type's own, as the default channel usually is.
+// loginLine is the command that logs in the channel or provider name of type
+// typ; the name is left out when it is the type's own, as the default usually
+// is.
 func loginLine(typ, name string) string {
 	if name == typ {
 		return "holaclaw login " + typ
@@ -182,6 +184,7 @@ func providerLogin(ctx context.Context, c *cli, client *api.Client, provider str
 	}
 	if st.UserCode != nil && st.VerificationUrl != nil {
 		_, _ = fmt.Fprintf(c.stdout, "Open %s and enter the code: %s\n", printable(*st.VerificationUrl), printable(*st.UserCode))
+		_, _ = fmt.Fprintln(c.stderr, "note: "+deviceCodeSetting)
 	}
 	_, _ = fmt.Fprintln(c.stderr, "waiting for the login to complete (Ctrl-C stops waiting; the daemon keeps polling)…")
 	tick := time.NewTicker(loginPoll)
@@ -201,10 +204,21 @@ func providerLogin(ctx context.Context, c *cli, client *api.Client, provider str
 			_, _ = fmt.Fprintf(c.stdout, "%s: logged in\n", provider)
 			return nil
 		case gen.DeviceLoginStateFailed, gen.DeviceLoginStateNone:
-			return fmt.Errorf("%s: %s", provider, detailOr(st, "login failed"))
+			detail := detailOr(st, "login failed")
+			// OpenAI refuses the code in the browser when the setting is off,
+			// and the daemon only sees a code nobody approved.
+			if detail == codex.ErrDeviceCodeExpired.Error() {
+				return fmt.Errorf("%s: %s\n%s, then run `%s` again", provider, detail, deviceCodeSetting, loginLine("codex", provider))
+			}
+			return fmt.Errorf("%s: %s", provider, detail)
 		}
 	}
 }
+
+// deviceCodeSetting is the account setting a ChatGPT device-code login needs.
+// With it off, OpenAI rejects the code on its page and points at the Codex
+// CLI, so the CLI says it first.
+const deviceCodeSetting = "ChatGPT must have device code sign-in enabled (Security Settings)"
 
 // channelLogin links a channel with a pairing code (WhatsApp,
 // docs/channels/whatsapp.md §3). A link still pending — an earlier run

@@ -28,7 +28,8 @@ func refused(status int, code, msg string) loginReply {
 }
 
 // loginFake is a daemon with channels, providers that have a login, and a
-// scripted channel login: polls answers in order, the last one repeated.
+// scripted channel login: polls answers in order, the last one repeated. A
+// provider's poll answers the first of polls, when there is one.
 type loginFake struct {
 	channels  []string          // whatsapp channels
 	others    map[string]string // other channels: name → type
@@ -83,6 +84,10 @@ func (f *loginFake) serve(t *testing.T) string {
 			for _, p := range f.providers {
 				if p == name && r.Method == http.MethodPost && f.codex.status != 0 {
 					write(w, f.codex)
+					return
+				}
+				if p == name && len(f.polls) > 0 {
+					write(w, f.polls[0])
 					return
 				}
 				if p == name {
@@ -434,6 +439,41 @@ func TestLoginCodex(t *testing.T) {
 		"    [providers.codex]\n    type = \"codex\"\n    auth = \"subscription\"\n"
 	if code != 1 || errOut != want {
 		t.Errorf("404: exit = %d, stderr = %q", code, errOut)
+	}
+
+	// A started login says which ChatGPT setting it needs before the user
+	// opens the URL, on stderr: stdout stays the URL and the code.
+	started := ok(gen.DeviceLogin{State: gen.DeviceLoginStatePending,
+		VerificationUrl: ptrTo("https://auth.example/device"), UserCode: ptrTo("WXYZ-1234")})
+	note := "note: ChatGPT must have device code sign-in enabled (Security Settings)\n"
+	f = &loginFake{providers: []string{"codex"}, codex: started}
+	code, out, errOut := runCLI(t, "", "login", "codex", "--addr", f.serve(t))
+	if code != 1 || out != "Open https://auth.example/device and enter the code: WXYZ-1234\n" || !strings.HasPrefix(errOut, note) {
+		t.Errorf("started: exit = %d, stdout = %q, stderr = %q", code, out, errOut)
+	}
+
+	// A code nobody approved is what a login refused by OpenAI's page looks
+	// like, so the failure names the setting and the command to run again.
+	for _, tc := range []struct{ provider, again string }{
+		{"codex", "holaclaw login codex"},
+		{"work", "holaclaw login codex --name work"},
+	} {
+		expired := ok(gen.DeviceLogin{State: gen.DeviceLoginStateFailed, Detail: ptrTo("codex: device code expired")})
+		f = &loginFake{providers: []string{tc.provider}, codex: started, polls: []loginReply{expired}}
+		code, _, errOut = runCLI(t, "", "login", "codex", "--name", tc.provider, "--addr", f.serve(t))
+		want := "holaclaw: " + tc.provider + ": codex: device code expired\n" +
+			"ChatGPT must have device code sign-in enabled (Security Settings), then run `" + tc.again + "` again\n"
+		if code != 1 || !strings.HasSuffix(errOut, want) {
+			t.Errorf("expired %s: exit = %d, stderr = %q", tc.provider, code, errOut)
+		}
+	}
+
+	// Any other failure is printed as it comes.
+	denied := ok(gen.DeviceLogin{State: gen.DeviceLoginStateFailed, Detail: ptrTo("codex: access denied")})
+	f = &loginFake{providers: []string{"codex"}, codex: started, polls: []loginReply{denied}}
+	code, _, errOut = runCLI(t, "", "login", "codex", "--addr", f.serve(t))
+	if code != 1 || !strings.HasSuffix(errOut, "…\nholaclaw: codex: codex: access denied\n") {
+		t.Errorf("denied: exit = %d, stderr = %q", code, errOut)
 	}
 
 	// --phone belongs to whatsapp only.
