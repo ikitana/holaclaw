@@ -178,6 +178,7 @@ func New(ctx context.Context, opts Options) (*Daemon, error) {
 		Hub: d.Hub, Version: Version, Started: time.Now(), Logger: d.log,
 	}
 	d.Backend.ProviderLogin = providerLogin{d}
+	d.Backend.Providers = a.Providers
 	d.Backend.Skills = a
 	// Managed backups live beside the database, in a directory no backup
 	// archives (ARCHITECTURE.md §4).
@@ -296,6 +297,7 @@ func (d *Daemon) Run(ctx context.Context) error {
 		d.connectorChecks(ctx)
 	}()
 	go d.automaticBackups(ctx)
+	go d.modelChecks(ctx)
 	chDone := make(chan struct{})
 	go func() {
 		defer close(chDone)

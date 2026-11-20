@@ -282,7 +282,14 @@ pays for.
 | `BRW006` | warning | an agent with the browser has no `decide` model |
 
 `holaclaw models <provider>` prints the ids a provider serves, the list
-`MOD003` checks against.
+`MOD003` checks against. Both ask the running daemon, which holds the provider
+as the turns use it, and the provider itself when no daemon runs.
+
+A provider retires ids while the daemon runs. The daemon asks its providers at
+start and every 24 hours, and logs a warning for each model whose `id` is not
+served. It starts all the same: a turn on that model fails with the provider's
+error. `GET /v1/providers/{name}/models` answers the list, with admin scope
+([reference/api.md](reference/api.md)).
 
 The events, all in the trace ([reference/events.md](reference/events.md)):
 

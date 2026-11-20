@@ -189,8 +189,7 @@ func mod003Findings(cfg *config.Config, providerName string, models, ids []strin
 	var out []Finding
 	for _, name := range models {
 		id := cfg.Models[name].ID
-		// Ollama serves a name without a tag as its `latest`.
-		if slices.Contains(ids, id) || slices.Contains(ids, id+":latest") {
+		if provider.Serves(ids, id) {
 			continue
 		}
 		out = append(out, Finding{

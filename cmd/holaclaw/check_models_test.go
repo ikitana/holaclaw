@@ -19,24 +19,31 @@ import (
 // (docs/models.md §9).
 
 // modelsConfig is the minimal fixture with its one model, gemma, on a
-// provider of the given type, and its secrets in the temp dir.
+// provider of the given type, its secrets in the temp dir and a socket no
+// daemon listens on.
 func modelsConfig(t *testing.T, providerTOML, id string) string {
 	t.Helper()
 	dir := fixture(t, "minimal")
+	writeModelsConfig(t, dir, shortSocket(t), "main", providerTOML, id)
+	return dir
+}
+
+func writeModelsConfig(t *testing.T, dir, socket, providerName, providerTOML, id string) {
+	t.Helper()
 	writeTestFile(t, filepath.Join(dir, config.FileConfig), fmt.Sprintf(`version = 1
 
 [server]
+socket      = %q
 secrets_dir = %q
 
-[providers.main]
+[providers.%s]
 %s
 
 [models.gemma]
-provider = "main"
+provider = %q
 id       = %q
 context  = 8192
-`, filepath.Join(dir, "secrets"), providerTOML, id))
-	return dir
+`, socket, filepath.Join(dir, "secrets"), providerName, providerTOML, providerName, id))
 }
 
 // compatConfig points the model at an OpenAI-compatible endpoint.

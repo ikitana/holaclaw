@@ -194,15 +194,13 @@ func newModelsCmd(c *cli) *cobra.Command {
 
 // cmdModels prints the model ids a provider serves for its credentials, one
 // per line: the values a `models.<name>.id` can take, and the list MOD003
-// checks against. Listing only reads the credentials, which the running
-// daemon owns.
+// checks against, asked the same way (providerModels).
 func cmdModels(ctx context.Context, c *cli, name string) error {
 	a, err := app.Static(c.configDir)
 	if err != nil {
 		return err
 	}
-	pc, ok := a.Config.Providers[name]
-	if !ok {
+	if _, ok := a.Config.Providers[name]; !ok {
 		names := make([]string, 0, len(a.Config.Providers))
 		for n := range a.Config.Providers {
 			names = append(names, n)
@@ -210,17 +208,12 @@ func cmdModels(ctx context.Context, c *cli, name string) error {
 		sort.Strings(names)
 		return fmt.Errorf("unknown provider %q: the config has %s", name, strings.Join(names, ", "))
 	}
-	p, err := app.NewProvider(pc, a.Secrets, nil)
-	if err != nil {
-		return err
-	}
-	lister, ok := p.(provider.ModelLister)
-	if !ok {
-		return fmt.Errorf("provider %s cannot list its models", name)
-	}
 	ctx, cancel := context.WithTimeout(ctx, check.ProbeTimeout)
 	defer cancel()
-	ids, err := lister.Models(ctx)
+	ids, err := providerModels(ctx, a.Config, a.Secrets, name)
+	if errors.Is(err, check.ErrNoModelList) {
+		return fmt.Errorf("provider %s cannot list its models", name)
+	}
 	if err != nil {
 		return err
 	}

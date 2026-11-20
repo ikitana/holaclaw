@@ -9,6 +9,7 @@ import (
 	"errors"
 	"fmt"
 	"math"
+	"slices"
 	"time"
 
 	"github.com/shopspring/decimal"
@@ -272,6 +273,12 @@ type Transcriber interface {
 // daemon that owns them.
 type ModelLister interface {
 	Models(ctx context.Context) ([]string, error)
+}
+
+// Serves reports whether id is among ids, the answer of a ModelLister. Ollama
+// serves a name without a tag as its `latest`.
+func Serves(ids []string, id string) bool {
+	return slices.Contains(ids, id) || slices.Contains(ids, id+":latest")
 }
 
 // Collect drains a stream and returns the final response. onText, if not nil,

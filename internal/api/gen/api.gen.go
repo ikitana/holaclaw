@@ -2316,6 +2316,9 @@ type ServerInterface interface {
 	// (POST /pair)
 	PairDevice(w http.ResponseWriter, r *http.Request)
 
+	// (GET /providers/{name}/models)
+	ListProviderModels(w http.ResponseWriter, r *http.Request, name string)
+
 	// (GET /sessions)
 	ListSessions(w http.ResponseWriter, r *http.Request)
 
@@ -3744,6 +3747,32 @@ func (siw *ServerInterfaceWrapper) PairDevice(w http.ResponseWriter, r *http.Req
 	handler.ServeHTTP(w, r)
 }
 
+// ListProviderModels operation middleware
+func (siw *ServerInterfaceWrapper) ListProviderModels(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "name" -------------
+	var name string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "name", r.PathValue("name"), &name, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "", ValueIsUnescaped: true})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "name", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.ListProviderModels(w, r, name)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
 // ListSessions operation middleware
 func (siw *ServerInterfaceWrapper) ListSessions(w http.ResponseWriter, r *http.Request) {
 
@@ -4654,6 +4683,7 @@ func HandlerWithOptions(si ServerInterface, options StdHTTPServerOptions) http.H
 	m.HandleFunc(http.MethodGet+" "+options.BaseURL+"/status", wrapper.GetStatus)
 	m.HandleFunc(http.MethodGet+" "+options.BaseURL+"/agents", wrapper.ListAgents)
 	m.HandleFunc(http.MethodGet+" "+options.BaseURL+"/models", wrapper.ListModels)
+	m.HandleFunc(http.MethodGet+" "+options.BaseURL+"/providers/{name}/models", wrapper.ListProviderModels)
 	m.HandleFunc(http.MethodPut+" "+options.BaseURL+"/credentials/{provider}", wrapper.PutCredentials)
 	m.HandleFunc(http.MethodGet+" "+options.BaseURL+"/credentials/{provider}/login", wrapper.GetProviderLogin)
 	m.HandleFunc(http.MethodPost+" "+options.BaseURL+"/credentials/{provider}/login", wrapper.LoginProvider)

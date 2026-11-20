@@ -5,12 +5,14 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
 
 	"github.com/spf13/cobra"
 
+	"holaclaw/internal/api"
 	"holaclaw/internal/app"
 	"holaclaw/internal/auth/secrets"
 	"holaclaw/internal/check"
@@ -215,24 +217,68 @@ func probeFor(cfg *config.Config, sec *secrets.File) func(context.Context, strin
 	}
 }
 
-// modelsFor asks a provider for the model ids it serves (MOD003). Any
-// provider that is a provider.ModelLister answers; one that is not has no
-// list. Listing only reads the credentials, which the running daemon owns.
+// modelsFor asks for the model ids a provider serves (MOD003): the daemon
+// when it runs, else the provider itself.
 func modelsFor(cfg *config.Config, sec *secrets.File) func(context.Context, string) ([]string, error) {
 	return func(ctx context.Context, name string) ([]string, error) {
-		// Without a readable auth.toml there are no credentials to list with.
-		if cfg == nil || sec == nil {
+		if cfg == nil {
 			return nil, check.ErrNoModelList
 		}
-		p, err := app.NewProvider(cfg.Providers[name], sec, nil)
-		if err != nil {
-			return nil, check.ErrNoModelList
-		}
-		lister, ok := p.(provider.ModelLister)
-		if !ok {
-			return nil, check.ErrNoModelList
-		}
-		return lister.Models(ctx)
+		return providerModels(ctx, cfg, sec, name)
+	}
+}
+
+// providerModels lists the model ids a provider serves. The running daemon
+// is asked first: it holds the provider as the turns use it, with its
+// environment and its network. Without one the provider is asked from here:
+// any provider that is a provider.ModelLister answers, and one that is not
+// has no list (check.ErrNoModelList). Listing only reads the credentials,
+// which the running daemon owns.
+func providerModels(ctx context.Context, cfg *config.Config, sec *secrets.File, name string) ([]string, error) {
+	if ids, err := daemonModels(ctx, cfg, name); !errors.Is(err, errNoDaemon) {
+		return ids, err
+	}
+	// Without a readable auth.toml there are no credentials to list with.
+	if sec == nil {
+		return nil, check.ErrNoModelList
+	}
+	p, err := app.NewProvider(cfg.Providers[name], sec, nil)
+	if err != nil {
+		return nil, check.ErrNoModelList
+	}
+	lister, ok := p.(provider.ModelLister)
+	if !ok {
+		return nil, check.ErrNoModelList
+	}
+	return lister.Models(ctx)
+}
+
+// daemonModels asks the daemon on the socket of cfg for a provider's model
+// ids. errNoDaemon is no daemon that can say: none runs, or the one that
+// does has no such provider (it started before the config had it), is not
+// initialised or is older than the operation.
+func daemonModels(ctx context.Context, cfg *config.Config, name string) ([]string, error) {
+	socket := cfg.Server.Socket
+	if socket == "" {
+		socket = app.DefaultSocket()
+	}
+	client, err := api.Dial(socket, "")
+	if err != nil {
+		return nil, errNoDaemon
+	}
+	ids, err := client.ProviderModels(ctx, name)
+	var ce *api.ClientError
+	switch {
+	case err == nil:
+		return ids, nil
+	case !errors.As(err, &ce):
+		return nil, notRunning(err)
+	case ce.Status == http.StatusNotImplemented:
+		return nil, check.ErrNoModelList
+	case ce.Status == http.StatusBadGateway:
+		return nil, errors.New(ce.Message)
+	default:
+		return nil, errNoDaemon
 	}
 }
 
