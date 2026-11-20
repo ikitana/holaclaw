@@ -73,6 +73,12 @@ func (c *Client) Status(ctx context.Context) (gen.Status, error) {
 	return out, err
 }
 
+// Restart has the daemon restart in its process. A nil error means it is on
+// its way down; it is back within seconds.
+func (c *Client) Restart(ctx context.Context) error {
+	return c.do(ctx, http.MethodPost, "/restart", nil, nil)
+}
+
 func (c *Client) CreateSession(ctx context.Context, in gen.SessionCreate) (gen.Session, error) {
 	var out gen.Session
 	err := c.do(ctx, http.MethodPost, "/sessions", in, &out)

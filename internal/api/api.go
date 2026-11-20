@@ -69,7 +69,8 @@ type Backend struct {
 	// Backups is the managed backups of the daemon (ARCHITECTURE.md §4); nil answers 501.
 	Backups BackupBackend
 	// Restart stops the daemon and starts it again in this process, which is
-	// how a staged restore is applied; nil answers 501 to a restore.
+	// how a staged restore is applied; nil answers 501 to a restore and to a
+	// restart.
 	Restart func()
 	// Channels lists the configured channel instances; nil is an empty list.
 	Channels func() []gen.ChannelStatus
@@ -216,6 +217,7 @@ var scopes = map[string]auth.Scope{
 	"getChannelLogin":      auth.ScopeAdmin,
 	"logoutChannel":        auth.ScopeAdmin,
 	"getStatus":            auth.ScopeClient,
+	"restartDaemon":        auth.ScopeAdmin,
 	"listAgents":           auth.ScopeClient,
 	"listModels":           auth.ScopeClient,
 	"putCredentials":       auth.ScopeAdmin,
@@ -310,6 +312,7 @@ var routes = map[route]string{
 	{"GET", "/channels/{name}/login"}:              "getChannelLogin",
 	{"DELETE", "/channels/{name}/login"}:           "logoutChannel",
 	{"GET", "/status"}:                             "getStatus",
+	{"POST", "/restart"}:                           "restartDaemon",
 	{"GET", "/agents"}:                             "listAgents",
 	{"GET", "/models"}:                             "listModels",
 	{"PUT", "/credentials/{provider}"}:             "putCredentials",
