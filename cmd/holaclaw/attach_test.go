@@ -598,6 +598,7 @@ func TestCommandsSayTheDaemonIsNotRunning(t *testing.T) {
 		{"status", "--config", dir},
 		{"approvals", "--config", dir},
 		{"token", "list", "--config", dir},
+		{"tasks", "list", "--config", dir},
 	} {
 		code, _, errOut := runCLI(t, "", args...)
 		if code != 1 {
