@@ -183,6 +183,10 @@ func providerLogin(ctx context.Context, c *cli, client *api.Client, provider str
 	if st.UserCode != nil && st.VerificationUrl != nil {
 		_, _ = fmt.Fprintf(c.stdout, "Open %s and enter the code: %s\n", printable(*st.VerificationUrl), printable(*st.UserCode))
 	}
+	// What the provider says the sign-in needs, in its own words.
+	if note := detailOr(st, ""); st.State == gen.DeviceLoginStatePending && note != "" {
+		_, _ = fmt.Fprintln(c.stderr, "note: "+note)
+	}
 	_, _ = fmt.Fprintln(c.stderr, "waiting for the login to complete (Ctrl-C stops waiting; the daemon keeps polling)…")
 	tick := time.NewTicker(loginPoll)
 	defer tick.Stop()
