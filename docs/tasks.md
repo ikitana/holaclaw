@@ -192,6 +192,8 @@ All four endpoints need the `admin` scope:
 
 A task carries its `next_run`, `last_run` and `last_trace_id`.
 
+`holaclaw tasks list` prints what `GET /v1/tasks` returns, one task per line.
+
 | Event | Trace | Attributes |
 |---|---|---|
 | `task.scheduled` | the creator's turn, if any | `task`, `agent`, `schedule`, `delivery`, `next_run`, `grants` (a count) |

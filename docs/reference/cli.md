@@ -1037,6 +1037,27 @@ usage: holaclaw skills revert <agent> <name> [flags]
 | `--to int` |  | version number from history/ to make current |
 | `--token string` |  | API token, for a TCP address; prefer $HOLACLAW_TOKEN — an argument is visible to every process in "ps" |
 
+### `holaclaw tasks`
+
+inspect the scheduled tasks
+
+```
+usage: holaclaw tasks
+```
+
+#### `holaclaw tasks list`
+
+list every task, newest first
+
+```
+usage: holaclaw tasks list [flags]
+```
+
+| Flag | Default | Description |
+|---|---|---|
+| `--addr string` |  | daemon base URL or socket path ($HOLACLAW_ADDR) |
+| `--token string` |  | API token, for a TCP address; prefer $HOLACLAW_TOKEN — an argument is visible to every process in "ps" |
+
 ### `holaclaw token`
 
 manage the API tokens
