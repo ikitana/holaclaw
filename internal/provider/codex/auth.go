@@ -175,10 +175,19 @@ func (a *auth) setTokens(t tokens) {
 func (a *auth) adopt(write func() error) error {
 	a.mu.Lock()
 	defer a.mu.Unlock()
+	access, account := a.store.get(keyAccessToken), a.store.get(keyAccountID)
 	if err := write(); err != nil {
 		return err
 	}
-	a.cur = a.store.load()
+	t := a.store.load()
+	// A write may name the tokens alone. The account id the entry then still
+	// holds is that of the access token it replaced, so only the new token's
+	// own claim counts.
+	if t.Access != access && a.store.get(keyAccountID) == account {
+		c, _ := decodeClaims(t.Access)
+		t.AccountID = c.AccountID
+	}
+	a.cur = t
 	a.state = stateOK
 	a.gen.Add(1)
 	return nil

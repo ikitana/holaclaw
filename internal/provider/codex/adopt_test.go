@@ -124,6 +124,45 @@ func TestAdoptBeforeAnyTokensWereLoaded(t *testing.T) {
 	wantPut(t, chat(t, f, p))
 }
 
+// A write that names only the tokens, with an access token that carries no
+// account claim, does not send the new token under the account id stored for
+// the token it replaced. An account id the write names itself is used.
+func TestAdoptDropsTheAccountOfTheReplacedToken(t *testing.T) {
+	const otherAccess = jwtHeader + "." + noClaimsPayload + ".FAKEsigOTHER"
+	put := func(sec secretStore, kv map[string]string) func() error {
+		return func() error { return sec.Set(secrets.Providers, "codex", kv) }
+	}
+	cases := []struct {
+		name string
+		kv   map[string]string
+		want string
+	}{
+		{"tokens alone", map[string]string{keyAccessToken: otherAccess, keyRefreshToken: putRefresh}, ""},
+		{"with an account id", map[string]string{keyAccessToken: otherAccess, keyRefreshToken: putRefresh, keyAccountID: putAccount}, putAccount},
+		// The same access token is the same account: nothing to drop.
+		{"another field only", map[string]string{keyRefreshToken: putRefresh}, storedAccount},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			f := newFake(t)
+			f.inference = sseHandler(fixture(t, "inference_tool_call.sse"))
+			sec := newSecrets(t)
+			seedFresh(t, sec, "codex")
+			p := newProvider(t, f, sec, newClock(), event.Discard)
+			if got := chat(t, f, p).Header.Get("chatgpt-account-id"); got != storedAccount {
+				t.Fatalf("account id = %q, want the stored one", got)
+			}
+
+			if err := p.Adopt(put(sec, tc.kv)); err != nil {
+				t.Fatalf("adopt: %v", err)
+			}
+			if got := chat(t, f, p).Header.Get("chatgpt-account-id"); got != tc.want {
+				t.Fatalf("account id = %q, want %q", got, tc.want)
+			}
+		})
+	}
+}
+
 // A write that arrives during a refresh waits for it, so the tokens that
 // refresh rotated cannot land on top of the new ones, in memory or on disk.
 func TestAdoptWaitsForARefreshInFlight(t *testing.T) {
