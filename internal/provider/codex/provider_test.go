@@ -134,25 +134,25 @@ func TestUnauthorizedTwiceIsAuthError(t *testing.T) {
 	}
 }
 
+// Models lists with the stored access token and never owns the tokens:
+// nothing is refreshed and auth.toml is left as it was, so `holaclaw check`
+// can call it beside a running daemon.
 func TestModels(t *testing.T) {
-	t.Run("live", func(t *testing.T) {
+	t.Run("the account's list", func(t *testing.T) {
 		f := newFake(t)
 		f.models = jsonHandler(http.StatusOK, fixture(t, "models.json"))
 		sec := newSecrets(t)
 		seedFresh(t, sec, "codex")
 		p := newProvider(t, f, sec, newClock(), event.Discard)
 
-		models, source, err := p.ModelsWithSource(context.Background())
-		if err != nil {
-			t.Fatalf("models: %v", err)
-		}
-		if source != SourceLive {
-			t.Errorf("source = %q, want live", source)
-		}
-		if len(models) != 2 || models[0] != "gpt-6.1-sol" {
-			t.Errorf("models = %v", models)
+		models, err := p.Models(context.Background())
+		if err != nil || len(models) != 2 || models[0] != "gpt-6.1-sol" {
+			t.Fatalf("models = %v, err = %v", models, err)
 		}
 		rec := f.last("/backend-api/codex/models")
+		if rec.Header.Get("Authorization") != "Bearer "+noClaimsAccess {
+			t.Errorf("the stored access token was not sent")
+		}
 		if rec.Header.Get("originator") != Originator {
 			t.Errorf("originator header missing")
 		}
@@ -161,42 +161,54 @@ func TestModels(t *testing.T) {
 		}
 	})
 
-	cases := []struct {
+	t.Run("an expired token is not refreshed", func(t *testing.T) {
+		f := newFake(t) // f.oauth is unset: a refresh fails the test
+		f.models = jsonHandler(http.StatusUnauthorized, fixture(t, "unauthorized.json"))
+		sec := newSecrets(t)
+		seedStale(t, sec, "codex")
+		p := newProvider(t, f, sec, newClock(), event.Discard)
+
+		if models, err := p.Models(context.Background()); err == nil {
+			t.Fatalf("models = %v, want an error", models)
+		}
+		if c := f.count(pathOAuthToken); c != 0 {
+			t.Errorf("refreshes = %d, want 0", c)
+		}
+		if got, _ := sec.Get(secrets.Providers, "codex", keyRefreshToken); got != storedRefresh {
+			t.Errorf("the stored refresh token changed")
+		}
+	})
+
+	for _, tc := range []struct {
 		name    string
 		handler http.HandlerFunc
 	}{
 		{"server error", jsonHandler(http.StatusInternalServerError, `{"error":"nope"}`)},
 		{"empty list", jsonHandler(http.StatusOK, `{"data":[]}`)},
 		{"garbage", jsonHandler(http.StatusOK, `not json at all`)},
-	}
-	for _, tc := range cases {
-		t.Run("pinned on "+tc.name, func(t *testing.T) {
+	} {
+		t.Run("an error on "+tc.name, func(t *testing.T) {
 			f := newFake(t)
 			f.models = tc.handler
 			sec := newSecrets(t)
 			seedFresh(t, sec, "codex")
 			p := newProvider(t, f, sec, newClock(), event.Discard)
 
-			models, source, err := p.ModelsWithSource(context.Background())
-			if err != nil {
-				t.Fatalf("models: %v", err)
-			}
-			if source != SourcePinned {
-				t.Errorf("source = %q, want pinned", source)
-			}
-			if len(models) != len(PinnedModels) || models[0] != PinnedModels[0] {
-				t.Errorf("models = %v, want the pinned list", models)
+			if models, err := p.Models(context.Background()); err == nil {
+				t.Fatalf("models = %v, want an error", models)
 			}
 		})
 	}
 
-	t.Run("pinned when not logged in", func(t *testing.T) {
+	t.Run("not logged in", func(t *testing.T) {
 		f := newFake(t)
-		sec := newSecrets(t)
-		p := newProvider(t, f, sec, newClock(), event.Discard)
-		models, source, err := p.ModelsWithSource(context.Background())
-		if err != nil || source != SourcePinned || len(models) == 0 {
-			t.Fatalf("models = %v, source = %q, err = %v", models, source, err)
+		p := newProvider(t, f, newSecrets(t), newClock(), event.Discard)
+		models, err := p.Models(context.Background())
+		if provider.KindOf(err) != provider.ErrAuth || models != nil {
+			t.Fatalf("models = %v, err = %v, want an auth error", models, err)
+		}
+		if c := f.count("/backend-api/codex/models"); c != 0 {
+			t.Errorf("requests = %d, want 0", c)
 		}
 	})
 }

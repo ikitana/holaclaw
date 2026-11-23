@@ -9,6 +9,7 @@ import (
 	"errors"
 	"fmt"
 	"math"
+	"slices"
 	"time"
 
 	"github.com/shopspring/decimal"
@@ -264,6 +265,20 @@ type Embedder interface {
 // endpoint. It returns the text and what the call cost.
 type Transcriber interface {
 	Transcribe(ctx context.Context, model Model, mime string, audio []byte) (string, Usage, error)
+}
+
+// ModelLister is implemented by providers that can list the model ids they
+// serve for their credentials. Models only reads the stored credentials, and
+// never refreshes or rewrites them: any process may call it, not only the
+// daemon that owns them.
+type ModelLister interface {
+	Models(ctx context.Context) ([]string, error)
+}
+
+// Serves reports whether id is among ids, the answer of a ModelLister. Ollama
+// serves a name without a tag as its `latest`.
+func Serves(ids []string, id string) bool {
+	return slices.Contains(ids, id) || slices.Contains(ids, id+":latest")
 }
 
 // Collect drains a stream and returns the final response. onText, if not nil,

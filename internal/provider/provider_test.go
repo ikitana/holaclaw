@@ -73,3 +73,22 @@ func TestNanoUSDDecimal(t *testing.T) {
 }
 
 func ptrNano(v NanoUSD) *NanoUSD { return &v }
+
+func TestServes(t *testing.T) {
+	ids := []string{"gemma4:e2b", "qwen3:latest"}
+	for id, want := range map[string]bool{
+		"gemma4:e2b":   true,
+		"qwen3":        true, // Ollama: no tag is `latest`
+		"qwen3:latest": true,
+		"gemma4":       false,
+		"gemma4:e4b":   false,
+		"":             false,
+	} {
+		if got := Serves(ids, id); got != want {
+			t.Errorf("Serves(%q) = %v, want %v", id, got, want)
+		}
+	}
+	if Serves(nil, "gemma4:e2b") {
+		t.Error("an empty list serves nothing")
+	}
+}

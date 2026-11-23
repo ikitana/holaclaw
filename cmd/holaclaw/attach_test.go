@@ -52,10 +52,16 @@ func launchDaemon(t *testing.T, owner bool, tools, policy string, script ...test
 	dir := t.TempDir()
 	e := &daemonEnv{dir: dir, socket: shortSocket(t), model: model}
 	writeDaemonConfig(t, e, tools, policy)
+	return runDaemon(t, e, owner)
+}
 
+// runDaemon runs the daemon of e.dir in this process and waits until its
+// socket answers.
+func runDaemon(t *testing.T, e *daemonEnv, owner bool) *daemonEnv {
+	t.Helper()
 	ctx, cancel := context.WithCancel(context.Background())
 	d, err := daemon.New(ctx, daemon.Options{
-		ConfigDir: dir, Debounce: -1,
+		ConfigDir: e.dir, Debounce: -1,
 		Logger:   slog.New(slog.NewTextHandler(io.Discard, &slog.HandlerOptions{Level: slog.LevelError})),
 		OnListen: func(string, net.Addr) {},
 	})

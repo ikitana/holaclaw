@@ -53,6 +53,7 @@ type env struct {
 	ctx     context.Context
 	tcp     chan string
 	stop    func()
+	logger  *slog.Logger // nil: testLogger
 }
 
 // start writes a config directory pointing at a scripted model, launches the
@@ -145,8 +146,12 @@ func (e *env) launch() {
 	t.Helper()
 	ctx, cancel := context.WithCancel(context.Background())
 	e.tcp = make(chan string, 4)
+	logger := e.logger
+	if logger == nil {
+		logger = testLogger(t)
+	}
 	d, err := New(ctx, Options{
-		ConfigDir: e.dir, Logger: testLogger(t), Debounce: -1,
+		ConfigDir: e.dir, Logger: logger, Debounce: -1,
 		OnListen: func(kind string, addr net.Addr) {
 			if kind == "tcp" {
 				select {
