@@ -45,6 +45,16 @@ func (p providerLogin) Status(_ context.Context, name string) (gen.DeviceLogin, 
 	return deviceLogin(cp.Login().State()), nil
 }
 
+// storeCredentials is api.Backend.StoreCredentials: a subscription Codex
+// provider serves its tokens from memory, so it adopts the ones write stores;
+// every other provider reads auth.toml on each request.
+func (d *Daemon) storeCredentials(name string, write func() error) error {
+	if cp, ok := d.App.Codex[name]; ok {
+		return cp.Adopt(write)
+	}
+	return write()
+}
+
 func deviceLogin(s codex.LoginState) gen.DeviceLogin {
 	out := gen.DeviceLogin{State: gen.DeviceLoginState(s.Status)}
 	if s.DeviceCode.UserCode != "" {

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"io"
 	"mime/multipart"
 	"net/http"
@@ -409,6 +410,49 @@ func TestCredentialsAreWriteOnly(t *testing.T) {
 		map[string]string{"api_key": "x"}), http.StatusNotFound, CodeNotFound)
 	if _, ok := h.b.Secrets.Get(secrets.Providers, "nope", "api_key"); ok {
 		t.Fatal("a credential was written for an unknown provider")
+	}
+}
+
+// A credentials write goes through Backend.StoreCredentials when the daemon
+// set one, so a provider that holds its credentials in memory can adopt them;
+// its error fails the request.
+func TestCredentialsWriteGoesThroughStoreCredentials(t *testing.T) {
+	t.Parallel()
+	h := newHarness(t)
+	var got []string
+	var fail error
+	h.b.StoreCredentials = func(provider string, write func() error) error {
+		got = append(got, provider)
+		if fail != nil {
+			return fail
+		}
+		return write()
+	}
+
+	resp := h.do(http.MethodPut, "/credentials/ollama", h.adminToken, map[string]string{"api_key": "first"})
+	if resp.StatusCode != http.StatusNoContent {
+		t.Fatalf("put status = %d", resp.StatusCode)
+	}
+	_ = resp.Body.Close()
+	if len(got) != 1 || got[0] != "ollama" {
+		t.Fatalf("StoreCredentials calls = %v, want one for ollama", got)
+	}
+	if v, _ := h.b.Secrets.Get(secrets.Providers, "ollama", "api_key"); v != "first" {
+		t.Fatal("the credential was not stored")
+	}
+
+	fail = errors.New("disk full")
+	errorBody(t, h.do(http.MethodPut, "/credentials/ollama", h.adminToken,
+		map[string]string{"api_key": "second"}), http.StatusInternalServerError, CodeInternal)
+	if v, _ := h.b.Secrets.Get(secrets.Providers, "ollama", "api_key"); v != "first" {
+		t.Fatal("a failed write changed the stored credential")
+	}
+
+	// An unknown provider never reaches it.
+	errorBody(t, h.do(http.MethodPut, "/credentials/nope", h.adminToken,
+		map[string]string{"api_key": "x"}), http.StatusNotFound, CodeNotFound)
+	if len(got) != 2 {
+		t.Fatalf("StoreCredentials calls = %v, want none for an unknown provider", got)
 	}
 }
 

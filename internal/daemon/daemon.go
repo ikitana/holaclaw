@@ -178,6 +178,7 @@ func New(ctx context.Context, opts Options) (*Daemon, error) {
 		Hub: d.Hub, Version: Version, Started: time.Now(), Logger: d.log,
 	}
 	d.Backend.ProviderLogin = providerLogin{d}
+	d.Backend.StoreCredentials = d.storeCredentials
 	d.Backend.Providers = a.Providers
 	d.Backend.Skills = a
 	// Managed backups live beside the database, in a directory no backup
