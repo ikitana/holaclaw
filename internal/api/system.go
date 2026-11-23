@@ -38,6 +38,19 @@ func (h *handlers) GetStatus(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, out)
 }
 
+// RestartDaemon restarts the daemon in this process, which reads the config
+// again.
+func (h *handlers) RestartDaemon(w http.ResponseWriter, r *http.Request) {
+	if h.b.Restart == nil {
+		notImplemented(w, "restart")
+		return
+	}
+	h.b.logger().Warn("api: the daemon restarts", "by", string(skillWho(r)))
+	w.WriteHeader(http.StatusAccepted)
+	// The shutdown this starts lets the request finish, so the answer is out.
+	h.b.Restart()
+}
+
 // ListAgents describes the configured agents: what they may call and which
 // model plays each role.
 func (h *handlers) ListAgents(w http.ResponseWriter, _ *http.Request) {

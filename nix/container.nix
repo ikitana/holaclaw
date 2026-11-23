@@ -79,6 +79,7 @@ pkgs.dockerTools.streamLayeredImage {
     Cmd = [ "run" ];
     Env = [
       "PATH=/bin"
+      "HOLACLAW_CONTAINER=1"
       "HOLACLAW_CONFIG=/etc/holaclaw"
       "HOLACLAW_LISTEN=0.0.0.0:8484"
       "HOLACLAW_ALLOW_INSECURE_TRANSPORT=true"

@@ -2319,6 +2319,9 @@ type ServerInterface interface {
 	// (GET /providers/{name}/models)
 	ListProviderModels(w http.ResponseWriter, r *http.Request, name string)
 
+	// (POST /restart)
+	RestartDaemon(w http.ResponseWriter, r *http.Request)
+
 	// (GET /sessions)
 	ListSessions(w http.ResponseWriter, r *http.Request)
 
@@ -3773,6 +3776,20 @@ func (siw *ServerInterfaceWrapper) ListProviderModels(w http.ResponseWriter, r *
 	handler.ServeHTTP(w, r)
 }
 
+// RestartDaemon operation middleware
+func (siw *ServerInterfaceWrapper) RestartDaemon(w http.ResponseWriter, r *http.Request) {
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.RestartDaemon(w, r)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
 // ListSessions operation middleware
 func (siw *ServerInterfaceWrapper) ListSessions(w http.ResponseWriter, r *http.Request) {
 
@@ -4681,6 +4698,7 @@ func HandlerWithOptions(si ServerInterface, options StdHTTPServerOptions) http.H
 	m.HandleFunc(http.MethodGet+" "+options.BaseURL+"/channels/{name}/login", wrapper.GetChannelLogin)
 	m.HandleFunc(http.MethodPost+" "+options.BaseURL+"/channels/{name}/login", wrapper.LoginChannel)
 	m.HandleFunc(http.MethodGet+" "+options.BaseURL+"/status", wrapper.GetStatus)
+	m.HandleFunc(http.MethodPost+" "+options.BaseURL+"/restart", wrapper.RestartDaemon)
 	m.HandleFunc(http.MethodGet+" "+options.BaseURL+"/agents", wrapper.ListAgents)
 	m.HandleFunc(http.MethodGet+" "+options.BaseURL+"/models", wrapper.ListModels)
 	m.HandleFunc(http.MethodGet+" "+options.BaseURL+"/providers/{name}/models", wrapper.ListProviderModels)
