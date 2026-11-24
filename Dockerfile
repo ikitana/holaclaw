@@ -36,10 +36,11 @@ CMD ["run"]
 FROM base AS slim
 COPY --from=build /out/holaclaw /usr/libexec/holaclaw/holaclaw
 
-# The default image: Chromium and Xvfb, and the browser on.
+# The default image: Chromium, Xvfb and the browser's fonts, and the browser on.
 FROM base
 RUN apt-get update \
- && apt-get install -y --no-install-recommends chromium xvfb fonts-dejavu-core \
+ && apt-get install -y --no-install-recommends chromium xvfb \
+    fonts-dejavu-core fonts-liberation fonts-noto-cjk fonts-noto-color-emoji \
  && rm -rf /var/lib/apt/lists/*
 ENV HOLACLAW_BROWSER_ENABLED=true
 COPY --from=build /out/holaclaw /usr/libexec/holaclaw/holaclaw

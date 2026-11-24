@@ -30,7 +30,7 @@ services.holaclaw = {
   # `holaclaw init` sets `server.secrets_dir` to the `secrets` directory
   # inside the config directory. This option must match it.
   secretsDir = "/etc/holaclaw/secrets";
-  browser.enable = true;   # optional: runs the browser sidecar with Chromium and Xvfb
+  browser.enable = true;   # optional: runs the browser sidecar with Chromium, Xvfb and its fonts
 };
 ```
 

@@ -1,7 +1,7 @@
 # HolaClaw in a container
 
 The image `ghcr.io/ikitana/holaclaw` holds the daemon, the browser sidecar,
-Chromium and Xvfb, for `linux/amd64` and `linux/arm64`. It is a supported
+Chromium, Xvfb and the browser's fonts, for `linux/amd64` and `linux/arm64`. It is a supported
 way to run HolaClaw, and the recommended one when the machine does anything
 else: the agent, its tools and `exec` see only the container, never the host,
 and the only programs `exec` can run are the ones in the image. Inside, the

@@ -247,6 +247,10 @@ service_browser() {
   check "holaclaw-browser.service is enabled" "systemctl is-enabled holaclaw-browser"
   check "the sidecar's socket is there" "[ -S /run/holaclaw-browser/browser.sock ]"
   check "the browser starts" "! runuser -u holaclaw -- env HOLACLAW_CONFIG=/etc/holaclaw holaclaw check --offline 2>&1 | grep -E '^BRW00[1-4]'"
+  # The browser's fonts: none of these falls back to DejaVu.
+  check "Arial is Liberation Sans" "runuser -u holaclaw-browser -- fc-match Arial family | grep -q '^Liberation Sans'"
+  check "CJK is Noto Sans CJK" "runuser -u holaclaw-browser -- fc-match :lang=ja family | grep -q '^Noto Sans CJK'"
+  check "emoji is Noto Color Emoji" "runuser -u holaclaw-browser -- fc-match emoji family | grep -q '^Noto Color Emoji'"
   check "the secrets and the data stay the daemon's" \
     "[ \"\$(stat -c %a /etc/holaclaw/data)\" = 700 ] && [ \"\$(stat -c %a /etc/holaclaw/token)\" = 600 ]"
 }

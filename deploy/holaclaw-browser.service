@@ -3,6 +3,7 @@
 #   useradd --system --home /var/lib/holaclaw-browser --shell /usr/sbin/nologin holaclaw-browser
 #   usermod -aG holaclaw-browser holaclaw      # the daemon reaches the 0660 socket through the group
 #   apt install chromium xvfb                # or the distro equivalent; nothing is downloaded
+#   apt install fonts-dejavu-core fonts-liberation fonts-noto-cjk fonts-noto-color-emoji
 #   chmod 750 /etc/holaclaw && chgrp holaclaw-browser /etc/holaclaw
 #   chgrp -R holaclaw-browser /etc/holaclaw/config.toml /etc/holaclaw/agents
 #   chmod -R g+rX /etc/holaclaw/config.toml /etc/holaclaw/agents

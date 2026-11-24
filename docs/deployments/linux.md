@@ -33,9 +33,9 @@ You need:
   subscription, or any OpenAI-compatible endpoint, such as Ollama
   ([README.md §2](README.md#2-choose-a-provider)).
 
-HolaClaw is one static binary with no runtime dependencies. Chromium and Xvfb
-are needed only for the browser tool, which is optional
-([browser.md](../browser.md)).
+HolaClaw is one static binary with no runtime dependencies. Chromium, Xvfb
+and a basic set of fonts are needed only for the browser tool, which is
+optional ([browser.md](../browser.md#2-setting-it-up)).
 
 ## 2. Download and verify
 
@@ -234,7 +234,8 @@ once you linger, which on Debian only root may allow:
 choice: here the agent, and any command its `exec` tool runs, run as you,
 with your home in reach. With `--browser`, the sidecar runs as you too, under
 a second user service, `holaclaw-browser` (see
-[browser.md](../browser.md#2-setting-it-up)); install Chromium and Xvfb first.
+[browser.md](../browser.md#2-setting-it-up)); install Chromium, Xvfb and its
+fonts first.
 To edit the config, edit the files in `~/.config/holaclaw` directly, then
 `systemctl --user restart holaclaw`. To upgrade, install the new binary over
 `~/.local/bin/holaclaw` and restart the same way.

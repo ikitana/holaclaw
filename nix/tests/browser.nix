@@ -9,6 +9,7 @@ pkgs.testers.runNixOSTest {
   nodes.machine = {
     imports = [ module ];
     virtualisation.memorySize = 3072;
+    environment.systemPackages = [ pkgs.fontconfig ]; # fc-match
     services.holaclaw = {
       enable = true;
       secretsDir = "/etc/holaclaw/secrets";
@@ -42,6 +43,10 @@ pkgs.testers.runNixOSTest {
     machine.succeed("systemctl restart holaclaw")
     machine.wait_until_succeeds(f"{hb} status")
     machine.fail(f"{hb} check --offline 2>&1 | grep -E '^BRW00[1-4]'")
+    # The module's fonts: none of these falls back to DejaVu.
+    for query, family in [("Arial", "Liberation Sans"), (":lang=ja", "Noto Sans CJK"), ("emoji", "Noto Color Emoji")]:
+        got = machine.succeed(f"runuser -u holaclaw-browser -- fc-match '{query}' family")
+        assert got.startswith(family), f"fc-match {query}: got {got}, want {family}"
     # Everything else stays the daemon's.
     machine.succeed('test "$(stat -c %a /etc/holaclaw/data)" = 700')
   '';
