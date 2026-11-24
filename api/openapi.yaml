@@ -739,7 +739,10 @@ paths:
       tags: [system]
       operationId: putCredentials
       x-scope: admin
-      description: Write-only. Credentials can never be read back; no read operation exists by contract.
+      description: |
+        Write-only. Credentials can never be read back; no read operation exists by contract.
+        A stored credential is used from the next request to the provider,
+        without a restart.
       requestBody:
         required: true
         content:

@@ -1025,7 +1025,12 @@ func (h *handlers) PutCredentials(w http.ResponseWriter, r *http.Request, provid
 		badRequest(w, "no credential fields given")
 		return
 	}
-	if err := h.b.Secrets.Set(secrets.Providers, provider, in); err != nil {
+	write := func() error { return h.b.Secrets.Set(secrets.Providers, provider, in) }
+	store := h.b.StoreCredentials
+	if store == nil {
+		store = func(_ string, write func() error) error { return write() }
+	}
+	if err := store(provider, write); err != nil {
 		// The error is from the secrets package, which never quotes a value.
 		h.b.fail(w, "store credentials", err)
 		return

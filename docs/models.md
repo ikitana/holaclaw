@@ -88,7 +88,9 @@ sort           = "throughput"          # optional: OpenRouter's routing ("throug
 - **A ChatGPT subscription** (`type = "codex"`, `auth = "subscription"`)
   signs in with a device code: `holaclaw login codex`
   ([getting-started.md §3](getting-started.md#3-sign-in-to-chatgpt)). The
-  daemon keeps the tokens and refreshes them. When the plan's quota is spent,
+  daemon keeps the tokens and refreshes them. Tokens obtained elsewhere and
+  written with `PUT /v1/credentials/{provider}` replace them from the next
+  request, without a restart. When the plan's quota is spent,
   the run fails with a `model.usage_limit` event carrying the reset time; it
   never asks you to sign in again. This flow is unofficial: it uses the Codex
   client's endpoints, and OpenAI may change them.

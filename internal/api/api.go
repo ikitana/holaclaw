@@ -81,6 +81,10 @@ type Backend struct {
 	ChannelLinker func(name string) channel.Linker
 	// ProviderLogin is the device-code flow (docs/models.md); nil answers 501.
 	ProviderLogin ProviderLoginBackend
+	// StoreCredentials runs write, which stores the credentials of a
+	// provider, and makes a provider that keeps its credentials in memory use
+	// them from the next request; nil runs write alone.
+	StoreCredentials func(provider string, write func() error) error
 	// Providers is the configured providers by name, asked for the model ids
 	// they serve (provider.ModelLister).
 	Providers map[string]provider.Provider

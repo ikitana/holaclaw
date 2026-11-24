@@ -147,6 +147,10 @@ func (p *Provider) Name() string { return p.name }
 // and observe it.
 func (p *Provider) Login() *Login { return p.login }
 
+// Adopt runs write, which stores tokens obtained elsewhere in auth.toml, and
+// uses them from the next request, as a completed login does.
+func (p *Provider) Adopt(write func() error) error { return p.auth.adopt(write) }
+
 // Chat ensures a valid access token before anything goes on the wire: a
 // provider that is not logged in fails with a typed auth error and the login
 // hint, without a request.
