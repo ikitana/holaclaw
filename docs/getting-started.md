@@ -64,8 +64,19 @@ hola
 
 ## 3. Sign in to ChatGPT
 
-Only with a ChatGPT subscription (`--provider openai-codex`). The sign-in
-runs inside the daemon, which keeps the tokens and refreshes them:
+Only with a ChatGPT subscription (`--provider openai-codex`).
+
+To use your ChatGPT subscription with HolaClaw, your OpenAI account must allow
+**device code sign-in**. When it is off, OpenAI's sign-in page shows an error
+that tells you to run `codex login` again; the Codex CLI is not needed. To
+enable it, open [ChatGPT's Security Settings](https://chatgpt.com/settings/security)
+and turn on `Enable device code sign-in for Codex, Excel, PowerPoint, and Word`
+under "App Security":
+
+![The device code sign-in setting in ChatGPT's Security Settings](assets/chatgpt-device-code-sign-in.png)
+
+After you enable it, sign in. The sign-in runs inside the daemon, which keeps
+the tokens and refreshes them:
 
 ```
 holaclaw login codex
@@ -76,11 +87,6 @@ It prints a URL and a code:
 ```
 Open https://auth.openai.com/codex/device and enter the code: XXXX-XXXXX
 ```
-
-Your ChatGPT account must allow this kind of sign-in: enable **device code
-sign-in** in ChatGPT's Security Settings first. With it off, OpenAI's page
-refuses the code and tells you to run `codex login` again: enable the setting
-and run `holaclaw login codex` again instead.
 
 Open the URL on any device, sign in with your ChatGPT account, enter the code
 and approve. The command returns `codex: logged in`. You do this once: the

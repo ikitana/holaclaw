@@ -38,6 +38,9 @@ const defaultInterval = 5 * time.Second
 // stay pending until the code expires: nothing tells the two apart here.
 const deviceCodeSetting = "your ChatGPT account must have device code sign-in enabled (ChatGPT Security Settings)"
 
+// deviceCodeDocs is the documentation page that shows where the setting is.
+const deviceCodeDocs = "https://holaclaw.ai/docs/server/first-chat#step-2-sign-in-to-chatgpt"
+
 // defaultDeviceLifetime is used when the device response gives no expiry.
 const defaultDeviceLifetime = 15 * time.Minute
 
@@ -144,7 +147,7 @@ func (l *Login) Start(ctx context.Context) (DeviceCode, error) {
 	l.mu.Lock()
 	defer l.mu.Unlock()
 	l.status = LoginPending
-	l.detail = deviceCodeSetting
+	l.detail = deviceCodeSetting + ", see " + deviceCodeDocs
 	l.code = code
 	l.device = dr.DeviceCode
 	l.verifier = dr.CodeVerifier
@@ -348,7 +351,7 @@ func (l *Login) fail(err error) {
 	l.status = LoginFailed
 	l.detail = err.Error()
 	if errors.Is(err, ErrDeviceCodeExpired) {
-		l.detail += ": " + deviceCodeSetting + "; then " + loginHint + " again"
+		l.detail += ": " + deviceCodeSetting + "; then " + loginHint + " again, see " + deviceCodeDocs
 	}
 	l.device = ""
 	l.verifier = ""

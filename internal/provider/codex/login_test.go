@@ -146,8 +146,8 @@ func TestLoginTerminalAnswers(t *testing.T) {
 			}
 			// A pending login says what the account needs before the user
 			// opens the page.
-			if st := p.Login().State(); st.Status != LoginPending || st.Detail != deviceCodeSetting {
-				t.Fatalf("state = %+v, want pending with the setting", st)
+			if st := p.Login().State(); st.Status != LoginPending || st.Detail != deviceCodeSetting+", see "+deviceCodeDocs {
+				t.Fatalf("state = %+v, want pending with the setting and its docs page", st)
 			}
 			done, err := p.Login().Poll(context.Background())
 			if done || !errors.Is(err, tc.want) {
@@ -158,7 +158,7 @@ func TestLoginTerminalAnswers(t *testing.T) {
 				t.Fatalf("state = %+v, want failed with the cause", st)
 			}
 			// Only a code nobody approved may be one OpenAI's page refused.
-			hint := ": " + deviceCodeSetting + "; then run `holaclaw login codex` again"
+			hint := ": " + deviceCodeSetting + "; then run `holaclaw login codex` again, see " + deviceCodeDocs
 			if got := strings.HasSuffix(st.Detail, hint); got != (tc.want == ErrDeviceCodeExpired) {
 				t.Fatalf("detail = %q, setting hint = %v", st.Detail, got)
 			}
