@@ -307,6 +307,9 @@ type run struct {
 	// making a move on it: one read per page, so a click that comes back to
 	// the same picture does not pay for a second screenshot.
 	screenedAt fingerprint
+	// read is the screenshot the extraction in flight read the page off, held
+	// until the run knows whether it is also what it returns (screenshot.go).
+	read *shot
 }
 
 // progress books the run getting somewhere, which is the only thing that buys
@@ -431,6 +434,9 @@ type finishedAttrs struct {
 	// reading it sees where a run stopped without having to replay it.
 	URL   string `json:"url,omitempty"`
 	Title string `json:"title,omitempty"`
+	// Screenshot says the run returned a picture of the page it ended on. The
+	// image itself is never traced.
+	Screenshot bool `json:"screenshot"`
 }
 
 type blockedAttrs struct {
@@ -504,6 +510,7 @@ func (e *Executor) Run(ctx context.Context, t Task) (Result, error) {
 		ExtractPromptTokens: r.extractPrompt, ExtractCompletionTokens: r.extractOutput,
 		ScreenReads: r.stats.ScreenReads, ScreenWhy: r.screenWhy,
 		URL: res.URL, Title: res.Title,
+		Screenshot: len(res.Screenshot) > 0,
 	})
 	if err != nil {
 		return Result{}, err

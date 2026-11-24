@@ -186,7 +186,7 @@ reads what a page shows, images and charts included, so the chat model
 doesn't treat a picture as a dead end.
 
 What comes back is compact and never a snapshot, at most 8000 bytes. Empty
-lines are left out.
+lines are left out; the `screenshot` line is always there.
 
 ```
 outcome: done | failed | blocked
@@ -195,6 +195,7 @@ notes: <fixed words, and the page's title and URL where it stopped>
 url: <where the browser ended up>
 title: <its title>
 downloads attached: <names>
+screenshot: true | false
 ```
 
 How a run ends:
@@ -218,6 +219,14 @@ How a run ends:
 - **Downloads** become attachments: up to 10 per run, 20 MiB each, stored as
   blobs and never executed. A larger one, or one that can't be fetched, is
   dropped.
+- **A screenshot** of the page a `done` run ended on is attached as
+  `screenshot.jpg` when the request asks for one, or when the answer is
+  clearer as a picture: a chart, a map, a seating plan (§5). It is one JPEG of
+  what the tab shows, stored as a blob after the downloads, with the same
+  20 MiB cap. `screenshot: true` says it is attached; `false` says there is
+  none, or that it was over the cap or could not be stored. It is tainted
+  like the answer. The chat model is told only that it is attached: the image
+  is not passed to it.
 
 That is the entire interface between the two halves. The chat model decides
 *whether* and *what* to ask the browser. Nothing about pages, refs or moves
@@ -427,9 +436,23 @@ sentence. `partial` is matched only as the first word. The Spanish `no
 encontrado` and `mirar` count too. The choice to look is the reading model's,
 never a list of words the request might contain.
 
+Once the answer is read, the run asks one more question, once: should the
+answer come with a screenshot of the page? Yes when the request asks for a
+screenshot, an image or to be shown the page, and when what answers it is a
+chart, a map, a plan or a layout that words lose. The question is put on the
+request, the answer and the page's URL and title, and on whether the answer
+was read off the screen. The decision model answers it (`picture`, 0.6 or
+more); without a `decide` role the chat model answers with one word, `yes` or
+`no`. It is a model's call, never a list of words the request might contain.
+On a yes the run takes one screenshot of the final page and returns it, or
+reuses the one the screen rung just read that page off. An answer that can't
+be read, a call that fails and a screenshot that fails all mean no
+screenshot, and the run is `done` all the same. A `failed` or `blocked` run
+returns none.
+
 `browser.task.finished` carries `extract_by` (`selection`, `chat`, `screen`),
-`screen_reads` and `screen_why`. Neither the page text nor the screenshot
-reaches a log, a trace or an event.
+`screen_reads`, `screen_why` and `screenshot` (whether the run returned one).
+Neither the page text nor a screenshot reaches a log, a trace or an event.
 
 ## 6. Who decides what
 
@@ -438,7 +461,7 @@ The rule of the whole design, and the reason it fits a small context:
 | Owner | Decides | Given |
 |---|---|---|
 | Rules and the sidecar | facts: what is on the page, whether it changed, whether a box is expanded or invalid, whether the run is circling, whether a page is thin, whether a move is inside the closed set and the allow-list | the DOM, the accessibility tree, the layout, the run's own history |
-| Decision model (`decide`) | judgments among things offered: which element, what a move commits, did it work, is the goal met, is the page loading, which suggestion, which strategy, which span | a fenced state (request, page, history) and closed criteria; never free text back |
+| Decision model (`decide`) | judgments among things offered: which element, what a move commits, did it work, is the goal met, is the page loading, which suggestion, which strategy, which span, does the answer want a picture | a fenced state (request, page, history) and closed criteria; never free text back |
 | Generative model (`plan` / `chat` / `vision`) | only what must be written: the moves, a deep-link URL, the prose answer, a control's description | the fenced page, the history, the request; strict JSON or one short answer |
 | The main agent (`chat`) | whether to browse, what to ask for, what to do with the answer | the tool's description and the compact result, tainted |
 
@@ -602,7 +625,8 @@ except on the stream), never a body.
   failed), `steps`, `rungs` (how often each rung ran), `move_budget`,
   `move_calls`, `generative_calls`, `decision_calls`, `waits`, `recoveries`,
   `downloads`, `answer` (whether there was one), `extract_by`,
-  `extract_took_ms`, `screen_reads`, `screen_why`, `took_ms`, the URL and
+  `extract_took_ms`, `screen_reads`, `screen_why`, `screenshot` (whether the
+  run returned one), `took_ms`, the URL and
   title it ended on, and the usage over every call it made, chat and decision
   alike: `prompt_tokens`, `completion_tokens`, `cost_nanousd` (the calls that
   reported a price) and `unpriced_calls` (those that didn't), with
@@ -617,6 +641,14 @@ except on the stream), never a body.
   `until`, `quiet`), holds (`held: stuck`, `why`), recoveries
   (`action: recover`, `strategy`) and `held: queued` (`why: another_run`) for
   a run waiting for the browser.
+- `browser.screenshot`: one per screenshot taken, whatever took it: `why`
+  (`look` for the vision rung, `thin` or `screen` for a screen read of a page
+  with or without text, `return` for the one a run returns, `takeover` for
+  the one a chat channel gets with a takeover request), `size` in bytes,
+  `took_ms`, the page's `url` and `title` (absent on a takeover's), and
+  `attached` (whether it was returned to the agent). A screen read that is
+  reused as the returned picture is one event, `attached`. Never the image,
+  nor anything read off it.
 - `browser.blocked`: `why`, one of `not_allowed`, `approval_refused`, `login`,
   `captcha`, `2fa` or `error` (a give-up offered to a person). A login,
   captcha or 2FA is reported when it is met, even if a takeover then gets the
@@ -631,7 +663,7 @@ moves' expectations and the URLs and titles a run passed through. Never page
 text beyond those, typed values or pixels.
 
 `holaclaw chat` shows a run as it happens: the task events and downloads at
-`-v`, the moves and steps at `-vv`, a queued run at every level. `holaclaw
+`-v`, the moves, steps and screenshots at `-vv`, a queued run at every level. `holaclaw
 trace` lets you walk one afterwards, with each step's rung, duration and the
 token counts.
 

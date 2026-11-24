@@ -218,7 +218,23 @@ const (
 	manyInstructions = "Does what is to be read off the page ask for more than one item?"
 	manyTrue         = "Yes: several results, options or rows are asked for."
 	manyFalse        = "No: one value — a price, a name, a time, a code, a link."
+
+	// The picture question is asked once, of a run that has its answer. It is
+	// the model's call on the request and the answer, never a list of words a
+	// request might contain.
+	pictureInstructions = "Should the answer come with a screenshot of the page as it is on the screen now?"
+	pictureTrue         = "Yes: the request asks for a screenshot, an image or to be shown the page; " +
+		"or what answers it is a chart, a map, a plan or a layout that words lose."
+	pictureFalse = "No: the answer is complete as text."
 )
+
+// pictureSystem is the same question for the chat model, when there is no
+// decision model to ask: one word back.
+const pictureSystem = "You decide whether an answer read off a web page should come with a screenshot of that page.\n" +
+	pageRule + "\n" + pictureTrue + "\n" + pictureFalse + "\nAnswer with exactly one word: yes or no."
+
+// pictureReadOffScreen tells the question what the text cannot: fixed words.
+const pictureReadOffScreen = "the answer was read off a screenshot of the page, not off its text"
 
 // deeplinkSystem is the whole contract of the one generative call the recovery
 // branch makes: a site whose search is in its address, and the address that

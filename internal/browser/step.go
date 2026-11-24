@@ -1166,6 +1166,11 @@ func (e *Executor) reach(ctx context.Context, r *run) (Result, bool, error) {
 // pixels before it ever made a move.
 func (e *Executor) reachAs(ctx context.Context, r *run, what string) (Result, bool, error) {
 	answer, err := e.extract(ctx, r)
+	// The screenshot the extraction read, if it read one, is reported once the
+	// run knows whether it is also the picture it returns.
+	read, returned := r.read, false
+	r.read = nil
+	defer func() { e.emitShot(ctx, r, read, returned) }()
 	if ended(err) {
 		return r.result(OutcomeFailed, notesTime), true, nil
 	}
@@ -1191,6 +1196,7 @@ func (e *Executor) reachAs(ctx context.Context, r *run, what string) (Result, bo
 	}
 	res := r.result(OutcomeDone, r.partialNotes)
 	res.Answer = answer
+	res.Screenshot, returned = e.picture(ctx, r, answer, read)
 	return res, true, nil
 }
 
@@ -1249,14 +1255,15 @@ func (e *Executor) person(ctx context.Context, r *run, why Blocker, takeovers *i
 // never coordinates, because nothing a model says may drive input — turned
 // into a move whose element the decision model binds like any other.
 func (e *Executor) look(ctx context.Context, r *run, obs proto.Observation) (Move, bool) {
-	shot, err := e.o.Sidecar.Screenshot(ctx, r.task.Agent)
-	if err != nil || len(shot) == 0 {
+	shot := e.shoot(ctx, r, ShotLook, obs)
+	if shot == nil {
 		return Move{}, false
 	}
+	e.emitShot(ctx, r, shot, false)
 	resp, err := e.chat(ctx, e.o.VisionModel, e.o.Vision,
 		fmt.Sprintf(visionSystemFmt, oneLine(r.task.Intent, 200)), visionReserve, provider.ReasoningNone,
 		provider.Message{Role: provider.RoleUser, Parts: []provider.Part{
-			{Image: &provider.Image{MIME: "image/jpeg", Data: shot}},
+			{Image: &provider.Image{MIME: "image/jpeg", Data: shot.data}},
 			{Text: "which control is it?"},
 		}})
 	if err != nil {

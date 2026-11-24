@@ -124,7 +124,7 @@ func eventStyle(ev gen.Event) styleKind {
 		return styleYellow
 	case event.ModelError, event.RunAborted, event.BrowserBlocked:
 		return styleRed
-	case event.BrowserTaskStarted, event.BrowserMove, event.BrowserStep,
+	case event.BrowserTaskStarted, event.BrowserMove, event.BrowserScreenshot, event.BrowserStep,
 		event.BrowserTakeoverRequest, event.BrowserTakeoverStarted, event.BrowserTakeoverEnded,
 		event.BrowserDownload, event.BrowserTaskFinished:
 		return styleCyan

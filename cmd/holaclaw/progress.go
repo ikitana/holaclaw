@@ -292,6 +292,7 @@ var verbosityFloor = map[event.Type]int{
 	event.BrowserTaskFinished: 1,
 	event.BrowserDownload:     1,
 	event.BrowserMove:         2,
+	event.BrowserScreenshot:   2,
 	event.BrowserStep:         2,
 }
 
@@ -546,6 +547,19 @@ func progressLine(ev gen.Event, verbosity int) string {
 
 	case event.BrowserTakeoverEnded:
 		return "browser: takeover ended"
+
+	case event.BrowserScreenshot:
+		s := "browser: screenshot" + paren(evAttr(ev, "why"))
+		if n, ok := evNum(ev, "size"); ok {
+			s += " · " + bytesShort(int64(n))
+		}
+		if n, ok := evNum(ev, "took_ms"); ok {
+			s += fmt.Sprintf(" · %dms", int64(n))
+		}
+		if evBool(ev, "attached") {
+			s += " · attached"
+		}
+		return s
 
 	case event.BrowserDownload:
 		s := "browser: download"

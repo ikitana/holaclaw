@@ -133,8 +133,12 @@ func (cs *channels) takeoverNotice(ctx context.Context, e event.Event) {
 		Role: event.RoleAssistant, Text: takeoverText(attrs.Agent, attrs.Why),
 		CreatedAt: time.Now().UTC(),
 	}
+	start := time.Now()
 	if att, err := cs.d.browserShot(ctx, attrs.Agent); err == nil {
 		msg.Attachments = []event.Attachment{att}
+		// It goes to a person, not to the agent, and the event never carries it.
+		cs.d.App.Events.Emit(ctx, event.New(event.BrowserScreenshot, e.TraceID, e.SessionID, "",
+			browser.ScreenshotAttrs{Why: browser.ShotTakeover, Size: int(att.Size), TookMS: time.Since(start).Milliseconds()}))
 	}
 	if err := cs.send(ctx, sess.Origin, "", e.TraceID, msg); err != nil {
 		cs.d.log.Warn("takeover notice not delivered", "channel", sess.Origin.Channel, "err", err)

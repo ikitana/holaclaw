@@ -249,11 +249,19 @@ func (e *Executor) readScreen(ctx context.Context, r *run, obs proto.Observation
 	if !ok {
 		return screenRead{}
 	}
-	shot, err := e.o.Sidecar.Screenshot(ctx, r.task.Agent)
-	if err != nil || len(shot) == 0 {
+	kind := ShotScreen
+	if why == screenWhyThin {
+		kind = ShotThin
+	}
+	shot := e.shoot(ctx, r, kind, obs)
+	if shot == nil {
 		e.log(r).Info("browser: the page could not be read off the screen")
 		return screenRead{}
 	}
+	// An extraction may look twice, when the first look's call failed: the
+	// earlier screenshot is then not the one the run could return.
+	e.emitShot(ctx, r, r.read, false)
+	r.read = shot
 	system := screenExtractSystem
 	if many {
 		system = screenExtractListSystem
@@ -264,7 +272,7 @@ func (e *Executor) readScreen(ctx context.Context, r *run, obs proto.Observation
 		fencePage("url: "+oneLine(obs.URL, 300)+"\ntitle: "+oneLine(obs.Title, proto.MaxNameBytes)+"\n")
 	resp, err := e.chat(ctx, model, prov, system, extractReserve, provider.ReasoningNone,
 		provider.Message{Role: provider.RoleUser, Parts: []provider.Part{
-			{Image: &provider.Image{MIME: "image/jpeg", Data: shot}},
+			{Image: &provider.Image{MIME: "image/jpeg", Data: shot.data}},
 			{Text: msg},
 		}})
 	if err != nil {

@@ -27,7 +27,8 @@ const (
 	BrowserBlocked         Type = "browser.blocked" // a run hit a blocker: site not allowed, approval refused, a login, captcha or 2FA, or a give-up offered to a person
 	BrowserDownload        Type = "browser.download"
 	BrowserMove            Type = "browser.move" // one move call (plan or chat role) and the moves it proposed
-	BrowserStep            Type = "browser.step" // one action run on the page; also waits, holds and recoveries
+	BrowserScreenshot      Type = "browser.screenshot" // one screenshot of the page was taken; never the image
+	BrowserStep            Type = "browser.step"       // one action run on the page; also waits, holds and recoveries
 	BrowserTakeoverEnded   Type = "browser.takeover.ended"
 	BrowserTakeoverRequest Type = "browser.takeover.requested" // the run asks a person to drive the browser
 	BrowserTakeoverStarted Type = "browser.takeover.started"
@@ -100,7 +101,7 @@ var Types = []Type{
 	ApprovalRequested, ApprovalResolved,
 	AuthRefreshed,
 	BackupCreated, BackupDeleted, BackupFailed, BackupRestored,
-	BrowserBlocked, BrowserDownload, BrowserMove, BrowserStep, BrowserTakeoverEnded,
+	BrowserBlocked, BrowserDownload, BrowserMove, BrowserScreenshot, BrowserStep, BrowserTakeoverEnded,
 	BrowserTakeoverRequest, BrowserTakeoverStarted, BrowserTaskFinished, BrowserTaskStarted,
 	ChannelReacted, ChannelReceived, ChannelSent, ChannelStatus,
 	ConnectorStatus,

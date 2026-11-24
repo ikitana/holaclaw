@@ -153,6 +153,12 @@ func TestProgressLine(t *testing.T) {
 		{"browser takeover ended", progEvent(event.BrowserTakeoverEnded, map[string]any{
 			"agent": "main", "user_id": "u1",
 		}), "browser: takeover ended"},
+		{"browser screenshot", progEvent(event.BrowserScreenshot, map[string]any{
+			"why": "return", "size": 2048, "took_ms": 120, "url": "https://shop.example/", "attached": true,
+		}), "browser: screenshot (return) · 2.0 kB · 120ms · attached"},
+		{"browser screenshot not attached", progEvent(event.BrowserScreenshot, map[string]any{
+			"why": "look", "size": 2048, "took_ms": 80, "attached": false,
+		}), "browser: screenshot (look) · 2.0 kB · 80ms"},
 		{"browser download", progEvent(event.BrowserDownload, map[string]any{
 			"agent": "main", "name": "tickets.pdf", "size": 2048,
 		}), "browser: download tickets.pdf (2.0 kB)"},

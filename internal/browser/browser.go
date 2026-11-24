@@ -55,7 +55,11 @@ type Result struct {
 	Title   string // the final page's own title, alongside URL (M11)
 	// Downloads are files saved during the task, in the sidecar's quarantine.
 	Downloads []proto.Download
-	Stats     Stats
+	// Screenshot is one JPEG of the page a done run ended on, when the request
+	// asked for a picture or the answer is clearer as one; nil otherwise. It is
+	// the page's own pixels: tainted like Answer, and never logged or traced.
+	Screenshot []byte
+	Stats      Stats
 }
 
 // Stats is the measurement every task carries (docs/browser.md: the rung

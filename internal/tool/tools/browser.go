@@ -1,6 +1,7 @@
 package tools
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	"fmt"
@@ -29,6 +30,10 @@ const (
 	maxBrowserDownloads = 10
 	// maxBrowserResultBytes caps the rendered result.
 	maxBrowserResultBytes = 8000
+	// browserShotName and browserShotMIME are what a returned screenshot is
+	// attached as: the sidecar takes JPEGs.
+	browserShotName = "screenshot.jpg"
+	browserShotMIME = "image/jpeg"
 )
 
 // ErrNoBrowser is what a BrowserBackend returns when no browser is configured
@@ -135,17 +140,23 @@ func (t *browserDo) Run(ctx context.Context, c tool.Call) (tool.Result, error) {
 		return tool.Result{}, fmt.Errorf("browser.do: %w", err)
 	}
 
-	atts := t.attach(ctx, c, res.Downloads)
+	downloads := t.attach(ctx, c, res.Downloads)
+	atts := downloads
+	shot, shown := t.screenshot(ctx, res.Screenshot)
+	if shown {
+		atts = append(atts, shot)
+	}
 	return tool.Result{
-		Text:        capText(render(res, atts), maxBrowserResultBytes),
+		Text:        capText(render(res, downloads, shown), maxBrowserResultBytes),
 		Tainted:     true,
 		Attachments: atts,
 	}, nil
 }
 
 // render is the compact result: an outcome line, the answer, where it
-// stopped, and the files it brought back.
-func render(res browser.Result, atts []event.Attachment) string {
+// stopped, the files it brought back, and whether a screenshot of the page is
+// attached.
+func render(res browser.Result, atts []event.Attachment, shot bool) string {
 	var b strings.Builder
 	b.WriteString("outcome: " + string(res.Outcome) + "\n")
 	if res.Answer != "" {
@@ -170,7 +181,30 @@ func render(res browser.Result, atts []event.Attachment) string {
 		}
 		b.WriteString("downloads attached: " + strings.Join(names, ", ") + "\n")
 	}
+	fmt.Fprintf(&b, "screenshot: %t\n", shot)
 	return strings.TrimRight(b.String(), "\n")
+}
+
+// screenshot stores the picture a run returned as a blob, next to its
+// downloads. One that is over the cap or cannot be stored is dropped, like a
+// download: the task itself succeeded.
+func (t *browserDo) screenshot(ctx context.Context, shot []byte) (event.Attachment, bool) {
+	if len(shot) == 0 || len(shot) > maxAttachBytes {
+		return event.Attachment{}, false
+	}
+	id, size, err := t.blobs.PutBlob(ctx, bytes.NewReader(shot), browserShotMIME)
+	if err != nil {
+		return event.Attachment{}, false
+	}
+	return event.Attachment{
+		ID:     event.NewID(),
+		BlobID: id,
+		SHA256: id, // blob ids are content addresses: hex sha256
+		MIME:   browserShotMIME,
+		Name:   browserShotName,
+		Size:   size,
+		Kind:   event.KindFromMIME(browserShotMIME),
+	}, true
 }
 
 // attach moves the quarantined downloads into blobs. A file that cannot be
