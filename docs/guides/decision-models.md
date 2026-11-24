@@ -51,8 +51,9 @@ doesn't need one.
   [config directory](../deployments/README.md#config-directory).
 - **An endpoint that serves decision models**, and its API key if it needs
   one. This guide uses OpenRouter's alpha decisions API, the one HolaClaw is
-  run against. Ollama (0.35 or newer) documents the same request and reply
-  at `/v1/systemone`; HolaClaw has not been run against it (§2).
+  run against. Ollama and llama.cpp's `llama-server` document the same
+  request and reply for local models; HolaClaw has not been run against
+  them (§2).
 
 ## 2. Add the model
 
@@ -86,12 +87,18 @@ url      = "https://openrouter.ai/api/alpha/decisions"
 
 **Another endpoint.** HolaClaw posts the questions to whatever `url` names,
 so any endpoint that takes the same request and gives the same reply can
-serve the model. Ollama's `/v1/systemone` is documented as one, which would
-make a local decision model a `[models.<name>]` on your Ollama provider with
-`url = "http://localhost:11434/v1/systemone"` and one of its decision models
-as `id`. That pairing is untested: try it with `guard_mode = "recommend"`
-first, where a failed call only means you are asked (§9). Ollama reports no
-price, so its calls count as unpriced in a trace.
+serve the model. Two local runtimes document that API, at `/v1/systemone`:
+
+| Runtime | `url` | `id` |
+|---|---|---|
+| Ollama, 0.35 or newer | `http://localhost:11434/v1/systemone` | one of its [decision models](https://ollama.com/search?c=decision), pulled first |
+| llama.cpp's `llama-server`, build 11361 or newer | `http://127.0.0.1:8080/v1/systemone` | the model it was started with |
+
+The model goes on the `[providers.<name>]` of that runtime, with the host and
+port it listens on in `url`. Neither pairing is tested: try it with
+`guard_mode = "recommend"` first, where a failed call only means you are
+asked (§9). A local runtime reports no price, so its calls count as unpriced
+in a trace.
 
 Store the key, unless the provider already has one. The command reads it from
 stdin:
