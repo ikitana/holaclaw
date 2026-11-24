@@ -28,7 +28,8 @@ func refused(status int, code, msg string) loginReply {
 }
 
 // loginFake is a daemon with channels, providers that have a login, and a
-// scripted channel login: polls answers in order, the last one repeated.
+// scripted channel login: polls answers in order, the last one repeated. A
+// provider's poll answers the first of polls, when there is one.
 type loginFake struct {
 	channels  []string          // whatsapp channels
 	others    map[string]string // other channels: name → type
@@ -83,6 +84,10 @@ func (f *loginFake) serve(t *testing.T) string {
 			for _, p := range f.providers {
 				if p == name && r.Method == http.MethodPost && f.codex.status != 0 {
 					write(w, f.codex)
+					return
+				}
+				if p == name && len(f.polls) > 0 {
+					write(w, f.polls[0])
 					return
 				}
 				if p == name {
@@ -434,6 +439,27 @@ func TestLoginCodex(t *testing.T) {
 		"    [providers.codex]\n    type = \"codex\"\n    auth = \"subscription\"\n"
 	if code != 1 || errOut != want {
 		t.Errorf("404: exit = %d, stderr = %q", code, errOut)
+	}
+
+	// A pending login's detail is what the provider says the sign-in needs:
+	// printed as a note on stderr, so stdout stays the URL and the code. A
+	// failure is printed as the daemon words it.
+	started := ok(gen.DeviceLogin{State: gen.DeviceLoginStatePending, Detail: ptrTo("the account needs\x1b[31m a setting"),
+		VerificationUrl: ptrTo("https://auth.example/device"), UserCode: ptrTo("WXYZ-1234")})
+	failed := ok(gen.DeviceLogin{State: gen.DeviceLoginStateFailed, Detail: ptrTo("codex: device code expired: enable the setting")})
+	f = &loginFake{providers: []string{"codex"}, codex: started, polls: []loginReply{failed}}
+	code, out, errOut := runCLI(t, "", "login", "codex", "--addr", f.serve(t))
+	if code != 1 || out != "Open https://auth.example/device and enter the code: WXYZ-1234\n" ||
+		!strings.HasPrefix(errOut, "note: the account needs a setting\n") ||
+		!strings.HasSuffix(errOut, "holaclaw: codex: codex: device code expired: enable the setting\n") {
+		t.Errorf("started: exit = %d, stdout = %q, stderr = %q", code, out, errOut)
+	}
+
+	// No detail, no note.
+	f = &loginFake{providers: []string{"codex"}, codex: ok(gen.DeviceLogin{State: gen.DeviceLoginStatePending,
+		VerificationUrl: ptrTo("https://auth.example/device"), UserCode: ptrTo("WXYZ-1234")})}
+	if _, _, errOut = runCLI(t, "", "login", "codex", "--addr", f.serve(t)); strings.Contains(errOut, "note:") {
+		t.Errorf("no detail: stderr = %q", errOut)
 	}
 
 	// --phone belongs to whatsapp only.

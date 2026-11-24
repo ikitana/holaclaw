@@ -144,13 +144,23 @@ func TestLoginTerminalAnswers(t *testing.T) {
 			if _, err := p.Login().Start(context.Background()); err != nil {
 				t.Fatalf("start: %v", err)
 			}
+			// A pending login says what the account needs before the user
+			// opens the page.
+			if st := p.Login().State(); st.Status != LoginPending || st.Detail != deviceCodeSetting+", see "+deviceCodeDocs {
+				t.Fatalf("state = %+v, want pending with the setting and its docs page", st)
+			}
 			done, err := p.Login().Poll(context.Background())
 			if done || !errors.Is(err, tc.want) {
 				t.Fatalf("poll: done=%v err=%v, want %v", done, err, tc.want)
 			}
 			st := p.Login().State()
-			if st.Status != LoginFailed || st.Detail == "" {
-				t.Fatalf("state = %+v, want failed with a detail", st)
+			if st.Status != LoginFailed || !strings.HasPrefix(st.Detail, tc.want.Error()) {
+				t.Fatalf("state = %+v, want failed with the cause", st)
+			}
+			// Only a code nobody approved may be one OpenAI's page refused.
+			hint := ": " + deviceCodeSetting + "; then run `holaclaw login codex` again, see " + deviceCodeDocs
+			if got := strings.HasSuffix(st.Detail, hint); got != (tc.want == ErrDeviceCodeExpired) {
+				t.Fatalf("detail = %q, setting hint = %v", st.Detail, got)
 			}
 			if containsAny(st.Detail, secretValues()...) {
 				t.Fatalf("state detail leaks a credential: %q", st.Detail)
@@ -182,8 +192,8 @@ func TestLoginDeviceCodeExpires(t *testing.T) {
 	if c := f.count(pathDeviceToken); c != 0 {
 		t.Fatalf("polled upstream %d times after expiry, want 0", c)
 	}
-	if st := p.Login().State(); st.Status != LoginFailed {
-		t.Fatalf("status = %q, want failed", st.Status)
+	if st := p.Login().State(); st.Status != LoginFailed || !strings.Contains(st.Detail, deviceCodeSetting) {
+		t.Fatalf("state = %+v, want failed with the setting", st)
 	}
 }
 

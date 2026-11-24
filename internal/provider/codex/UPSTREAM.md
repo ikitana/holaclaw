@@ -16,6 +16,7 @@ the provider is declared supported; all of them live in `auth.go`
 8. Account id claim: `https://api.openai.com/auth → chatgpt_account_id`; expiry from `exp`.
 9. Model list at `<backend>/codex/models`. `gpt-6.1-sol` was confirmed against the live service on 2026-10-16.
 10. `originator` is sent on auth requests too; header names `chatgpt-account-id`, `originator`, `session_id`.
+11. An account with device code sign-in turned off (ChatGPT Security Settings) gets the user code all the same; OpenAI's page then refuses it. Not confirmed against the live service: polling is assumed to stay pending until the code expires, so `login.go` names the setting on a pending login and on an expired code.
 
 When upstream drifts: update the fixtures in `testdata/`, then the form
 builders, and nothing else.

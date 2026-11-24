@@ -33,6 +33,14 @@ const slowDownStep = 5 * time.Second
 // defaultInterval is used when the device response gives none.
 const defaultInterval = 5 * time.Second
 
+// deviceCodeSetting is the account setting the login needs. With it off,
+// OpenAI's page refuses the code and points at the Codex CLI, and the polls
+// stay pending until the code expires: nothing tells the two apart here.
+const deviceCodeSetting = "your ChatGPT account must have device code sign-in enabled (ChatGPT Security Settings)"
+
+// deviceCodeDocs is the documentation page that shows where the setting is.
+const deviceCodeDocs = "https://holaclaw.ai/docs/server/first-chat#step-2-sign-in-to-chatgpt"
+
 // defaultDeviceLifetime is used when the device response gives no expiry.
 const defaultDeviceLifetime = 15 * time.Minute
 
@@ -59,7 +67,7 @@ type DeviceCode struct {
 type LoginState struct {
 	Status     LoginStatus
 	DeviceCode DeviceCode
-	Detail     string // why it failed; never a token
+	Detail     string // what a pending login needs, or why it failed; never a token
 }
 
 // Login drives the device-code flow for one provider instance. One login at a
@@ -139,7 +147,7 @@ func (l *Login) Start(ctx context.Context) (DeviceCode, error) {
 	l.mu.Lock()
 	defer l.mu.Unlock()
 	l.status = LoginPending
-	l.detail = ""
+	l.detail = deviceCodeSetting + ", see " + deviceCodeDocs
 	l.code = code
 	l.device = dr.DeviceCode
 	l.verifier = dr.CodeVerifier
@@ -335,12 +343,16 @@ func (l *Login) schedule() {
 }
 
 // fail records a terminal failure. The detail is the error text, which the auth
-// helpers keep free of token values.
+// helpers keep free of token values. A code nobody approved may be one OpenAI
+// refused, so that failure names the setting too.
 func (l *Login) fail(err error) {
 	l.mu.Lock()
 	defer l.mu.Unlock()
 	l.status = LoginFailed
 	l.detail = err.Error()
+	if errors.Is(err, ErrDeviceCodeExpired) {
+		l.detail += ": " + deviceCodeSetting + "; then " + loginHint + " again, see " + deviceCodeDocs
+	}
 	l.device = ""
 	l.verifier = ""
 }
