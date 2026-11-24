@@ -248,8 +248,9 @@ api      = "decisions"
 url      = "https://openrouter.ai/api/alpha/decisions"
 ```
 
-The only endpoint today is OpenRouter's alpha decisions API, so the model
-names it in `url`, and its provider must be `openai-compatible`. The transport
+The endpoint HolaClaw is run against is OpenRouter's alpha decisions API. The
+API has no standard path, so the model names its endpoint in `url`, and its
+provider must be `openai-compatible`. The transport
 is experimental: a call is not retried, and every caller has a defined
 behaviour when it fails. The guard asks a person (`recommend`) or denies
 (`auto`); the taint scorer counts the result as steering; the browser treats

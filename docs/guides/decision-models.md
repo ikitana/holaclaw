@@ -7,12 +7,26 @@ HolaClaw. The design behind it is in
 [models.md §7](../models.md#7-decision-models); you don't need it to follow
 this guide.
 
-A **decision model** doesn't chat. HolaClaw sends it a piece of text and
-closed questions about it (yes or no, one of these options, a place on a
-scale), and it answers each from the set it was offered, in about 0.4 s and
-for about $0.00002 a call. It never writes free text back, so what it reads
-can't talk its way into the agent's prompt. That makes it cheap and safe
-enough to ask on every tool call.
+**Why.** An agent that acts on its own needs a second opinion on what it is
+about to do, and on what it has just read: is this command safe to run, is
+this web page trying to give the agent orders, did that click do what was
+meant. A chat model can give that opinion, but it takes seconds and a chat
+call's price each time, and its answer is text that has to be read back. A
+**decision model** only picks an answer from the ones it is offered, in about
+0.4 s and for about $0.00002 a call, so it can be asked on every tool call
+without slowing the agent down.
+
+**When.** Add one when an agent:
+
+- runs tools you don't want to approve one by one, and shouldn't run
+  unchecked either: commands, writes, calls to outside services (§4);
+- reads the web, connectors or other content it shouldn't take orders from,
+  and holds anything private (§5);
+- uses the browser, where it is the difference between one fast call and a
+  chat turn per step (§6).
+
+An agent that only chats, or whose every tool call you approve yourself,
+doesn't need one.
 
 ## Contents
 
@@ -35,9 +49,10 @@ enough to ask on every tool call.
   [the way your deployment does](../deployments/README.md#run-a-command).
   The files edited here are in the
   [config directory](../deployments/README.md#config-directory).
-- **An OpenRouter account and API key.** The only endpoint that serves
-  decision models today is OpenRouter's alpha decisions API. A local runtime
-  such as Ollama doesn't serve one.
+- **An endpoint that serves decision models**, and its API key if it needs
+  one. This guide uses OpenRouter's alpha decisions API, the one HolaClaw is
+  run against. Ollama (0.35 or newer) documents the same request and reply
+  at `/v1/systemone`; HolaClaw has not been run against it (§2).
 
 ## 2. Add the model
 
@@ -68,6 +83,15 @@ url      = "https://openrouter.ai/api/alpha/decisions"
 - **`timeout`** is optional. A decision call is given 2 seconds by default.
 
 `jev` is only a name: the roles below refer to it.
+
+**Another endpoint.** HolaClaw posts the questions to whatever `url` names,
+so any endpoint that takes the same request and gives the same reply can
+serve the model. Ollama's `/v1/systemone` is documented as one, which would
+make a local decision model a `[models.<name>]` on your Ollama provider with
+`url = "http://localhost:11434/v1/systemone"` and one of its decision models
+as `id`. That pairing is untested: try it with `guard_mode = "recommend"`
+first, where a failed call only means you are asked (§9). Ollama reports no
+price, so its calls count as unpriced in a trace.
 
 Store the key, unless the provider already has one. The command reads it from
 stdin:
