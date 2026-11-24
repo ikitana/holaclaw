@@ -27,10 +27,6 @@ Every tag is a multi-arch image, for `linux/amd64` and `linux/arm64`.
 | `slim` | `latest` without Chromium and Xvfb, and so without the browser |
 | `vX.Y.Z-slim` | a release without the browser |
 
-The images with the browser hold its fonts
-([browser.md §2](../browser.md#2-setting-it-up)), which add about 80 MB to the
-image, 50 MB of it to the download. The `slim` images have none.
-
 Every image of a release is signed; `cosign verify` checks one, as
 [security.md](../security.md#verifying-a-release) shows.
 

@@ -1,4 +1,4 @@
-# The fonts every deployment gives the browser (docs/browser.md §2): DejaVu,
+# The fonts every deployment gives the browser: DejaVu,
 # Liberation for pages that ask for Arial, Times New Roman or Courier New,
 # Noto CJK and Noto Color Emoji. `conf` is a fontconfig file with only these,
 # for the image, which has no /etc/fonts: it includes fontconfig's own conf.d,

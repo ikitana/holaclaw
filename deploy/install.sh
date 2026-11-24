@@ -403,7 +403,7 @@ has_chromium() {
 install_browser() {
   local c=/etc/holaclaw pkgs=()
   has_chromium || pkgs=(chromium xvfb)
-  # The fonts of docs/browser.md, also for a Chromium that was here already.
+  # The browser's fonts, also for a Chromium that was here already.
   if command -v apt-get >/dev/null 2>&1; then
     as_root apt-get update -qq
     as_root env DEBIAN_FRONTEND=noninteractive apt-get install -y -qq "${pkgs[@]}" \

@@ -234,7 +234,7 @@ once you linger, which on Debian only root may allow:
 choice: here the agent, and any command its `exec` tool runs, run as you,
 with your home in reach. With `--browser`, the sidecar runs as you too, under
 a second user service, `holaclaw-browser` (see
-[browser.md](../browser.md#2-setting-it-up)); install Chromium, Xvfb and the
+[browser.md](../browser.md#2-setting-it-up)); install Chromium, Xvfb and its
 fonts first.
 To edit the config, edit the files in `~/.config/holaclaw` directly, then
 `systemctl --user restart holaclaw`. To upgrade, install the new binary over
