@@ -61,8 +61,18 @@ agent gets `browser.do`, unless its `agent.toml` turns it off. The sidecar
 needs Chromium, and Xvfb unless `headless = true`. How you set it up depends
 on how HolaClaw runs.
 
+**Fonts.** Chromium draws a page with the fonts installed on the system, and
+text in a script that none of them covers comes out as empty boxes, in the
+screenshots too. Every deployment below installs the same basic set: DejaVu,
+Liberation (the same metrics as Arial, Times New Roman and Courier New, so a
+page that asks for one of them keeps its layout), Noto Sans CJK and Noto
+Color Emoji. On Debian these are `fonts-dejavu-core`, `fonts-liberation`,
+`fonts-noto-cjk` and `fonts-noto-color-emoji`. Install the same four where
+you install Chromium yourself; any other font you install system-wide is
+used as well, except in the image, which has only these.
+
 **In a container** ([deployments/container.md](deployments/container.md)):
-nothing to do. The `latest` image holds Chromium and Xvfb and sets
+nothing to do. The `latest` image holds Chromium, Xvfb and the fonts, and sets
 `HOLACLAW_BROWSER_ENABLED=true`, and the entrypoint runs the sidecar as its
 own user next to the daemon. Chromium's sandbox needs the `--security-opt
 seccomp=unconfined` of the guide's `docker run`. `install.sh` asks whether to
@@ -74,7 +84,8 @@ Chromium, and drop the flag; or pass `-e HOLACLAW_BROWSER_ENABLED=false` to
 sidecar runs as a second user, `holaclaw-browser`, under its own unit,
 `holaclaw-browser.service`, which is in the release next to `holaclaw.service`.
 `install.sh` sets it up when you answer yes, or with `--service --browser`;
-it installs Chromium and Xvfb with apt when they are missing. To do it by
+it installs Chromium and Xvfb with apt when they are missing, and the fonts.
+To do it by
 hand, first add an empty `[browser]` table to `/etc/holaclaw/config.toml`
 (`sudoedit`, as in section 6 of the guide): its socket defaults to the
 unit's, `/run/holaclaw-browser/browser.sock`. Then, from the directory you
@@ -83,7 +94,8 @@ downloaded the release into (section 2 of the guide, with `$base` set):
 ```
 curl -fL --remote-name-all "$base/holaclaw-browser.service" "$base/SHA256SUMS"
 sha256sum --check --ignore-missing SHA256SUMS
-sudo apt install chromium xvfb
+sudo apt install chromium xvfb \
+  fonts-dejavu-core fonts-liberation fonts-noto-cjk fonts-noto-color-emoji
 sudo useradd --system --home-dir /var/lib/holaclaw-browser --shell /usr/sbin/nologin holaclaw-browser
 sudo usermod -aG holaclaw-browser holaclaw        # the daemon reaches the sidecar's 0660 socket
 sudo chgrp holaclaw-browser /etc/holaclaw && sudo chmod 750 /etc/holaclaw
@@ -104,15 +116,15 @@ the group read access again to an agent you add later.
 
 **On NixOS** ([deployments/nix.md](deployments/nix.md)),
 `services.holaclaw.browser.enable = true` creates the user and the unit, with
-Chromium and Xvfb, and gives the config directory to the `holaclaw-browser`
-group. Make `config.toml`, the agents (and `channels.toml`, if you add one)
+Chromium and Xvfb, adds the fonts to `fonts.packages`, and gives the config
+directory to the `holaclaw-browser` group. Make `config.toml`, the agents (and `channels.toml`, if you add one)
 readable by that group, and add the `[browser]` table, as above.
 
 **As your own user** (section 9 of
 [deployments/linux.md](deployments/linux.md#9-as-your-own-user)),
 `install.sh --user --browser` runs the sidecar as a second user service,
 `holaclaw-browser`, once Chromium and Xvfb are installed. By hand, run it in a
-terminal of its own. Install Chromium and Xvfb with your package manager,
+terminal of its own. Install Chromium, Xvfb and the fonts with your package manager,
 then put the socket in a directory you own, written out, as TOML doesn't
 expand variables (`echo $XDG_RUNTIME_DIR` prints it):
 

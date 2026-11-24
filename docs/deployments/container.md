@@ -1,7 +1,7 @@
 # HolaClaw in a container
 
 The image `ghcr.io/ikitana/holaclaw` holds the daemon, the browser sidecar,
-Chromium and Xvfb, for `linux/amd64` and `linux/arm64`. It is a supported
+Chromium, Xvfb and the browser's fonts, for `linux/amd64` and `linux/arm64`. It is a supported
 way to run HolaClaw, and the recommended one when the machine does anything
 else: the agent, its tools and `exec` see only the container, never the host,
 and the only programs `exec` can run are the ones in the image. Inside, the
@@ -26,6 +26,10 @@ Every tag is a multi-arch image, for `linux/amd64` and `linux/arm64`.
 | `vX.Y.Z` | a release, with the browser |
 | `slim` | `latest` without Chromium and Xvfb, and so without the browser |
 | `vX.Y.Z-slim` | a release without the browser |
+
+The images with the browser hold its fonts
+([browser.md §2](../browser.md#2-setting-it-up)), which add about 80 MB to the
+image, 50 MB of it to the download. The `slim` images have none.
 
 Every image of a release is signed; `cosign verify` checks one, as
 [security.md](../security.md#verifying-a-release) shows.

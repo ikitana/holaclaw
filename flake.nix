@@ -78,6 +78,8 @@
           inherit pkgs;
           module = self.nixosModules.default;
         };
+        # The browser image's font set; needs no KVM.
+        fonts = import ./nix/tests/fonts.nix { inherit pkgs; };
       };
 
       devShells.default = pkgs.mkShell {
@@ -271,6 +273,9 @@
             users.users.holaclaw.extraGroups = [ "holaclaw-browser" ];
 
             systemd.services.holaclaw.after = [ "holaclaw-browser.service" ];
+
+            # The same fonts as the container images, system-wide.
+            fonts.packages = (import ./nix/fonts.nix { inherit pkgs; }).packages;
 
             # See deploy/holaclaw-browser.service for why this unit relaxes
             # NoNewPrivileges, RestrictNamespaces, MemoryDenyWriteExecute and

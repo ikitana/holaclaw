@@ -38,7 +38,7 @@ let
     pathsToLink = [ "/bin" "/etc/ssl" "/usr/libexec" ];
   };
 
-  fonts = pkgs.makeFontsConf { fontDirectories = [ target.dejavu_fonts ]; };
+  fonts = (import ./fonts.nix { inherit pkgs target; }).conf;
 
   # The same users as the Dockerfile, with fixed ids so volumes keep their owners.
   passwd = pkgs.writeText "passwd" ''

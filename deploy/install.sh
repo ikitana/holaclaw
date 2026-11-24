@@ -243,7 +243,7 @@ choose_browser() {
       say "Its sandbox needs the container to run with --security-opt seccomp=unconfined."
       say "Without it, the container runs the slim image, which has no Chromium."
       ;;
-    service) say "It installs Chromium and Xvfb, which run as the user holaclaw-browser." ;;
+    service) say "It installs Chromium, Xvfb and fonts. The browser runs as the user holaclaw-browser." ;;
     user)
       say "Chromium and Xvfb must be installed already. They run as you, so a page"
       say "that breaks out of Chromium's sandbox reaches your secrets: use it to"
@@ -401,10 +401,13 @@ has_chromium() {
 # service: the sidecar's user, unit and packages, the [browser] table, with
 # the default socket, and the config readable by the sidecar's group.
 install_browser() {
-  local c=/etc/holaclaw
-  if ! has_chromium; then
+  local c=/etc/holaclaw pkgs=()
+  has_chromium || pkgs=(chromium xvfb)
+  # The fonts of docs/browser.md, also for a Chromium that was here already.
+  if command -v apt-get >/dev/null 2>&1; then
     as_root apt-get update -qq
-    as_root env DEBIAN_FRONTEND=noninteractive apt-get install -y -qq chromium xvfb >/dev/null
+    as_root env DEBIAN_FRONTEND=noninteractive apt-get install -y -qq "${pkgs[@]}" \
+      fonts-dejavu-core fonts-liberation fonts-noto-cjk fonts-noto-color-emoji >/dev/null
   fi
   if ! id holaclaw-browser >/dev/null 2>&1; then
     as_root useradd --system --home-dir /var/lib/holaclaw-browser --shell /usr/sbin/nologin holaclaw-browser
