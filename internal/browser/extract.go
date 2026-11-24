@@ -260,7 +260,7 @@ func (e *Executor) readScreen(ctx context.Context, r *run, obs proto.Observation
 	}
 	// An extraction may look twice, when the first look's call failed: the
 	// earlier screenshot is then not the one the run could return.
-	e.emitShot(ctx, r, r.read, false)
+	e.emitShot(ctx, r, r.read, shotKept)
 	r.read = shot
 	system := screenExtractSystem
 	if many {

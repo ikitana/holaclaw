@@ -43,6 +43,14 @@ type ScreenshotAttrs struct {
 	Attached bool   `json:"attached"`
 }
 
+// shotUse is what became of a screenshot once it was taken.
+type shotUse int
+
+const (
+	shotKept     shotUse = iota // a model looked at it, and that was all
+	shotAttached                // it was returned to the agent
+)
+
 // shot is one screenshot and what its event says of it.
 type shot struct {
 	data  []byte
@@ -63,34 +71,35 @@ func (e *Executor) shoot(ctx context.Context, r *run, why string, obs proto.Obse
 	}}
 }
 
-// emitShot reports a screenshot; nil is none taken.
-func (e *Executor) emitShot(ctx context.Context, r *run, s *shot, attached bool) {
+// emitShot reports a screenshot and what became of it; nil is none taken.
+func (e *Executor) emitShot(ctx context.Context, r *run, s *shot, use shotUse) {
 	if s == nil {
 		return
 	}
 	a := s.attrs
-	a.Attached = attached
+	a.Attached = use == shotAttached
 	e.emit(ctx, r, event.BrowserScreenshot, a)
 }
 
 // picture is the screenshot a done run returns with its answer, or nil. read
 // is the screenshot the extraction read this same page off, which is reused;
-// reused says it was. A question nobody could answer and a screenshot that
-// failed both mean no picture, and the run is done all the same.
-func (e *Executor) picture(ctx context.Context, r *run, answer string, read *shot) (data []byte, reused bool) {
+// use says what became of read. A question nobody could answer and a
+// screenshot that failed both mean no picture, and the run is done all the
+// same.
+func (e *Executor) picture(ctx context.Context, r *run, answer string, read *shot) (data []byte, use shotUse) {
 	if !e.wantsPicture(ctx, r, answer) {
-		return nil, false
+		return nil, shotKept
 	}
 	if read != nil {
-		return read.data, true
+		return read.data, shotAttached
 	}
 	s := e.shoot(ctx, r, ShotReturn, proto.Observation{URL: r.url, Title: r.title})
 	if s == nil {
 		e.log(r).Info("browser: the page could not be photographed for the answer")
-		return nil, false
+		return nil, shotKept
 	}
-	e.emitShot(ctx, r, s, true)
-	return s.data, false
+	e.emitShot(ctx, r, s, shotAttached)
+	return s.data, shotKept
 }
 
 // wantsPicture asks once whether the answer should come with a picture of the

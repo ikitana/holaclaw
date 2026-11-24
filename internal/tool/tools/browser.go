@@ -146,17 +146,19 @@ func (t *browserDo) Run(ctx context.Context, c tool.Call) (tool.Result, error) {
 	if shown {
 		atts = append(atts, shot)
 	}
+	// The last line is always there: whether a screenshot of the page is
+	// attached.
+	text := render(res, downloads) + fmt.Sprintf("\nscreenshot: %t", shown)
 	return tool.Result{
-		Text:        capText(render(res, downloads, shown), maxBrowserResultBytes),
+		Text:        capText(text, maxBrowserResultBytes),
 		Tainted:     true,
 		Attachments: atts,
 	}, nil
 }
 
 // render is the compact result: an outcome line, the answer, where it
-// stopped, the files it brought back, and whether a screenshot of the page is
-// attached.
-func render(res browser.Result, atts []event.Attachment, shot bool) string {
+// stopped, and the files it brought back.
+func render(res browser.Result, atts []event.Attachment) string {
 	var b strings.Builder
 	b.WriteString("outcome: " + string(res.Outcome) + "\n")
 	if res.Answer != "" {
@@ -181,7 +183,6 @@ func render(res browser.Result, atts []event.Attachment, shot bool) string {
 		}
 		b.WriteString("downloads attached: " + strings.Join(names, ", ") + "\n")
 	}
-	fmt.Fprintf(&b, "screenshot: %t\n", shot)
 	return strings.TrimRight(b.String(), "\n")
 }
 

@@ -1168,9 +1168,9 @@ func (e *Executor) reachAs(ctx context.Context, r *run, what string) (Result, bo
 	answer, err := e.extract(ctx, r)
 	// The screenshot the extraction read, if it read one, is reported once the
 	// run knows whether it is also the picture it returns.
-	read, returned := r.read, false
+	read, use := r.read, shotKept
 	r.read = nil
-	defer func() { e.emitShot(ctx, r, read, returned) }()
+	defer func() { e.emitShot(ctx, r, read, use) }()
 	if ended(err) {
 		return r.result(OutcomeFailed, notesTime), true, nil
 	}
@@ -1196,7 +1196,7 @@ func (e *Executor) reachAs(ctx context.Context, r *run, what string) (Result, bo
 	}
 	res := r.result(OutcomeDone, r.partialNotes)
 	res.Answer = answer
-	res.Screenshot, returned = e.picture(ctx, r, answer, read)
+	res.Screenshot, use = e.picture(ctx, r, answer, read)
 	return res, true, nil
 }
 
@@ -1259,7 +1259,7 @@ func (e *Executor) look(ctx context.Context, r *run, obs proto.Observation) (Mov
 	if shot == nil {
 		return Move{}, false
 	}
-	e.emitShot(ctx, r, shot, false)
+	e.emitShot(ctx, r, shot, shotKept)
 	resp, err := e.chat(ctx, e.o.VisionModel, e.o.Vision,
 		fmt.Sprintf(visionSystemFmt, oneLine(r.task.Intent, 200)), visionReserve, provider.ReasoningNone,
 		provider.Message{Role: provider.RoleUser, Parts: []provider.Part{
