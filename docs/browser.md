@@ -437,18 +437,14 @@ encontrado` and `mirar` count too. The choice to look is the reading model's,
 never a list of words the request might contain.
 
 Once the answer is read, the run asks one more question, once: should the
-answer come with a screenshot of the page? Yes when the request asks for a
-screenshot, an image or to be shown the page, and when what answers it is a
-chart, a map, a plan or a layout that words lose. The question is put on the
-request, the answer and the page's URL and title, and on whether the answer
-was read off the screen. The decision model answers it (`picture`, 0.6 or
-more); without a `decide` role the chat model answers with one word, `yes` or
-`no`. It is a model's call, never a list of words the request might contain.
-On a yes the run takes one screenshot of the final page and returns it, or
-reuses the one the screen rung just read that page off. An answer that can't
-be read, a call that fails and a screenshot that fails all mean no
-screenshot, and the run is `done` all the same. A `failed` or `blocked` run
-returns none.
+answer come with a screenshot of the page? Yes when the request asks for one,
+or when the answer is clearer as a picture: a chart, a map, a seating plan.
+The decision model answers (`picture`, 0.6 or more); without a `decide` role
+the chat model answers `yes` or `no`. It is a model's call, never a list of
+words the request might contain. On a yes the run returns one screenshot of
+the final page, reusing the one a screen read took of it. If the question
+can't be answered or the screenshot fails, the run is `done` all the same,
+without one. A `failed` or `blocked` run returns none.
 
 `browser.task.finished` carries `extract_by` (`selection`, `chat`, `screen`),
 `screen_reads`, `screen_why` and `screenshot` (whether the run returned one).
