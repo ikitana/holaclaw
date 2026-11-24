@@ -180,10 +180,10 @@ func TestQueuedMovesCostNoSecondTextCall(t *testing.T) {
 	if n := len(r.chat.requests()); n != 1 {
 		t.Errorf("%d chat calls, want the move call alone", n)
 	}
-	// The click's pre-move call, a post-move call each, and the selection: the
-	// typing needed no question anybody could answer.
-	if res.Stats.DecisionCalls != 4 {
-		t.Errorf("decision calls %d, want 4", res.Stats.DecisionCalls)
+	// The click's pre-move call, a post-move call each, the selection and the
+	// picture question: the typing needed no question anybody could answer.
+	if res.Stats.DecisionCalls != 5 {
+		t.Errorf("decision calls %d, want 5", res.Stats.DecisionCalls)
 	}
 	if res.Stats.Steps != 2 {
 		t.Errorf("steps %d, want type and click", res.Stats.Steps)
@@ -1718,8 +1718,8 @@ func TestATypedBoxThatExpandsIsPickedFrom(t *testing.T) {
 	if n := len(r.typed(event.BrowserMove)); n != 2 {
 		t.Errorf("%d move calls: the pick asked for one of its own", n)
 	}
-	if res.Stats.DecisionCalls != 5 {
-		t.Errorf("decision calls %d, want the four of an ordinary run plus the pick", res.Stats.DecisionCalls)
+	if res.Stats.DecisionCalls != 6 {
+		t.Errorf("decision calls %d, want the five of an ordinary run plus the pick", res.Stats.DecisionCalls)
 	}
 	if n := r.dec.timesAsked(QuestionPick); n != 1 {
 		t.Errorf("the pick question was asked %d times", n)

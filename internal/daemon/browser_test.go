@@ -214,6 +214,20 @@ func TestTakeoverText(t *testing.T) {
 	}
 }
 
+// recordScreenshots puts a sink in front of the daemon's that keeps every
+// browser.screenshot event.
+func recordScreenshots(d *Daemon) *[]event.Event {
+	var got []event.Event
+	next := d.App.Events
+	d.App.Events = event.SinkFunc(func(ctx context.Context, e event.Event) {
+		if e.Type == event.BrowserScreenshot {
+			got = append(got, e)
+		}
+		next.Emit(ctx, e)
+	})
+	return &got
+}
+
 func TestTakeoverNotice(t *testing.T) {
 	newCS := func(t *testing.T, d *Daemon, ch *fakeChannel) *channels {
 		t.Helper()
@@ -234,6 +248,7 @@ func TestTakeoverNotice(t *testing.T) {
 		d.browser = &browserWiring{client: fakeSidecar(t, mux)}
 		sess := seedConversation(t, d, store.RoleOwner)
 		ch := &fakeChannel{}
+		shots := recordScreenshots(d)
 		newCS(t, d, ch).takeoverNotice(context.Background(), notice(sess, string(browser.BlockLogin)))
 
 		msgs := ch.messages()
@@ -245,6 +260,25 @@ func TestTakeoverNotice(t *testing.T) {
 		}
 		if len(msgs[0].Attachments) != 1 || msgs[0].Attachments[0].MIME != "image/jpeg" {
 			t.Fatalf("attachments = %+v", msgs[0].Attachments)
+		}
+		// The screenshot is logged on the run's trace, without the image and
+		// as one the agent did not get.
+		if len(*shots) != 1 {
+			t.Fatalf("%d browser.screenshot events, want 1", len(*shots))
+		}
+		e := (*shots)[0]
+		if e.TraceID != "tr1" || e.SessionID != sess.ID {
+			t.Errorf("event on trace %q, session %q", e.TraceID, e.SessionID)
+		}
+		var a browser.ScreenshotAttrs
+		if err := json.Unmarshal(e.Attrs, &a); err != nil {
+			t.Fatalf("attrs: %v", err)
+		}
+		if a.Why != browser.ShotTakeover || a.Attached || a.Size != len("\xff\xd8\xff not really a jpeg") {
+			t.Errorf("attrs %+v", a)
+		}
+		if strings.Contains(string(e.Attrs), "not really a jpeg") {
+			t.Errorf("the event carries the image: %s", e.Attrs)
 		}
 	})
 
@@ -258,7 +292,11 @@ func TestTakeoverNotice(t *testing.T) {
 		d.browser = &browserWiring{client: fakeSidecar(t, mux)}
 		sess := seedConversation(t, d, store.RoleOwner)
 		ch := &fakeChannel{}
+		shots := recordScreenshots(d)
 		newCS(t, d, ch).takeoverNotice(context.Background(), notice(sess, string(browser.BlockCaptcha)))
+		if len(*shots) != 0 {
+			t.Errorf("a screenshot that was not taken was logged: %+v", *shots)
+		}
 
 		msgs := ch.messages()
 		if len(msgs) != 1 || len(msgs[0].Attachments) != 0 {

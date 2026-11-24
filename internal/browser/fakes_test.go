@@ -427,6 +427,10 @@ type answers struct {
 	cover     float64
 	many      float64
 	spanProbs map[string]float64
+	// picture is the answer to "should the answer come with a picture of the
+	// page", and noPicture a reply that does not carry that answer at all.
+	picture   float64
+	noPicture bool
 }
 
 type fakeDecider struct {
@@ -519,6 +523,14 @@ func buildAnswers(a answers, qs map[string]provider.Question) map[string]provide
 			QuestionSpan:  {Type: provider.QuestionChoice, Choice: a.span, Probabilities: a.spanProbs},
 			QuestionCover: {Type: provider.QuestionNoul, Noul: a.cover},
 			QuestionMany:  {Type: provider.QuestionNoul, Noul: a.many},
+		}
+	}
+	if _, asked := qs[QuestionPicture]; asked {
+		if a.noPicture {
+			return map[string]provider.Answer{}
+		}
+		return map[string]provider.Answer{
+			QuestionPicture: {Type: provider.QuestionNoul, Noul: a.picture},
 		}
 	}
 	if _, asked := qs[QuestionStrategy]; asked {

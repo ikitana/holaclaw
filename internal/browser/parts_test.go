@@ -499,8 +499,9 @@ func TestExtractionBySelection(t *testing.T) {
 		t.Errorf("extract_by %v, want %q", fin["extract_by"], extractBySelection)
 	}
 	// The spans are page text: they reach the model as criteria and inside the
-	// fence, and nothing else.
-	st := r.dec.states[len(r.dec.states)-1]
+	// fence, and nothing else. The selection is the call before the last one,
+	// which asks whether the answer wants a picture.
+	st := r.dec.states[len(r.dec.states)-2]
 	if !strings.Contains(st, "free delivery") {
 		t.Errorf("the spans never reached the model: %q", st)
 	}
@@ -1127,9 +1128,10 @@ func TestCostCountsTheChatCalls(t *testing.T) {
 	if fin["cost_nanousd"] != float64(want) {
 		t.Errorf("the finished event's cost = %v, want %v", fin["cost_nanousd"], want)
 	}
-	// The span selection reported no price: the sum says one call is not in it.
-	if fin["unpriced_calls"] != float64(1) {
-		t.Errorf("unpriced_calls = %v, want the one decision without a price", fin["unpriced_calls"])
+	// The span selection and the picture question reported no price: the sum
+	// says two calls are not in it.
+	if fin["unpriced_calls"] != float64(2) {
+		t.Errorf("unpriced_calls = %v, want the two decisions without a price", fin["unpriced_calls"])
 	}
 	if fin["completion_tokens"] == nil || fin["output_tokens"] != nil {
 		t.Errorf("the finished event's completion tokens are not under the usage name: %v", fin)

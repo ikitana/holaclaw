@@ -38,6 +38,7 @@ many it does not cover.
 | `browser.blocked` |  |  |
 | `browser.download` |  |  |
 | `browser.move` |  |  |
+| `browser.screenshot` |  |  |
 | `browser.step` |  |  |
 | `browser.takeover.ended` |  |  |
 | `browser.takeover.requested` |  |  |

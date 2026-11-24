@@ -18,8 +18,8 @@ func TestEachRunStartsOnAPageOfItsOwn(t *testing.T) {
 	one := moveJSON(t, false, "", click("r2", "results are listed"))
 	r.chat.replies = []string{one, one}
 	r.dec.script = []answers{
-		{}, {effect: 0.9, goal: 1}, {span: "s2", cover: 0.9},
-		{}, {effect: 0.9, goal: 1}, {span: "s2", cover: 0.9},
+		{}, {effect: 0.9, goal: 1}, {span: "s2", cover: 0.9}, {},
+		{}, {effect: 0.9, goal: 1}, {span: "s2", cover: 0.9}, {},
 	}
 
 	first := r.run(Task{})

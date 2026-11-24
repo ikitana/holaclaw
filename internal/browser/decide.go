@@ -29,6 +29,9 @@ const (
 	// dead end and what to do about it is a choice among the few things this
 	// package can do, not a fact about the page (recover.go).
 	QuestionStrategy = "strategy"
+	// QuestionPicture is asked once, of a run that has its answer: whether the
+	// answer should come with a picture of the page (screenshot.go).
+	QuestionPicture = "picture"
 )
 
 // RefNone is the element answer that means "none of the candidates fits". It
