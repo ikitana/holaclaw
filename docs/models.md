@@ -236,7 +236,9 @@ text, and answers each from a closed set:
 HolaClaw keeps the workflow and the model only answers, so an answer can
 never carry free text back. That makes it fast and cheap enough to sit on the
 path of every tool call: the guard asks one question per call, the taint
-scorer one per untrusted result, and the browser several per move.
+scorer one per untrusted result, and the browser several per move. Setting
+one up, step by step, is in
+[guides/decision-models.md](guides/decision-models.md).
 
 ```toml
 [models.jev]
@@ -246,8 +248,9 @@ api      = "decisions"
 url      = "https://openrouter.ai/api/alpha/decisions"
 ```
 
-The only endpoint today is OpenRouter's alpha decisions API, so the model
-names it in `url`, and its provider must be `openai-compatible`. The transport
+The endpoint HolaClaw is run against is OpenRouter's alpha decisions API. The
+API has no standard path, so the model names its endpoint in `url`, and its
+provider must be `openai-compatible`. The transport
 is experimental: a call is not retried, and every caller has a defined
 behaviour when it fails. The guard asks a person (`recommend`) or denies
 (`auto`); the taint scorer counts the result as steering; the browser treats

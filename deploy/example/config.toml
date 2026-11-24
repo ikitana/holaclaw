@@ -30,7 +30,8 @@ tools    = true
 # tools    = true
 #
 # A decision model as guard for tool calls (experimental transport, ~0.4 s
-# and ~$0.00002 per call). It sees an excerpt of the tool arguments.
+# and ~$0.00002 per call). It sees an excerpt of the tool arguments
+# (docs/guides/decision-models.md).
 # [models.jev]
 # provider = "openrouter"
 # id       = "~typesafe/jev-latest"
