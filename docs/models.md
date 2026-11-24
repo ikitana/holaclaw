@@ -236,7 +236,9 @@ text, and answers each from a closed set:
 HolaClaw keeps the workflow and the model only answers, so an answer can
 never carry free text back. That makes it fast and cheap enough to sit on the
 path of every tool call: the guard asks one question per call, the taint
-scorer one per untrusted result, and the browser several per move.
+scorer one per untrusted result, and the browser several per move. Setting
+one up, step by step, is in
+[guides/decision-models.md](guides/decision-models.md).
 
 ```toml
 [models.jev]

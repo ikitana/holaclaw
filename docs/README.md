@@ -23,6 +23,7 @@ Step by step, for whoever runs HolaClaw.
 | [Google Chat](guides/googlechat.md) | from a Chat app, set up in Google Cloud |
 | [WhatsApp](guides/whatsapp.md) | from a WhatsApp account, linked as a device |
 | [Connectors](guides/connectors.md) | give an agent the tools of a remote MCP server |
+| [Decision models](guides/decision-models.md) | add a model such as Jev as the guard, the taint scorer and the browser's decider |
 
 ## How it works
 
