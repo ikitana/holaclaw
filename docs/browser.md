@@ -482,17 +482,18 @@ Before a move that commits something (a click, a type or select that submits,
 the Enter key), the decision model classifies it: `none`, `purchase`, `send`
 (posts, messages, emails, forms to people), `delete` (deletes or cancels
 something) or `account` (credentials or account settings). An answer it can't
-read drops the move. Anything but `none` is an ordinary tool approval for
-`browser.do` ([security.md](security.md#5-approvals-and-grants)), so every
-channel and app shows it. The approval reads in fixed words, the class, the
-action and the ref, never an element's name or a typed value:
+read drops the move. Anything but `none` is a tool approval for `browser.do`
+([security.md](security.md#5-approvals-and-grants)), so every channel and app
+shows it. The approval reads in fixed words, the class, the action and the
+ref, never an element's name or a typed value:
 
 ```
 browser: a move classified purchase: click on g4r2
 ```
 
-Every risky step asks again, whatever the last answer was. A denied or
-expired approval ends the run `blocked`. A detached run's step approval is
+Every risky step asks again, whatever the last answer was: a step approval
+can only be answered `once` or denied, so it never becomes a grant for
+`browser.do`. A denied or expired approval ends the run `blocked`. A detached run's step approval is
 filed and waits like any other, until it expires or the run's deadline ends
 it.
 

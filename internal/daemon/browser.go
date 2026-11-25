@@ -67,17 +67,19 @@ func (d *Daemon) probeBrowser(ctx context.Context) {
 	}
 }
 
-// humans is browser.Humans on the daemon's own machinery: a risky step is an
-// ordinary tool approval, so every channel and client already shows it, and a
+// humans is browser.Humans on the daemon's own machinery: a risky step is a
+// once-only tool approval, so every channel and client already shows it, and a
 // blocker that needs a person is a takeover request on the live view.
 type humans struct{ d *Daemon }
 
 // Approve asks owner / admins to allow one step. The summary is the
-// executor's own fixed wording; kind is already part of it.
+// executor's own fixed wording; kind is already part of it. The answer is
+// once-only: a grant would cover every browser.do call, never the next step.
 func (h humans) Approve(ctx context.Context, t browser.Task, _ browser.RiskKind, summary string) (bool, error) {
 	a, err := h.d.Approvals.Request(ctx, tool.Approval{
 		Tool:      "browser.do",
 		Summary:   summary,
+		OnceOnly:  true,
 		Agent:     t.Agent,
 		TraceID:   t.TraceID,
 		SessionID: t.SessionID,

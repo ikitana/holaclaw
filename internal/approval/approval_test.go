@@ -337,6 +337,59 @@ func TestResolvePersistsGrants(t *testing.T) {
 	}
 }
 
+// A once-only approval refuses the two answers that would keep a grant, stays
+// pending for the one it takes, and says so in its request event.
+func TestResolveOnceOnly(t *testing.T) {
+	s, rec := newService(t)
+	ctx := context.Background()
+	a, err := s.insert(ctx, tool.Approval{Agent: "a", Tool: "browser.do", SessionID: "s1", OnceOnly: true})
+	if err != nil {
+		t.Fatal(err)
+	}
+	var attrs requestedAttrs
+	if err := json.Unmarshal(rec.all()[0].Attrs, &attrs); err != nil || !attrs.OnceOnly {
+		t.Fatalf("request event attrs = %s, err = %v", rec.all()[0].Attrs, err)
+	}
+	for _, choice := range []tool.GrantScope{tool.GrantSession, tool.GrantAlways} {
+		if _, err := s.Resolve(ctx, a.ID, true, choice, "u1"); !errors.Is(err, ErrOnceOnly) {
+			t.Fatalf("%s: err = %v, want ErrOnceOnly", choice, err)
+		}
+	}
+	stored, err := s.Get(ctx, a.ID)
+	if err != nil || stored.Status != tool.ApprovalPending || !stored.OnceOnly || stored.ResolvedBy != "" {
+		t.Fatalf("a refused answer changed the approval: %+v err=%v", stored, err)
+	}
+	if n := rec.count(event.ApprovalResolved); n != 0 {
+		t.Fatalf("%d resolved events for refused answers", n)
+	}
+	got, err := s.Resolve(ctx, a.ID, true, tool.GrantOnce, "u1")
+	if err != nil || got.Status != tool.ApprovalApproved || got.Choice != tool.GrantOnce {
+		t.Fatalf("once: %+v err=%v", got, err)
+	}
+	if gs, err := s.ListGrants(ctx, "a"); err != nil || len(gs) != 0 {
+		t.Fatalf("grants = %+v err=%v", gs, err)
+	}
+	// Settled wins over once-only: a late "always" is a second answer.
+	if _, err := s.Resolve(ctx, a.ID, true, tool.GrantAlways, "u1"); !errors.Is(err, ErrNotPending) {
+		t.Fatalf("err = %v, want ErrNotPending", err)
+	}
+
+	// A deny carries no choice, whatever was sent with it.
+	b, _ := s.insert(ctx, tool.Approval{Agent: "a", Tool: "browser.do", OnceOnly: true})
+	if got, err := s.Resolve(ctx, b.ID, false, tool.GrantAlways, "u1"); err != nil || got.Status != tool.ApprovalDenied {
+		t.Fatalf("deny: %+v err=%v", got, err)
+	}
+	// An ordinary approval is not once-only, in the row or the event.
+	c, _ := s.insert(ctx, tool.Approval{Agent: "a", Tool: "sh"})
+	if stored, _ := s.Get(ctx, c.ID); stored.OnceOnly {
+		t.Fatal("an ordinary approval came back once-only")
+	}
+	evs := rec.all()
+	if strings.Contains(string(evs[len(evs)-1].Attrs), "once_only") {
+		t.Fatalf("attrs = %s", evs[len(evs)-1].Attrs)
+	}
+}
+
 func TestConcurrentApprovalsAreIndependent(t *testing.T) {
 	s, _ := newService(t, WithTimeout(5*time.Second))
 	ctx := context.Background()

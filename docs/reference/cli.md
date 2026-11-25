@@ -205,8 +205,8 @@ usage: holaclaw approve <id> [flags]
 | Flag | Default | Description |
 |---|---|---|
 | `--addr string` |  | daemon base URL or socket path ($HOLACLAW_ADDR) |
-| `--always` |  | allow the same call from now on |
-| `--session` |  | allow the same call for the rest of this session |
+| `--always` |  | allow the same call from now on (not for a browser step) |
+| `--session` |  | allow the same call for the rest of this session (not for a browser step) |
 | `--token string` |  | API token, for a TCP address; prefer $HOLACLAW_TOKEN — an argument is visible to every process in "ps" |
 
 ### `holaclaw auth`

@@ -64,6 +64,9 @@ func (h *handlers) ResolveApproval(w http.ResponseWriter, r *http.Request, id ge
 	case errors.Is(err, approval.ErrNotPending):
 		writeError(w, http.StatusConflict, CodeConflict, "approval is already resolved")
 		return
+	case errors.Is(err, approval.ErrOnceOnly):
+		badRequest(w, "this approval can only be approved once")
+		return
 	case errors.Is(err, approval.ErrNotFound):
 		notFound(w)
 		return
@@ -75,7 +78,7 @@ func (h *handlers) ResolveApproval(w http.ResponseWriter, r *http.Request, id ge
 }
 
 func toGenApproval(a tool.Approval) gen.Approval {
-	return gen.Approval{
+	out := gen.Approval{
 		Id:        string(a.ID),
 		Status:    gen.ApprovalStatus(a.Status),
 		TraceId:   optID(a.TraceID),
@@ -86,6 +89,10 @@ func toGenApproval(a tool.Approval) gen.Approval {
 		CreatedAt: a.CreatedAt,
 		ExpiresAt: a.ExpiresAt,
 	}
+	if a.OnceOnly {
+		out.OnceOnly = ptr(true)
+	}
+	return out
 }
 
 // --- identities, invites, tokens ---------------------------------------------

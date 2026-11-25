@@ -14,7 +14,7 @@ import (
 // approvalColumns leaves out kind: every approval is a tool call, and insert
 // writes 'tool' (the column stays until the migrations are squashed).
 const approvalColumns = `id, status, trace_id, session_id, agent, tool, summary, args,
-	choice, resolved_by, created_at, expires_at, resolved_at`
+	once_only, choice, resolved_by, created_at, expires_at, resolved_at`
 
 // requestedAttrs is the attrs object of approval.requested. It never carries
 // the raw arguments: only a capped excerpt, because arguments are model output
@@ -25,6 +25,7 @@ type requestedAttrs struct {
 	Summary   string    `json:"summary,omitempty"`
 	SessionID event.ID  `json:"session_id,omitempty"`
 	Args      string    `json:"args_excerpt,omitempty"`
+	OnceOnly  bool      `json:"once_only,omitempty"`
 	ExpiresAt time.Time `json:"expires_at"`
 }
 
@@ -55,15 +56,15 @@ func (s *Service) insert(ctx context.Context, a tool.Approval) (tool.Approval, e
 	a.Args = tool.Cap(a.Args, tool.MaxApprovalArgs)
 
 	if _, err := s.exec(ctx, `INSERT INTO approvals (kind, `+approvalColumns+`)
-		VALUES ('tool', ?, ?, ?, ?, ?, ?, ?, ?, '', '', ?, ?, NULL)`,
+		VALUES ('tool', ?, ?, ?, ?, ?, ?, ?, ?, ?, '', '', ?, ?, NULL)`,
 		string(a.ID), string(a.Status), string(a.TraceID), string(a.SessionID),
-		a.Agent, a.Tool, a.Summary, a.Args, ms(a.CreatedAt), ms(a.ExpiresAt)); err != nil {
+		a.Agent, a.Tool, a.Summary, a.Args, a.OnceOnly, ms(a.CreatedAt), ms(a.ExpiresAt)); err != nil {
 		return tool.Approval{}, fmt.Errorf("approval: insert: %w", err)
 	}
 
 	s.events.Emit(ctx, event.New(event.ApprovalRequested, a.TraceID, a.SessionID, "", requestedAttrs{
 		ID: a.ID, Tool: a.Tool, Summary: a.Summary,
-		SessionID: a.SessionID, Args: a.Args, ExpiresAt: a.ExpiresAt.UTC(),
+		SessionID: a.SessionID, Args: a.Args, OnceOnly: a.OnceOnly, ExpiresAt: a.ExpiresAt.UTC(),
 	}))
 	return a, nil
 }
@@ -129,7 +130,8 @@ func (s *Service) close(ctx context.Context, a tool.Approval, status tool.Approv
 // Resolve records a human decision. The UPDATE is the serialisation point: a
 // second call on the same approval returns ErrNotPending and changes nothing.
 // Approving with scope session or always also persists the grant that will
-// answer the next identical call without asking.
+// answer the next identical call without asking; a once-only approval refuses
+// both with ErrOnceOnly and stays pending.
 func (s *Service) Resolve(ctx context.Context, id event.ID, approve bool, choice tool.GrantScope, by event.ID) (tool.Approval, error) {
 	status := tool.ApprovalDenied
 	if approve {
@@ -138,15 +140,20 @@ func (s *Service) Resolve(ctx context.Context, id event.ID, approve bool, choice
 		choice = ""
 	}
 	now := s.now()
+	grants := choice == tool.GrantSession || choice == tool.GrantAlways
 	res, err := s.exec(ctx, `UPDATE approvals SET status = ?, choice = ?, resolved_by = ?, resolved_at = ?
-		WHERE id = ? AND status = 'pending'`,
-		string(status), string(choice), string(by), ms(now), string(id))
+		WHERE id = ? AND status = 'pending' AND NOT (once_only AND ?)`,
+		string(status), string(choice), string(by), ms(now), string(id), grants)
 	if err != nil {
 		return tool.Approval{}, fmt.Errorf("approval: resolve: %w", err)
 	}
 	if n, _ := res.RowsAffected(); n == 0 {
-		if _, err := s.Get(ctx, id); err != nil {
+		a, err := s.Get(ctx, id)
+		if err != nil {
 			return tool.Approval{}, err
+		}
+		if a.Status == tool.ApprovalPending && a.OnceOnly && grants {
+			return tool.Approval{}, ErrOnceOnly
 		}
 		return tool.Approval{}, ErrNotPending
 	}
@@ -155,7 +162,7 @@ func (s *Service) Resolve(ctx context.Context, id event.ID, approve bool, choice
 		return tool.Approval{}, err
 	}
 
-	if approve && (choice == tool.GrantSession || choice == tool.GrantAlways) {
+	if grants {
 		pattern := ""
 		if s.grantPattern != nil {
 			pattern = s.grantPattern(a)
@@ -247,7 +254,7 @@ func scanApproval(sc interface{ Scan(...any) error }) (tool.Approval, error) {
 	var created, expires int64
 	var resolved sql.NullInt64
 	if err := sc.Scan(&id, &status, &trace, &session, &a.Agent, &a.Tool, &a.Summary, &a.Args,
-		&choice, &by, &created, &expires, &resolved); err != nil {
+		&a.OnceOnly, &choice, &by, &created, &expires, &resolved); err != nil {
 		return tool.Approval{}, err
 	}
 	a.ID, a.Status = event.ID(id), tool.ApprovalStatus(status)

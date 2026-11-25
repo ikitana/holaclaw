@@ -100,7 +100,10 @@ func (p *plainSink) approve(_ context.Context, a approvalReq) approvalAnswer {
 			"(local mode: a choice lasts for this run only — nothing is persisted)"))
 	}
 	choices := "[y]es once / [s]ession / [a]lways / [n]o:"
-	if a.local {
+	switch {
+	case a.onceOnly:
+		choices = "[y]es once / [n]o:"
+	case a.local:
 		// There is nowhere to persist an "always" here.
 		choices = "[y]es once / [s]ession / [n]o:"
 	}
@@ -110,7 +113,11 @@ func (p *plainSink) approve(_ context.Context, a approvalReq) approvalAnswer {
 	if line == "" && err != nil {
 		return approvalAnswer{} // EOF: deny
 	}
-	switch strings.ToLower(strings.TrimSpace(line)) {
+	said := strings.ToLower(strings.TrimSpace(line))
+	if a.onceOnly && said != "y" && said != "yes" && said != "" {
+		return approvalAnswer{}
+	}
+	switch said {
 	case "y", "yes":
 		return approvalAnswer{approve: true, choice: choiceOnce}
 	case "s", "session":

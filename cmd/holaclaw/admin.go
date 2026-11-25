@@ -693,8 +693,8 @@ func newApprovalsCmd(c *cli) *cobra.Command {
 func newApproveCmd(c *cli) *cobra.Command {
 	cmd := &cobra.Command{Use: "approve <id>", Short: "approve a pending tool call", Args: cobra.ExactArgs(1)}
 	cn := c.connFlags(cmd)
-	session := cmd.Flags().Bool("session", false, "allow the same call for the rest of this session")
-	always := cmd.Flags().Bool("always", false, "allow the same call from now on")
+	session := cmd.Flags().Bool("session", false, "allow the same call for the rest of this session (not for a browser step)")
+	always := cmd.Flags().Bool("always", false, "allow the same call from now on (not for a browser step)")
 	cmd.MarkFlagsMutuallyExclusive("session", "always")
 	cmd.RunE = func(cmd *cobra.Command, args []string) error {
 		choice := gen.ApprovalResolveChoiceOnce

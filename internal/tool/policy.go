@@ -127,6 +127,9 @@ type Approval struct {
 	Tool    string
 	Summary string // short, human-readable, secrets-free description of the call
 	Args    string // raw JSON, capped
+	// OnceOnly says the answer covers this call only: session and always are
+	// refused, so the approval never becomes a grant.
+	OnceOnly bool
 	// Resolution.
 	Choice     GrantScope // once | session | always (approved only)
 	ResolvedBy event.ID
