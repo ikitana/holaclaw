@@ -372,12 +372,34 @@ func TestConnectorsCode(t *testing.T) {
 		t.Errorf("body = %v", b)
 	}
 
+	// An address the shell escaped on paste posts what the plain one does.
+	for name, tc := range map[string]struct {
+		url string
+		iss any
+	}{
+		"escaped":             {`http://127.0.0.1:26500/callback\?code\=FAKEcode\&state\=S1\&iss\=https%3A%2F%2Fas.example`, "https://as.example"},
+		"escaped without iss": {`http://127.0.0.1:26500/callback\?code\=FAKEcode\&state\=S1`, nil},
+	} {
+		t.Run(name, func(t *testing.T) {
+			f := &connFake{}
+			code, out, errOut := runCLI(t, "", "connectors", "code", "gh", tc.url, "--addr", f.serve(t))
+			if code != 0 || out != "gh: connected to GitHub, scopes repo\n" {
+				t.Fatalf("exit = %d, stdout = %q, stderr = %q", code, out, errOut)
+			}
+			if b := f.body("/v1/connectors/gh/code"); b["code"] != "FAKEcode" || b["state"] != "S1" || b["iss"] != tc.iss {
+				t.Errorf("body = %v", b)
+			}
+		})
+	}
+
 	for name, tc := range map[string]struct{ url, want string }{
-		"no code":   {"http://127.0.0.1:26500/callback?state=S1", "the address has no code"},
-		"no state":  {"http://127.0.0.1:26500/callback?code=FAKEcode", "the address has no state"},
-		"no query":  {"http://127.0.0.1:26500/callback", "not the address the browser landed on"},
-		"refused":   {"http://127.0.0.1:26500/callback?error=access_denied&error_description=no%1b[31m&state=S1", "refused: access_denied: no\ntry again"},
-		"not a url": {"%zz", "not the address the browser landed on"},
+		"no code":           {"http://127.0.0.1:26500/callback?state=S1", "the address has no code"},
+		"no state":          {"http://127.0.0.1:26500/callback?code=FAKEcode", "the address has no state"},
+		"escaped, no code":  {`http://127.0.0.1:26500/callback\?state\=S1`, "the address has no code"},
+		"escaped, no state": {`http://127.0.0.1:26500/callback\?code\=FAKEcode`, "the address has no state"},
+		"no query":          {"http://127.0.0.1:26500/callback", "not the address the browser landed on"},
+		"refused":           {"http://127.0.0.1:26500/callback?error=access_denied&error_description=no%1b[31m&state=S1", "refused: access_denied: no\ntry again"},
+		"not a url":         {"%zz", "not the address the browser landed on"},
 	} {
 		t.Run(name, func(t *testing.T) {
 			f := &connFake{}

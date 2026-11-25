@@ -512,8 +512,11 @@ func postCode(ctx context.Context, c *cli, client *api.Client, id string, in gen
 }
 
 // cmdConnectorsCode posts the code and state of the address the browser
-// landed on.
+// landed on. A shell that escapes a pasted address (zsh's url-quote-magic)
+// writes \?, \= and \&, and inside the single quotes the backslashes reach
+// us: they are dropped, since no callback address has one there.
 func cmdConnectorsCode(ctx context.Context, c *cli, cn *conn, id, raw string) error {
+	raw = strings.NewReplacer(`\?`, "?", `\=`, "=", `\&`, "&").Replace(raw)
 	u, err := url.Parse(strings.TrimSpace(raw))
 	if err != nil || u.RawQuery == "" {
 		return fmt.Errorf("%s: not the address the browser landed on: it should end in /callback?code=…&state=…", id)
