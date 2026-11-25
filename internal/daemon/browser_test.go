@@ -3,6 +3,7 @@ package daemon
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"log/slog"
 	"net"
 	"net/http"
@@ -171,6 +172,68 @@ func TestHumansApprove(t *testing.T) {
 			t.Fatal("a denied step came back true")
 		}
 	})
+}
+
+// Issue #20: a step approval answered "session" or "always" used to keep a
+// grant for the whole browser.do tool, which the next step never read. It is
+// once-only: both are refused, nothing is granted, and the next step asks.
+func TestHumansApproveNeverGrants(t *testing.T) {
+	d := browserDaemon(t)
+	ctx := context.Background()
+	step := func() chan bool {
+		out := make(chan bool, 1)
+		go func() {
+			ok, err := humans{d}.Approve(ctx, browser.Task{Agent: "main", TraceID: "tr1", SessionID: "se1"},
+				browser.RiskPurchase, "browser: a move classified purchase: click on g4r2")
+			out <- ok && err == nil
+		}()
+		return out
+	}
+	pending := func() tool.Approval {
+		t.Helper()
+		var a tool.Approval
+		until(t, "a step approval to be pending", func() bool {
+			list, err := d.Approvals.ListPending(ctx)
+			if err != nil || len(list) != 1 {
+				return false
+			}
+			a = list[0]
+			return true
+		})
+		return a
+	}
+
+	first := step()
+	a := pending()
+	if !a.OnceOnly {
+		t.Fatalf("a step approval is not once-only: %+v", a)
+	}
+	for _, choice := range []tool.GrantScope{tool.GrantSession, tool.GrantAlways} {
+		if _, err := d.Approvals.Resolve(ctx, a.ID, true, choice, "u1"); !errors.Is(err, approval.ErrOnceOnly) {
+			t.Fatalf("%s: err = %v, want ErrOnceOnly", choice, err)
+		}
+	}
+	if _, err := d.Approvals.Resolve(ctx, a.ID, true, tool.GrantOnce, "u1"); err != nil {
+		t.Fatalf("Resolve: %v", err)
+	}
+	if !<-first {
+		t.Fatal("the approved step came back false")
+	}
+	if gs, err := d.Approvals.ListGrants(ctx, "main"); err != nil || len(gs) != 0 {
+		t.Fatalf("grants = %+v err=%v", gs, err)
+	}
+
+	second := step()
+	b := pending()
+	if b.ID == a.ID {
+		t.Fatal("the next step did not ask again")
+	}
+	if _, err := d.Approvals.Resolve(ctx, b.ID, false, "", "u1"); err != nil {
+		t.Fatalf("Resolve: %v", err)
+	}
+	if <-second {
+		t.Fatal("the denied step came back true")
+	}
 }
 
 func TestHumansApproveTimeout(t *testing.T) {

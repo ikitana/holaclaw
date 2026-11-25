@@ -575,7 +575,9 @@ func (m *chatUI) approvalView() string {
 		}
 	}
 	keys := "[y] once   [s] session   [a] always   [n] no"
-	if a.local {
+	if a.onceOnly {
+		keys = "[y] once   [n] no"
+	} else if a.local {
 		// Nothing is persisted in the in-process mode, so there is no always.
 		b.WriteString("\n" + m.styles.dim.Render("this choice lasts for this run only — nothing is persisted") + "\n")
 		keys = "[y] once   [s] session   [n] no"

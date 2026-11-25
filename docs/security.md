@@ -276,6 +276,10 @@ An approval answered `session` or `always` is kept as a grant:
 For `exec`, a grant carries the command as a prefix pattern, matched like
 `exec_allow` (§4). Grants never apply to guests, and never lift a `deny`.
 
+A browser step approval ([browser.md](browser.md#risky-steps)) is once-only:
+it offers `once` and deny, and refuses `session` and `always`, which would
+grant every `browser.do` call rather than that step.
+
 ## 6. The guard model
 
 The `guard` model role is optional. It scores each tool call, 0 to 1, for

@@ -559,9 +559,12 @@ func (m *chatUI) approvalKey(msg tea.KeyMsg) tea.Cmd {
 	case "y":
 		ans = approvalAnswer{approve: true, choice: choiceOnce}
 	case "s":
+		if m.approval.onceOnly {
+			return nil
+		}
 		ans = approvalAnswer{approve: true, choice: choiceSession}
 	case "a":
-		if local {
+		if local || m.approval.onceOnly {
 			// There is nowhere to persist an "always" in the in-process mode.
 			return nil
 		}

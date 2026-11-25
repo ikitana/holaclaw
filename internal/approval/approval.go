@@ -27,6 +27,9 @@ var (
 	// ErrNotPending reports a second resolution of the same approval: the
 	// first decision stands.
 	ErrNotPending = errors.New("approval: already resolved")
+	// ErrOnceOnly reports a session or always answer to an approval that
+	// covers one call only. Nothing changed: it is still pending.
+	ErrOnceOnly = errors.New("approval: can only be approved once")
 )
 
 // Service stores grants and approvals in the shared database and wakes the

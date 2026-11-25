@@ -334,14 +334,18 @@ func (cs *channels) prompt(ctx context.Context, e event.Event) {
 	target := sess.Origin
 	target.PlatformMsgID = "" // a prompt is never a reply
 	text := "Allow: " + a.Summary + "?"
+	choices, react := []string{"once", "session", "always", "deny"}, reactToAnswer
+	if a.OnceOnly {
+		choices, react = []string{"once", "deny"}, reactToAnswerOnce
+	}
 	if buttons {
-		err = p.PromptApproval(ctx, target, a.ID, text, []string{"once", "session", "always", "deny"})
+		err = p.PromptApproval(ctx, target, a.ID, text, choices)
 	} else {
 		// No buttons: the prompt is text, answered by a reaction to it.
 		err = cs.sendPrompt(ctx, target, "", e.TraceID, event.Message{
 			// No ID: the prompt is never in the transcript.
 			Schema: event.SchemaVersion, SessionID: sess.ID, TraceID: e.TraceID,
-			Role: event.RoleAssistant, Text: text + "\n\n" + reactToAnswer, CreatedAt: time.Now().UTC(),
+			Role: event.RoleAssistant, Text: text + "\n\n" + react, CreatedAt: time.Now().UTC(),
 		}, a.ID)
 	}
 	if err != nil {
@@ -351,6 +355,9 @@ func (cs *channels) prompt(ctx context.Context, e event.Event) {
 
 // reactToAnswer closes an approval prompt on a channel without buttons.
 const reactToAnswer = "React to this message to answer: 👍 allow once · 🔁 allow for this session · ✅ always allow · 👎 deny"
+
+// reactToAnswerOnce is reactToAnswer for a once-only approval.
+const reactToAnswerOnce = "React to this message to answer: 👍 allow once · 👎 deny"
 
 // reactionChoice maps a reaction to an approval choice, or "" for an emoji
 // that answers nothing. It compares emoji.Base, so 👍🏽 is 👍.
@@ -530,10 +537,14 @@ func (cs *channels) approve(ctx context.Context, channelName string, id event.ID
 		return store.Identity{}, false
 	}
 	if _, err := cs.d.Approvals.Resolve(ctx, id, approve, scope, i.ID); err != nil {
-		if errors.Is(err, approval.ErrNotPending) {
+		switch {
+		case errors.Is(err, approval.ErrNotPending):
 			// Settled already: a second press or a later reaction.
 			cs.d.log.Debug("approval already settled", "approval", id)
-		} else {
+		case errors.Is(err, approval.ErrOnceOnly):
+			// A choice the prompt never offered: it is still pending.
+			cs.d.log.Debug("approval answer ignored: it can only be approved once", "approval", id)
+		default:
 			cs.d.log.Warn("approval resolve failed", "approval", id, "err", err)
 		}
 		return store.Identity{}, false

@@ -79,6 +79,9 @@ type approvalReq struct {
 	args    string    // raw JSON, already capped by whoever asked
 	expires time.Time // zero when nobody said
 	local   bool      // in-process: a choice lasts for this run only
+	// onceOnly: the answer covers this call only, so yes and no are the
+	// whole choice (a browser step, docs/browser.md).
+	onceOnly bool
 }
 
 // The three things a person can say yes with, as the API spells them.
@@ -282,6 +285,9 @@ func (e *attachedEngine) resolve(ctx context.Context, sink chatSink, ev gen.Even
 	}
 	if t, err := time.Parse(time.RFC3339, evAttr(ev, "expires_at")); err == nil {
 		req.expires = t
+	}
+	if ev.Attrs != nil {
+		req.onceOnly, _ = (*ev.Attrs)["once_only"].(bool)
 	}
 	ans := sink.approve(ctx, req)
 	in := gen.ApprovalResolve{Approve: ans.approve}

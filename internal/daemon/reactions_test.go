@@ -28,6 +28,7 @@ type reactChannel struct {
 	reacted []event.Origin
 	emoji   []string
 	prompts int
+	choices []string // of the last button prompt
 }
 
 func (c *reactChannel) Limits() channel.Limits { return channel.Limits{Reactions: c.limits} }
@@ -53,10 +54,11 @@ func (c *reactChannel) React(_ context.Context, target event.Origin, emoji strin
 // buttonChannel is a reactChannel with approval buttons.
 type buttonChannel struct{ *reactChannel }
 
-func (c buttonChannel) PromptApproval(context.Context, event.Origin, event.ID, string, []string) error {
+func (c buttonChannel) PromptApproval(_ context.Context, _ event.Origin, _ event.ID, _ string, choices []string) error {
 	c.reactMu.Lock()
 	defer c.reactMu.Unlock()
 	c.prompts++
+	c.choices = choices
 	return nil
 }
 
@@ -114,11 +116,21 @@ func newReactRig(t *testing.T, ch channel.Channel, rc *reactChannel) *reactRig {
 // ask raises a tool approval in the session and shows its prompt.
 func (rr *reactRig) ask(t *testing.T) tool.Approval {
 	t.Helper()
+	return rr.raise(t, tool.Approval{Tool: "files.write", Summary: "write a.txt"})
+}
+
+// askStep is ask for a browser step: a once-only approval.
+func (rr *reactRig) askStep(t *testing.T) tool.Approval {
+	t.Helper()
+	return rr.raise(t, tool.Approval{Tool: "browser.do", Summary: "browser: a move classified send: click on g4r2", OnceOnly: true})
+}
+
+func (rr *reactRig) raise(t *testing.T, a tool.Approval) tool.Approval {
+	t.Helper()
 	ctx := context.Background()
 	// A suspended tool call, as the policy gate raises it; it gives up when the
 	// test ends.
-	a := tool.Approval{ID: event.NewID(), SessionID: rr.sess.ID, Agent: "main",
-		TraceID: event.NewID(), Tool: "files.write", Summary: "write a.txt"}
+	a.ID, a.SessionID, a.Agent, a.TraceID = event.NewID(), rr.sess.ID, "main", event.NewID()
 	waitCtx, cancel := context.WithCancel(ctx)
 	done := make(chan struct{})
 	go func() {
@@ -185,6 +197,43 @@ func TestApprovalPromptKeepsButtons(t *testing.T) {
 	rr.ask(t)
 	if rc.prompts != 1 || len(rc.messages()) != 0 {
 		t.Fatalf("buttons %d, texts %+v", rc.prompts, rc.messages())
+	}
+}
+
+// A once-only approval offers once and deny, as buttons or as reactions, and
+// a 🔁 or ✅ it never offered leaves it pending and unanswered.
+func TestOnceOnlyApprovalPrompt(t *testing.T) {
+	rc := &reactChannel{}
+	rr := newReactRig(t, buttonChannel{rc}, rc)
+	rr.askStep(t)
+	if got := strings.Join(rc.choices, " "); got != "once deny" {
+		t.Fatalf("buttons = %q", got)
+	}
+	rr.ask(t)
+	if got := strings.Join(rc.choices, " "); got != "once session always deny" {
+		t.Fatalf("buttons = %q", got)
+	}
+
+	rc = &reactChannel{}
+	rr = newReactRig(t, rc, rc)
+	a := rr.askStep(t)
+	if sent := rc.messages(); len(sent) != 1 || !strings.HasSuffix(sent[0].Text, "\n\n"+reactToAnswerOnce) {
+		t.Fatalf("prompt = %+v", sent)
+	}
+	rr.reaction("fake:1", "c1:1", "🔁", false)
+	rr.reaction("fake:1", "c1:1", "✅", false)
+	if got := rr.status(t, a.ID); got.Status != tool.ApprovalPending {
+		t.Fatalf("status = %s", got.Status)
+	}
+	if n := len(rc.messages()); n != 1 {
+		t.Fatalf("%d messages sent, want only the prompt", n)
+	}
+	rr.reaction("fake:1", "c1:1", "👍", false)
+	if got := rr.status(t, a.ID); got.Status != tool.ApprovalApproved || got.Choice != tool.GrantOnce {
+		t.Fatalf("approval = %+v", got)
+	}
+	if gs, err := rr.d.Approvals.ListGrants(context.Background(), "main"); err != nil || len(gs) != 0 {
+		t.Fatalf("grants = %+v err=%v", gs, err)
 	}
 }
 

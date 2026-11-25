@@ -841,10 +841,13 @@ type AgentInfo struct {
 
 // Approval A human decision on a tool call.
 type Approval struct {
-	Agent     *string        `json:"agent,omitempty"`
-	CreatedAt time.Time      `json:"created_at"`
-	ExpiresAt time.Time      `json:"expires_at"`
-	Id        string         `json:"id"`
+	Agent     *string   `json:"agent,omitempty"`
+	CreatedAt time.Time `json:"created_at"`
+	ExpiresAt time.Time `json:"expires_at"`
+	Id        string    `json:"id"`
+
+	// OnceOnly The answer covers this call only: session and always are refused
+	OnceOnly  *bool          `json:"once_only,omitempty"`
 	SessionId *string        `json:"session_id,omitempty"`
 	Status    ApprovalStatus `json:"status"`
 	Summary   *string        `json:"summary,omitempty"`
@@ -859,11 +862,11 @@ type ApprovalStatus string
 type ApprovalResolve struct {
 	Approve bool `json:"approve"`
 
-	// Choice Defaults to once
+	// Choice Defaults to once. session and always are a bad request on a once_only approval
 	Choice *ApprovalResolveChoice `json:"choice,omitempty"`
 }
 
-// ApprovalResolveChoice Defaults to once
+// ApprovalResolveChoice Defaults to once. session and always are a bad request on a once_only approval
 type ApprovalResolveChoice string
 
 // Attachment defines model for Attachment.

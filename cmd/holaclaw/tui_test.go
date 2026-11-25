@@ -439,6 +439,49 @@ func TestLocalApprovalHasNoAlways(t *testing.T) {
 	}
 }
 
+// A once-only approval (a browser step) is yes or no: the keys that would
+// keep a grant are neither shown nor taken.
+func TestOnceOnlyApprovalHasNoSessionOrAlways(t *testing.T) {
+	m := newTestUI(t, &fakeEngine{})
+	reply := make(chan approvalAnswer, 1)
+	send(m, approvalMsg{reply: reply, req: approvalReq{
+		tool: "browser.do", summary: "browser: a move classified send: click on g4r2", onceOnly: true,
+	}})
+	if v := m.View(); strings.Contains(v, "[s] session") || strings.Contains(v, "[a] always") || !strings.Contains(v, "[y] once") {
+		t.Errorf("the modal offered more than once:\n%s", v)
+	}
+	send(m, keyMsg("s"))
+	send(m, keyMsg("a"))
+	if m.approval == nil {
+		t.Fatal("`s` or `a` resolved a once-only approval")
+	}
+	send(m, keyMsg("y"))
+	if ans := <-reply; !ans.approve || ans.choice != choiceOnce {
+		t.Errorf("answer = %+v", ans)
+	}
+}
+
+func TestPlainOnceOnlyApproval(t *testing.T) {
+	for said, want := range map[string]approvalAnswer{
+		"y\n": {approve: true, choice: choiceOnce},
+		"s\n": {},
+		"a\n": {},
+		"n\n": {},
+	} {
+		var errOut strings.Builder
+		c := &cli{stdin: strings.NewReader(said), stdout: &strings.Builder{}, stderr: &errOut}
+		p := newPlainSink(c, chatOptions{quiet: true}, true)
+		got := p.approve(context.Background(), approvalReq{summary: "a step", onceOnly: true})
+		p.close()
+		if got != want {
+			t.Errorf("%q: answer = %+v, want %+v", said, got, want)
+		}
+		if o := errOut.String(); strings.Contains(o, "[s]ession") || strings.Contains(o, "[a]lways") || !strings.Contains(o, "[y]es once / [n]o:") {
+			t.Errorf("prompt = %q", o)
+		}
+	}
+}
+
 func TestCommandsDoWhatTheySay(t *testing.T) {
 	eng := &fakeEngine{inf: engineInfo{agent: "main", conversation: "cli"}}
 	m := newTestUI(t, eng)

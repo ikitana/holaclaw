@@ -371,6 +371,36 @@ func TestApprovalsResolveAndConflict(t *testing.T) {
 		gen.ApprovalResolve{Approve: true}), http.StatusNotFound, CodeNotFound)
 }
 
+// A once-only approval says so, and refuses the answers that keep a grant.
+func TestApprovalsOnceOnly(t *testing.T) {
+	t.Parallel()
+	h := newHarness(t)
+	a := h.ask(tool.Approval{Agent: "main", Tool: "browser.do", Summary: "a step", TraceID: event.NewID(), OnceOnly: true})
+	plain := h.ask(tool.Approval{Agent: "main", Tool: "exec", Summary: "run ls", TraceID: event.NewID()})
+
+	list := decode[struct {
+		Approvals []gen.Approval `json:"approvals"`
+	}](t, h.do(http.MethodGet, "/approvals", h.adminToken, nil), http.StatusOK)
+	for _, got := range list.Approvals {
+		if once := got.OnceOnly != nil && *got.OnceOnly; once != (got.Id == string(a.ID)) {
+			t.Fatalf("once_only of %s (%s) = %v", got.Id, *got.Tool, once)
+		}
+	}
+	if len(list.Approvals) != 2 {
+		t.Fatalf("pending = %+v, want %s and %s", list.Approvals, a.ID, plain.ID)
+	}
+
+	for _, choice := range []gen.ApprovalResolveChoice{gen.ApprovalResolveChoiceSession, gen.ApprovalResolveChoiceAlways} {
+		errorBody(t, h.do(http.MethodPost, "/approvals/"+string(a.ID), h.adminToken,
+			gen.ApprovalResolve{Approve: true, Choice: &choice}), http.StatusBadRequest, CodeBadRequest)
+	}
+	resolved := decode[gen.Approval](t, h.do(http.MethodPost, "/approvals/"+string(a.ID), h.adminToken,
+		gen.ApprovalResolve{Approve: true}), http.StatusOK)
+	if resolved.Status != gen.ApprovalStatusApproved {
+		t.Fatalf("status = %s", resolved.Status)
+	}
+}
+
 // TestCredentialsAreWriteOnly proves the ARCHITECTURE.md §4 invariant: the API can write a
 // credential and can never read it back, from any endpoint or any log line.
 func TestCredentialsAreWriteOnly(t *testing.T) {
