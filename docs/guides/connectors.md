@@ -141,13 +141,20 @@ container, a VM) and the browser can be on any machine.
        https://auth.example.com/authorize?client_id=…&state=…
 
    The browser then goes to http://127.0.0.1:26500/callback, which does not load. Copy the whole address
-   from the address bar and, before 14:37:05, run:
+   from the address bar and run, right after signing in:
 
        holaclaw connectors code tracker '<address>'
+
+   holaclaw takes the address until 14:37:05. The server may stop taking its code sooner.
    ```
 
    The time is when the daemon drops the sign-in, 15 minutes after it
-   opened it by the daemon's clock, shown in your time zone.
+   opened it by the daemon's clock, shown in your time zone. It is
+   holaclaw's limit only. The service gives the code in the address a
+   lifetime of its own, counted from the moment you sign in and often
+   shorter (10 minutes at most is the usual advice), and nothing in the
+   address says how long. So run `code` as soon as the browser lands.
+   Restarting the daemon closes every open sign-in, whatever the time.
 2. Open the URL in any browser and sign in with the account the connector
    should act as. Approve what the consent screen asks.
 3. The browser is sent to `http://127.0.0.1:26500/callback?code=…&state=…`
@@ -789,7 +796,7 @@ connector (`tracker: …`). Config errors are the exception: they print as
 | `tracker: not the address the browser landed on: it should end in /callback?code=…&state=…` | `code` got something else, or the address lost its query in the shell. | Copy the address again and put it in single quotes. |
 | `tracker: the address has no code: copy all of it from the address bar` (or `no state`) | Part of the address is missing. | Copy the whole address. |
 | `tracker: the authorization server refused: access_denied`, then ``try again with `holaclaw connectors reconnect tracker` `` | You declined, or the service refused, on its page. Nothing was sent to the daemon. | `reconnect`. |
-| `tracker: no open authorization` | No sign-in is open: it expired, or its code was already used. | `reconnect`. |
+| `tracker: no open authorization: …`, then ``try again with `holaclaw connectors reconnect tracker` `` | No sign-in is open. What follows the colon says why: `it expired` (15 minutes passed); `its code was already posted`; `it ended with <detail>` (it failed: the detail is one of the table above, such as `state_mismatch` or `authorization_failed`); `none was opened since the daemon started at <time>` (the daemon restarted after the `create` or `reconnect`, which closes open sign-ins, or none was ever started); `it is still being opened`. The daemon's log has a `connector authorization ended` line with the same reason. | `reconnect`, and run `code` right after signing in. For `it is still being opened`, wait and run `code` again. |
 | `tracker: authorization in progress` | A sign-in is being opened, or its code is being exchanged. | Wait, then `list`. |
 | `tracker: state mismatch` | The address belongs to another sign-in. The sign-in is dropped. | Start again with the newest URL. |
 | `tracker: authorization failed: oauth: authorization server answered invalid_grant` | The code was used, expired or refused. | `reconnect`. |
