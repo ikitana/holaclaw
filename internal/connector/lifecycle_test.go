@@ -310,6 +310,165 @@ func TestIntentTTL(t *testing.T) {
 	}
 }
 
+// A reconnect's code is taken up to the intent's expiry, whatever ran
+// meanwhile: health checks, tool calls, a refresh of the old token, or one
+// the authorization server rejected.
+func TestCodeBeforeExpiry(t *testing.T) {
+	for name, tc := range map[string]struct {
+		expiresIn int
+		reject    bool // the old grant dies while the intent is open
+	}{
+		"old token lasts":   {3600, false},
+		"old token expires": {300, false},
+		"refresh rejected":  {300, true},
+	} {
+		t.Run(name, func(t *testing.T) {
+			h := newHarness(t)
+			h.is.expiresIn = tc.expiresIn
+			h.connect("gh", pinned)
+			s, err := h.m.Reconnect(h.ctx, "gh", ReconnectRequest{RedirectURI: pinned})
+			if err != nil {
+				t.Fatal(err)
+			}
+			if tc.reject {
+				h.is.setFail("invalid_grant")
+			}
+			for range int((IntentTTL - time.Second) / (30 * time.Second)) {
+				h.clock.advance(30 * time.Second)
+				h.m.Check(h.ctx)
+				_, _ = h.m.CallTool(h.ctx, "gh", "echo", nil)
+				if st, d := h.state("gh"); st != store.ConnectorAuthorizing || d != "" {
+					t.Fatalf("while open: %s/%s", st, d)
+				}
+			}
+			if refreshes := h.is.count("refresh_token"); (refreshes > 0) != (tc.expiresIn < 3600) {
+				t.Errorf("refreshes while open = %d", refreshes)
+			}
+			h.is.setFail("")
+			h.clock.advance(29 * time.Second) // a second before the expiry
+			c, err := h.m.Code(h.ctx, "gh", approve(t, s))
+			if err != nil || c.State != store.ConnectorConnected {
+				t.Fatalf("code before the expiry: %+v, %v (events %v)", c, err, h.events.statuses("gh"))
+			}
+			if res, err := h.m.CallTool(h.ctx, "gh", "echo", nil); err != nil || res.Text != "hello" {
+				t.Errorf("call with the new grant: %v", err)
+			}
+		})
+	}
+}
+
+// A code that finds no intent is told why, and each way an intent ends is
+// in the log.
+func TestNoIntentReason(t *testing.T) {
+	h := newHarness(t)
+	h.connect("gh", pinned)
+	logs := &syncBuffer{}
+	h.m.log = slog.New(slog.NewTextHandler(logs, nil))
+	reconnect := func() Started {
+		t.Helper()
+		s, err := h.m.Reconnect(h.ctx, "gh", ReconnectRequest{RedirectURI: pinned})
+		if err != nil {
+			t.Fatal(err)
+		}
+		return s
+	}
+	// refused posts cb and wants ErrNoIntent with why, logged too.
+	refused := func(cb oauth.Callback, why string) {
+		t.Helper()
+		_, err := h.m.Code(h.ctx, "gh", cb)
+		if !errors.Is(err, ErrNoIntent) || err.Error() != ErrNoIntent.Error()+": "+why {
+			t.Errorf("code: %v, want %q", err, why)
+		}
+		if want := `msg="connector code without an open authorization" connector=gh reason="` + why + `"`; !strings.Contains(logs.String(), want) {
+			t.Errorf("log has no %s:\n%s", want, logs.String())
+		}
+	}
+	ended := func(why string) {
+		t.Helper()
+		if want := `msg="connector authorization ended" connector=gh reason=` + why + "\n"; !strings.HasSuffix(logs.String(), want) {
+			t.Errorf("log does not end with %s:\n%s", want, logs.String())
+		}
+	}
+
+	// Used: once exchanged, and while its exchange runs.
+	s := h.create("gh2", pinned)
+	if _, err := h.m.Code(h.ctx, "gh2", approve(t, s)); err != nil {
+		t.Fatal(err)
+	}
+	if !strings.HasSuffix(logs.String(), `msg="connector authorization ended" connector=gh2 reason=used`+"\n") {
+		t.Errorf("log of a used intent:\n%s", logs.String())
+	}
+	s = reconnect()
+	c, _ := h.m.conn("gh")
+	c.mu.Lock()
+	c.intent.used = true
+	c.mu.Unlock()
+	refused(approve(t, s), "its code was already posted")
+	c.mu.Lock()
+	c.intent.used = false
+	c.mu.Unlock()
+	if _, err := h.m.Code(h.ctx, "gh", approve(t, s)); err != nil {
+		t.Fatal(err)
+	}
+	ended("used")
+	refused(approve(t, s), "its code was already posted")
+
+	// Replaced by a reconnect, then expired.
+	reconnect()
+	s = reconnect()
+	ended("replaced")
+	h.clock.advance(IntentTTL)
+	refused(approve(t, s), "it expired")
+	if !strings.Contains(logs.String(), `msg="connector authorization ended" connector=gh reason=`+DetailIntentExpired+"\n") {
+		t.Errorf("log of an expired intent:\n%s", logs.String())
+	}
+
+	// A failed exchange, and a state mismatch.
+	s = reconnect()
+	h.is.setFail("invalid_grant")
+	if _, err := h.m.Code(h.ctx, "gh", approve(t, s)); !errors.Is(err, ErrAuthorization) {
+		t.Fatalf("failed exchange: %v", err)
+	}
+	h.is.setFail("")
+	ended(DetailAuthorization)
+	refused(approve(t, s), "it ended with "+DetailAuthorization)
+	s = reconnect()
+	bad := approve(t, s)
+	bad.State = "another"
+	if _, err := h.m.Code(h.ctx, "gh", bad); !errors.Is(err, ErrStateMismatch) {
+		t.Fatalf("mismatch: %v", err)
+	}
+	ended(DetailStateMismatch)
+	refused(approve(t, s), "it ended with "+DetailStateMismatch)
+
+	// Still being opened.
+	s = reconnect()
+	c.mu.Lock()
+	c.intent.ready = false
+	c.mu.Unlock()
+	refused(approve(t, s), "it is still being opened")
+	c.mu.Lock()
+	c.intent.ready = true
+	c.mu.Unlock()
+
+	// Lost with the daemon: intents are in memory only.
+	h.clock.advance(time.Minute)
+	started := h.clock.Now().UTC().Format(time.RFC3339)
+	h.restart()
+	h.m.log = slog.New(slog.NewTextHandler(logs, nil))
+	refused(approve(t, s), "none was opened since the daemon started at "+started)
+
+	// Deleted: the intent goes with the connector.
+	s = reconnect()
+	if err := h.m.Delete(h.ctx, "gh"); err != nil {
+		t.Fatal(err)
+	}
+	ended("deleted")
+	if _, err := h.m.Code(h.ctx, "gh", approve(t, s)); !errors.Is(err, ErrNotFound) {
+		t.Errorf("code after delete: %v", err)
+	}
+}
+
 // A state mismatch drops the intent: the right code cannot follow.
 func TestStateMismatch(t *testing.T) {
 	h := newHarness(t)

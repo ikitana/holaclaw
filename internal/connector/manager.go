@@ -61,9 +61,10 @@ type Options struct {
 
 // Manager runs the connectors. Safe for concurrent use.
 type Manager struct {
-	o     Options
-	oauth *oauth.Client
-	log   *slog.Logger
+	o       Options
+	oauth   *oauth.Client
+	log     *slog.Logger
+	started time.Time // intents are in memory: none is older
 
 	ctx    context.Context // cancelled by Close: background tool refreshes
 	cancel context.CancelFunc
@@ -93,6 +94,9 @@ type conn struct {
 	client   *mcp.Client
 	gen      uint64 // bumped by every token change
 	deleted  bool
+	// ended is why the last intent ended, for a code that finds none: a
+	// detail, endedUsed, or "" when none ended since the start.
+	ended string
 
 	refreshFailed time.Time   // last failed refresh other than a dead grant
 	lastList      time.Time   // last tools/list after list_changed
@@ -114,7 +118,7 @@ func New(ctx context.Context, o Options) (*Manager, error) {
 		o.Now = time.Now
 	}
 	m := &Manager{
-		o: o, oauth: &oauth.Client{HTTP: o.HTTPClient}, log: o.Logger,
+		o: o, oauth: &oauth.Client{HTTP: o.HTTPClient}, log: o.Logger, started: o.Now(),
 		listInterval: listChangedInterval,
 		conns:        map[string]*conn{}, refused: map[string]bool{},
 	}
@@ -368,6 +372,9 @@ func (m *Manager) Delete(ctx context.Context, id string) error {
 		return fmt.Errorf("connector %s: delete: %w", id, err)
 	}
 	ctx = context.WithoutCancel(ctx)
+	if c.intent != nil {
+		m.intentEnded(c, "deleted")
+	}
 	c.deleted, c.intent = true, nil
 	cl := c.client
 	c.client = nil

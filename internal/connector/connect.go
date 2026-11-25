@@ -176,6 +176,9 @@ func (m *Manager) Reconnect(ctx context.Context, id string, r ReconnectRequest) 
 		cfg.Scopes = slices.Clone(r.Scopes)
 	}
 	in.cfg = cfg
+	if old != nil {
+		m.intentEnded(c, "replaced")
+	}
 	c.intent = in
 	err = m.updateLocked(ctx, c, func(row *store.Connector) { row.State, row.Detail = store.ConnectorAuthorizing, "" })
 	c.mu.Unlock()
@@ -392,6 +395,7 @@ func (m *Manager) endIntentLocked(ctx context.Context, c *conn, in *intent, deta
 		return
 	}
 	c.intent = nil
+	m.intentEnded(c, detail)
 	if in.create {
 		// c stays in the map, deleted, until its row and secrets are gone:
 		// a create of the same id meanwhile gets ErrExists.
@@ -419,6 +423,36 @@ func (m *Manager) forget(c *conn) {
 	if m.conns[c.id] == c {
 		delete(m.conns, c.id)
 	}
+}
+
+// endedUsed is conn.ended of an intent whose code was exchanged.
+const endedUsed = "used"
+
+// intentEnded keeps and logs why c's intent ended: a detail, endedUsed,
+// "deleted" or "replaced". c.mu is held.
+func (m *Manager) intentEnded(c *conn, why string) {
+	c.ended = why
+	m.log.Info("connector authorization ended", "connector", c.id, "reason", why)
+}
+
+// noIntentLocked is ErrNoIntent for a code that finds no intent to finish,
+// with why, in the daemon's words. c.mu is held.
+func (m *Manager) noIntentLocked(c *conn) error {
+	var why string
+	switch in := c.intent; {
+	case in != nil && !in.used:
+		why = "it is still being opened"
+	case in != nil || c.ended == endedUsed:
+		why = "its code was already posted"
+	case c.ended == "":
+		why = "none was opened since the daemon started at " + m.started.UTC().Format(time.RFC3339)
+	case c.ended == DetailIntentExpired:
+		why = "it expired"
+	default:
+		why = "it ended with " + c.ended
+	}
+	m.log.Info("connector code without an open authorization", "connector", c.id, "reason", why)
+	return fmt.Errorf("%w: %s", ErrNoIntent, why)
 }
 
 // usedGrace is how long past its TTL a used intent may still be finishing
@@ -460,8 +494,9 @@ func (m *Manager) Code(ctx context.Context, id string, cb oauth.Callback) (Conne
 		return Connector{}, ErrNotFound
 	}
 	if in == nil || !in.ready || in.used {
+		err := m.noIntentLocked(c)
 		c.mu.Unlock()
-		return Connector{}, ErrNoIntent
+		return Connector{}, err
 	}
 	in.used = true
 	c.mu.Unlock()
@@ -513,6 +548,7 @@ func (m *Manager) Code(ctx context.Context, id string, cb oauth.Callback) (Conne
 		}
 	}
 	c.intent, c.cfg, c.inConfig = nil, in.cfg, true
+	m.intentEnded(c, endedUsed)
 	if cl != nil {
 		if err := m.adoptLocked(c, cl); err != nil {
 			return Connector{}, err

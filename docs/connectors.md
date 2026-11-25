@@ -169,6 +169,18 @@ timer: expired intents are dropped when the connector is next read (`list`,
 `show`, `reconnect`, `code`) or checked (every 10 minutes), so a connector
 may show `authorizing` past its expiry until then.
 
+The 15 minutes are the daemon's limit only. The authorization server gives
+its code a lifetime of its own, counted from the sign-in, and the redirect
+does not carry it: a code posted inside the 15 minutes can still be refused
+by the server, which is a failed intent like any other.
+
+The daemon logs every intent that ends, with why: `connector authorization
+ended`, with `reason` a `detail` of §10, `used`, `replaced` (by a reconnect)
+or `deleted`. A code that finds no intent to finish is refused with the
+reason: the intent expired, its code was already posted, it ended with a
+`detail`, it is still being opened, or none was opened since the daemon
+started. Intents are in memory, so a restart is the last case.
+
 A failed intent, whatever the cause (expiry, a `state` or `iss` mismatch, a
 refused code, a server that does not answer), ends the same way:
 
@@ -599,7 +611,7 @@ server.
 |---|---|---|---|---|
 | `400` | a bad field, a built-in name, an auth mismatch | a bad field, a missing or stray `client_secret` | a missing field; a `state` or `iss` mismatch, which drops the intent | |
 | `404` | | no such id | no such id | nothing of the id is left |
-| `409` | the id is in use; `connectors.toml` does not parse, or is a symlink when the entry must be written | an intent is being opened or its code exchanged | no open intent; `connectors.toml` is a symlink or does not parse | `connectors.toml` is a symlink holding the entry, or does not parse |
+| `409` | the id is in use; `connectors.toml` does not parse, or is a symlink when the entry must be written | an intent is being opened or its code exchanged | no open intent, with why in the message; `connectors.toml` is a symlink or does not parse | `connectors.toml` is a symlink holding the entry, or does not parse |
 | `500` | | | | the entry is gone, but the keys or the cache row are left |
 | `502` | discovery, client identity or the server failed | the same | the authorization server refused the code | |
 

@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"net/url"
+	"regexp"
 	"slices"
 	"strings"
 	"sync"
@@ -229,6 +230,11 @@ func TestConnectorsCreatePrintsTheURL(t *testing.T) {
 		!strings.Contains(out, "holaclaw connectors code gh '<address>'") {
 		t.Errorf("stdout = %q", out)
 	}
+	// The time is the daemon's limit only, and is not put as the one to meet.
+	if !strings.Contains(out, "and run, right after signing in:") || strings.Contains(out, ", before ") ||
+		!regexp.MustCompile(`\nholaclaw takes the address until \d\d:\d\d:\d\d\. The server may stop taking its code sooner\.\n$`).MatchString(out) {
+		t.Errorf("stdout = %q", out)
+	}
 	if f.posted("/code") {
 		t.Error("a code was posted")
 	}
@@ -391,9 +397,16 @@ func TestConnectorsCode(t *testing.T) {
 		})
 	}
 
-	// The daemon's refusals: no open authorization, a degraded server.
-	f = &connFake{refuse: &gen.Error{Code: "conflict", Message: "connector: no open authorization"}, status: http.StatusConflict}
-	if code, _, errOut := runCLI(t, "", "connectors", "code", "gh", landed, "--addr", f.serve(t)); code != 1 || !strings.Contains(errOut, "gh: no open authorization") {
+	// The daemon's refusals: no open authorization, with its reason and the
+	// way on; another conflict, without; a degraded server.
+	f = &connFake{refuse: &gen.Error{Code: "conflict", Message: "connector: no open authorization: it expired"}, status: http.StatusConflict}
+	if code, _, errOut := runCLI(t, "", "connectors", "code", "gh", landed, "--addr", f.serve(t)); code != 1 ||
+		!strings.Contains(errOut, "gh: no open authorization: it expired\ntry again with `holaclaw connectors reconnect gh`\n") {
+		t.Errorf("exit = %d, stderr = %q", code, errOut)
+	}
+	f = &connFake{refuse: &gen.Error{Code: "conflict", Message: "connector: connectors.toml does not parse; fix it by hand"}, status: http.StatusConflict}
+	if code, _, errOut := runCLI(t, "", "connectors", "code", "gh", landed, "--addr", f.serve(t)); code != 1 ||
+		!strings.Contains(errOut, "gh: connectors.toml does not parse") || strings.Contains(errOut, "try again") {
 		t.Errorf("exit = %d, stderr = %q", code, errOut)
 	}
 	f = &connFake{codeState: "degraded", codeDetail: "server_unreachable"}

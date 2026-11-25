@@ -65,7 +65,7 @@ var (
 	// key config would refuse; the daemon never overwrites it.
 	ErrBadFile = errors.New("connector: " + config.FileConnectors + " does not parse; fix it by hand")
 	// ErrNoIntent means no authorization is open for the connector, or it
-	// expired, or its code was already posted.
+	// expired, or its code was already posted. Code wraps it with which.
 	ErrNoIntent = errors.New("connector: no open authorization")
 	// ErrBusy means an authorization is still being opened or its code is
 	// being exchanged.

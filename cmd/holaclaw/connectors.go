@@ -473,10 +473,13 @@ func connectorConnect(ctx context.Context, c *cli, cn *conn, id string, listen b
 		expires = *st.ExpiresAt
 	}
 	if !listen {
+		// The time is only ours: the server's code has a lifetime of its
+		// own, counted from the sign-in, and the redirect does not carry it.
 		_, _ = fmt.Fprintf(c.stdout, "Open this URL in a browser and sign in:\n\n    %s\n\n"+
 			"The browser then goes to %s, which does not load. Copy the whole address\n"+
-			"from the address bar and, before %s, run:\n\n    holaclaw connectors code %s '<address>'\n",
-			authURL, redirect, expires.Local().Format("15:04:05"), id)
+			"from the address bar and run, right after signing in:\n\n    holaclaw connectors code %s '<address>'\n\n"+
+			"holaclaw takes the address until %s. The server may stop taking its code sooner.\n",
+			authURL, redirect, id, expires.Local().Format("15:04:05"))
 		return nil
 	}
 
@@ -506,9 +509,20 @@ func connectorConnect(ctx context.Context, c *cli, cn *conn, id string, listen b
 func postCode(ctx context.Context, c *cli, client *api.Client, id string, in gen.ConnectorCode) error {
 	got, err := client.PostConnectorCode(ctx, id, in)
 	if err != nil {
-		return interrupted(ctx, connectorError(id, err))
+		return interrupted(ctx, codeError(id, err))
 	}
 	return connectorSettled(c, id, got)
+}
+
+// codeError is connectorError for a code post. With no authorization open
+// the daemon says why, and the way on is a new one.
+func codeError(id string, err error) error {
+	out := connectorError(id, err)
+	var ce *api.ClientError
+	if errors.As(err, &ce) && ce.Status == http.StatusConflict && strings.HasPrefix(ce.Message, connector.ErrNoIntent.Error()) {
+		return fmt.Errorf("%w\ntry again with `holaclaw connectors reconnect %s`", out, id)
+	}
+	return out
 }
 
 // cmdConnectorsCode posts the code and state of the address the browser
